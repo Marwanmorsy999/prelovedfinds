@@ -1,4 +1,4 @@
-import { getCookie, setCookie, deleteCookie } from "@tanstack/start-server-core";
+import { createIsomorphicFn } from "@tanstack/react-start";
 import { getEnv } from "./env";
 
 const SESSION_COOKIE = "session";
@@ -48,22 +48,22 @@ async function verifySessionToken(token: string | undefined): Promise<boolean> {
   return mismatch === 0;
 }
 
-export async function issueSession() {
-  const token = await signSessionToken();
-  setCookie(SESSION_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: SESSION_MAX_AGE,
+// Isomorphic cookie reader: on the server use TanStack's request-scoped
+// getCookie; on the client read document.cookie. This keeps the
+// server-only @tanstack/start-server-core module out of the client bundle.
+const readSessionCookie = createIsomorphicFn()
+  .server(async () => {
+    const { getCookie } = await import("@tanstack/start-server-core");
+    return (getCookie(SESSION_COOKIE) as string | undefined) ?? undefined;
+  })
+  .client(() => {
+    if (typeof document === "undefined") return undefined;
+    const match = document.cookie.match(/(?:^|;\s*)session=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : undefined;
   });
-}
-
-export function clearSession() {
-  deleteCookie(SESSION_COOKIE, { path: "/" });
-}
 
 export async function getIsAuthed(): Promise<boolean> {
-  const token = getCookie(SESSION_COOKIE);
+  const token = await readSessionCookie();
   return verifySessionToken(token);
 }
 
