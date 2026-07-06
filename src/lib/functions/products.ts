@@ -11,6 +11,7 @@ import {
   deleteSoldProducts,
   toggleSold,
   getDashboardStats,
+  searchProducts,
   type ProductInput,
   type ListParams,
 } from "@/lib/products.server";
@@ -96,3 +97,10 @@ export const dashboardStatsFn = createServerFn({ method: "GET" }).handler(async 
   await requireAdmin();
   return getDashboardStats();
 });
+
+export const searchProductsFn = createServerFn({ method: "GET" })
+  .validator(z.object({ query: z.string().min(1).max(100) }))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    return searchProducts(data.query);
+  });

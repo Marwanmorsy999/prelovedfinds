@@ -9,7 +9,7 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 async function issueSession() {
   const token = await signSessionToken();
   setCookie(SESSION_COOKIE, token, {
-    httpOnly: true,
+    httpOnly: false,
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE,

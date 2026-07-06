@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LogOut, ArrowUpDown, Layers } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, ArrowUpDown, Layers, Search, Eye, EyeOff } from "lucide-react";
 
 import { getIsAuthed } from "@/lib/auth";
 import { logoutFn } from "@/lib/functions/auth";
@@ -18,9 +18,11 @@ import {
   updateProductFn,
   deleteProductFn,
   toggleSoldFn,
+  searchProductsFn,
 } from "@/lib/functions/products";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Product, Availability } from "@/lib/products";
+import type { DashboardStats } from "@/lib/products.server";
 import { BulkDropDialog } from "@/components/admin/BulkDropDialog";
 import { AdvancedSettingsPanel } from "@/components/admin/AdvancedSettingsPanel";
 
@@ -77,7 +79,16 @@ export const Route = createFileRoute("/admin")({
     if (location.pathname === "/admin/login") {
       return {
         products: { items: [], total: 0, page: 1, perPage: PER_PAGE, totalPages: 1 },
-        stats: { total: 0, available: 0, sold: 0, oneLeft: 0, revenue: 0 },
+        stats: {
+          total: 0,
+          available: 0,
+          sold: 0,
+          oneLeft: 0,
+          revenue: 0,
+          topBrands: [],
+          recentRevenue: 0,
+          averagePrice: 0,
+        },
       };
     }
     const [products, stats] = await Promise.all([
@@ -135,6 +146,12 @@ function AdminDashboard() {
 
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searching, setSearching] = useState(false);
+
   const reload = async () => {
     const [products, s] = await Promise.all([
       listProductsFn({ data: { availability, sort, page, perPage } }),
@@ -142,6 +159,8 @@ function AdminDashboard() {
     ]);
     setData(products);
     setStats(s);
+    setSearchActive(false);
+    setSearchQuery("");
   };
 
   useEffect(() => {
@@ -152,6 +171,29 @@ function AdminDashboard() {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availability, sort, page, perPage]);
+
+  // Debounced search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchActive(false);
+      setSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const results = await searchProductsFn({ data: { query: searchQuery.trim() } });
+        setSearchResults(results);
+        setSearchActive(true);
+      } catch {
+        toast.error("Search failed");
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   // /admin/login is a child route; render only its outlet (the login form)
   // without the dashboard chrome when on that path.
@@ -266,6 +308,10 @@ function AdminDashboard() {
     navigate({ to: "/admin/login" });
   };
 
+  // Determine which products to show
+  const displayedProducts = searchActive ? searchResults : data.items;
+  const totalCount = searchActive ? searchResults.length : data.total;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
       <div className="flex items-end justify-between border-b border-hairline pb-6">
@@ -282,15 +328,42 @@ function AdminDashboard() {
         </Button>
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
+      {/* Stats Grid */}
+      <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-6">
         <StatCard label="Total" value={stats.total} />
         <StatCard label="Available" value={stats.available} />
         <StatCard label="1 Left" value={stats.oneLeft} />
         <StatCard label="Sold" value={stats.sold} />
         <StatCard label="Revenue (EGP)" value={stats.revenue.toLocaleString()} />
+        <StatCard label="Avg Price" value={`${stats.averagePrice} EGP`} />
       </div>
 
+      {/* Secondary Stats */}
+      <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <StatCard label="30d Revenue" value={`${stats.recentRevenue.toLocaleString()} EGP`} />
+        {stats.topBrands.slice(0, 3).map((b) => (
+          <StatCard key={b.brand} label={`Top: ${b.brand}`} value={b.count} />
+        ))}
+      </div>
+
+      {/* Controls */}
       <div className="mt-10 flex flex-wrap items-center gap-3">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-grey" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search products..."
+            className="pl-9"
+          />
+          {searching && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-grey border-t-transparent" />
+            </div>
+          )}
+        </div>
+
         <Select
           value={availability}
           onValueChange={(v) => setAvailability(v as Availability | "all")}
@@ -318,6 +391,12 @@ function AdminDashboard() {
           </SelectContent>
         </Select>
 
+        {searchActive && (
+          <Badge variant="secondary" className="text-xs">
+            {searchResults.length} result{searchResults.length !== 1 ? "s" : ""}
+          </Badge>
+        )}
+
         <div className="ml-auto flex flex-wrap items-center gap-3">
           <AdvancedSettingsPanel
             perPage={perPage}
@@ -337,63 +416,90 @@ function AdminDashboard() {
         </div>
       </div>
 
+      {/* Products Table */}
       <div className="mt-6 rounded-md border border-hairline">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">Img</TableHead>
+              <TableHead className="w-12">Img</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Brand</TableHead>
+              <TableHead>Era</TableHead>
+              <TableHead>Size</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.items.length === 0 && (
+            {displayedProducts.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-grey">
-                  No products
+                <TableCell colSpan={8} className="py-10 text-center text-grey">
+                  {searchActive ? "No results found" : "No products"}
                 </TableCell>
               </TableRow>
             )}
-            {data.items.map((p) => (
+            {displayedProducts.map((p) => (
               <TableRow key={p.id}>
                 <TableCell>
                   {p.images[0] ? (
                     <img
                       src={p.images[0]}
                       alt={p.title}
-                      className="h-12 w-12 rounded object-cover"
+                      className="h-10 w-10 rounded object-cover"
                     />
                   ) : (
-                    <div className="h-12 w-12 rounded bg-surface" />
+                    <div className="h-10 w-10 rounded bg-surface" />
                   )}
                 </TableCell>
-                <TableCell className="font-medium">{p.title}</TableCell>
+                <TableCell className="max-w-[180px] truncate font-medium" title={p.title}>
+                  {p.title}
+                </TableCell>
                 <TableCell className="text-grey">{p.brand}</TableCell>
-                <TableCell>{p.price} EGP</TableCell>
+                <TableCell className="text-xs text-grey">{p.era}</TableCell>
+                <TableCell className="text-xs text-grey">{p.size}</TableCell>
+                <TableCell className="font-mono text-xs">{p.price} EGP</TableCell>
                 <TableCell>
-                  <Badge variant={p.availability === "sold" ? "destructive" : "secondary"}>
-                    {p.availability}
+                  <Badge
+                    variant={
+                      p.availability === "sold"
+                        ? "destructive"
+                        : p.availability === "one-left"
+                          ? "default"
+                          : "secondary"
+                    }
+                  >
+                    <div className="flex items-center gap-1">
+                      {p.availability === "sold" ? (
+                        <EyeOff className="h-3 w-3" />
+                      ) : (
+                        <Eye className="h-3 w-3" />
+                      )}
+                      {p.availability === "one-left" ? "1 Left" : p.availability}
+                    </div>
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-1">
                     <Button
                       size="sm"
                       variant="outline"
                       className="border-rust text-rust hover:bg-rust hover:text-paper"
                       onClick={() => toggle(p)}
+                      title={p.availability === "sold" ? "Mark available" : "Mark sold"}
                     >
-                      <ArrowUpDown className="h-3.5 w-3.5" />
-                      {p.availability === "sold" ? "Available" : "Sold"}
+                      <ArrowUpDown className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => openEdit(p)}>
-                      <Pencil className="h-4 w-4" />
+                    <Button size="sm" variant="ghost" onClick={() => openEdit(p)} title="Edit">
+                      <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(p)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setDeleteTarget(p)}
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
                     </Button>
                   </div>
                 </TableCell>
@@ -403,8 +509,16 @@ function AdminDashboard() {
         </Table>
       </div>
 
-      {data.totalPages > 1 && (
+      {/* Pagination */}
+      {!searchActive && data.totalPages > 1 && (
         <nav className="mt-6 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            className="h-9 border border-hairline px-3 text-xs font-semibold text-ink hover:border-rust hover:text-rust disabled:opacity-30"
+          >
+            ← Prev
+          </button>
           {Array.from({ length: data.totalPages }, (_, i) => i + 1).map((n) => (
             <button
               key={n}
@@ -414,9 +528,17 @@ function AdminDashboard() {
               {n}
             </button>
           ))}
+          <button
+            onClick={() => setPage(Math.min(data.totalPages, page + 1))}
+            disabled={page >= data.totalPages}
+            className="h-9 border border-hairline px-3 text-xs font-semibold text-ink hover:border-rust hover:text-rust disabled:opacity-30"
+          >
+            Next →
+          </button>
         </nav>
       )}
 
+      {/* Create/Edit Dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
@@ -546,12 +668,13 @@ function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete product?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently removes “{deleteTarget?.title}”. This cannot be undone.
+              This permanently removes &ldquo;{deleteTarget?.title}&rdquo;. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -267,6 +267,9 @@ export interface DashboardStats {
   sold: number;
   oneLeft: number;
   revenue: number;
+  topBrands: { brand: string; count: number }[];
+  recentRevenue: number;
+  averagePrice: number;
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
@@ -284,6 +287,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     sold: 0,
     oneLeft: 0,
     revenue: 0,
+    topBrands: [],
+    recentRevenue: 0,
+    averagePrice: 0,
   };
 
   for (const r of rows.results ?? []) {
@@ -297,5 +303,46 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     if (r.availability === "one-left") stats.oneLeft = count;
   }
 
+  // Top brands
+  const brandRows = await db
+    .prepare(
+      `SELECT brand, COUNT(*) as count FROM products WHERE brand != '' GROUP BY brand ORDER BY count DESC LIMIT 5`,
+    )
+    .all<{ brand: string; count: number }>();
+  stats.topBrands = (brandRows.results ?? []).map((r) => ({ brand: r.brand, count: r.count }));
+
+  // Recent revenue (last 30 days)
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const recentRow = await db
+    .prepare(
+      `SELECT COALESCE(SUM(price), 0) as revenue FROM products WHERE availability = 'sold' AND createdAt >= ?`,
+    )
+    .bind(thirtyDaysAgo)
+    .first<{ revenue: number }>();
+  stats.recentRevenue = recentRow?.revenue ?? 0;
+
+  // Average price of available items
+  const avgRow = await db
+    .prepare(
+      `SELECT COALESCE(ROUND(AVG(price)), 0) as avg FROM products WHERE availability IN ('available', 'one-left')`,
+    )
+    .first<{ avg: number }>();
+  stats.averagePrice = avgRow?.avg ?? 0;
+
   return stats;
+}
+
+export async function searchProducts(query: string): Promise<Product[]> {
+  const db = getDB();
+  const searchTerm = `%${query}%`;
+  const rows = await db
+    .prepare(
+      `SELECT * FROM products
+       WHERE title LIKE ? OR brand LIKE ? OR era LIKE ? OR size LIKE ? OR id LIKE ?
+       ORDER BY createdAt DESC
+       LIMIT 50`,
+    )
+    .bind(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm)
+    .all<ProductRow>();
+  return (rows.results ?? []).map(rowToProduct);
 }

@@ -1,4 +1,4 @@
-doesnt import { Instagram } from "lucide-react";
+import { Instagram } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export function Footer() {
