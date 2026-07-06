@@ -1,4 +1,10 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  redirect,
+  useNavigate,
+  Outlet,
+  useRouterState,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, LogOut, ArrowUpDown } from "lucide-react";
@@ -58,12 +64,20 @@ import {
 const PER_PAGE = 8;
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const authed = await getIsAuthed();
-    if (!authed) throw redirect({ to: "/admin/login" });
+    if (!authed && location.pathname !== "/admin/login") {
+      throw redirect({ to: "/admin/login" });
+    }
     return { authed };
   },
-  loader: async () => {
+  loader: async ({ location }) => {
+    if (location.pathname === "/admin/login") {
+      return {
+        products: { items: [], total: 0, page: 1, perPage: PER_PAGE, totalPages: 1 },
+        stats: { total: 0, available: 0, sold: 0, oneLeft: 0, revenue: 0 },
+      };
+    }
     const [products, stats] = await Promise.all([
       listProductsFn({ data: { page: 1, perPage: PER_PAGE } }),
       dashboardStatsFn(),
@@ -101,6 +115,7 @@ const emptyForm: FormState = {
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const initial = Route.useLoaderData();
   const [data, setData] = useState(initial.products);
   const [stats, setStats] = useState(initial.stats);
@@ -133,6 +148,10 @@ function AdminDashboard() {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availability, sort, page]);
+
+  // /admin/login is a child route; render only its outlet (the login form)
+  // without the dashboard chrome when on that path.
+  if (pathname === "/admin/login") return <Outlet />;
 
   const openCreate = () => {
     setEditing(null);
