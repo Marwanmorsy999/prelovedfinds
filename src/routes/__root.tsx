@@ -12,7 +12,6 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Navigation } from "@/components/Navigation";
-import { MarqueeTicker } from "@/components/MarqueeTicker";
 import { Footer } from "@/components/Footer";
 import { CartProvider } from "@/lib/cart";
 import { Toaster } from "@/components/ui/sonner";
@@ -143,7 +142,6 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <div className="grain-overlay" aria-hidden="true" />
         {children}
         <Scripts />
       </body>
@@ -157,10 +155,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <div className="flex min-h-screen flex-col bg-background">
+        <div className="flex min-h-screen flex-col bg-white">
           <Navigation />
-          <MarqueeTicker />
-          <main className="flex-1 pt-14" id="main-content">
+          <main className="flex-1 pt-[104px]" id="main-content">
             <Outlet />
           </main>
           <Footer />

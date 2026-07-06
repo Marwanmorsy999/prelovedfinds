@@ -2,16 +2,16 @@ import type { Availability } from "@/lib/products";
 
 export function StatusBadge({ status }: { status: Availability }) {
   if (status === "available") return null;
-  const label = status === "sold" ? "Sold out" : "1 left";
-  const tone =
-    status === "sold"
-      ? "bg-[var(--color-outofstock)] text-ink border-[var(--color-outofstock)]"
-      : "bg-[var(--color-lowstock)] text-paper border-[var(--color-lowstock)]";
+  if (status === "sold") {
+    return (
+      <span className="inline-block bg-white text-[#1a1a1a] text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 border border-[#e5e7eb]">
+        Sold out
+      </span>
+    );
+  }
   return (
-    <span
-      className={`inline-block rounded-full border px-3 py-1 font-sans text-[10px] font-medium uppercase tracking-[0.15em] ${tone}`}
-    >
-      {label}
+    <span className="inline-block bg-[#1a1a1a] text-white text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1">
+      1 left
     </span>
   );
 }

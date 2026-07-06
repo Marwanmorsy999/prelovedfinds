@@ -5,44 +5,45 @@ export function Newsletter() {
   const [done, setDone] = useState(false);
 
   return (
-    <section className="border-y border-concrete bg-surface">
-      <div className="mx-auto max-w-7xl px-4 py-20 text-center md:px-8">
-        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-concrete">
+    <section className="border-t border-[#e5e7eb] bg-[#f9fafb]">
+      <div className="mx-auto max-w-xl px-4 py-16 text-center md:px-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9ca3af] mb-3">
           Newsletter
         </p>
-        <h2 className="mt-4 font-display text-4xl font-bold uppercase tracking-tight text-ink md:text-5xl">
-          Get first dibs.
+        <h2 className="text-[24px] font-bold uppercase tracking-widest text-[#1a1a1a] mb-2">
+          Sign up to access our fly community perks
         </h2>
-        <p className="mx-auto mt-4 max-w-md text-base text-ink/70">
-          New drops, restocks, and member-only pricing - straight to your inbox.
+        <p className="text-[13px] text-[#6b7280] mb-8">
+          New drops, early access, and member-only pricing — straight to your inbox.
         </p>
 
         <form
           onSubmit={(e) => {
             e.preventDefault();
             setDone(true);
-            setTimeout(() => setDone(false), 2000);
+            setEmail("");
+            setTimeout(() => setDone(false), 3000);
           }}
-          className="mx-auto mt-8 flex max-w-md flex-col gap-3 md:flex-row"
+          className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto"
         >
           <input
             type="email"
             required
-            placeholder="your@email.com"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-12 flex-1 border border-concrete bg-paper px-4 text-[15px] text-ink outline-none transition-colors focus:border-ink placeholder:text-concrete"
+            className="flex-1 h-11 px-4 border border-[#e5e7eb] bg-white text-[13px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-[#9ca3af]"
             aria-label="Email address"
           />
           <button
             type="submit"
-            className="h-12 border border-ink bg-ink px-8 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-paper transition-colors hover:bg-ink/90"
+            className="h-11 px-6 bg-[#1a1a1a] text-white text-[12px] font-semibold uppercase tracking-widest hover:bg-black transition-colors whitespace-nowrap"
           >
             {done ? "Subscribed ✓" : "Subscribe"}
           </button>
         </form>
 
-        <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.05em] text-concrete">
+        <p className="mt-4 text-[11px] text-[#9ca3af] uppercase tracking-widest">
           No spam. Unsubscribe anytime.
         </p>
       </div>

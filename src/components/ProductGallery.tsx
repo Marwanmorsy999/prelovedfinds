@@ -1,51 +1,51 @@
 import { useState } from "react";
 import { ImageSlot } from "./ImageSlot";
+import { X, ZoomIn } from "lucide-react";
 
 export function ProductGallery({ images, title }: { images: string[]; title: string }) {
   const [active, setActive] = useState(0);
   const [zoomed, setZoomed] = useState(false);
 
-  // Only show existing images — no empty slots
-  const existingImages = images.filter(Boolean);
-  const slots = existingImages.length ? existingImages : [undefined];
+  const slots = images.filter(Boolean).length ? images.filter(Boolean) : [undefined];
 
   return (
     <div className="space-y-3">
       {/* Main image */}
       <div
-        className="relative aspect-[4/5] w-full overflow-hidden bg-surface cursor-zoom-in"
+        className="relative overflow-hidden bg-[#f4f4f4] aspect-[4/5] cursor-zoom-in group"
         onClick={() => setZoomed(true)}
       >
-        <ImageSlot src={slots[active]} alt={title} />
-        {/* Image counter */}
-        {slots.length > 1 && (
-          <span className="absolute bottom-3 right-3 bg-ink/70 px-2 py-1 font-mono text-[11px] text-paper">
-            {active + 1}/{slots.length}
-          </span>
-        )}
+        <ImageSlot src={slots[active]} alt={title} className="w-full h-full object-cover" />
+        {/* Zoom hint */}
+        <div className="absolute top-3 right-3 bg-white/80 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <ZoomIn className="h-4 w-4 text-[#1a1a1a]" />
+        </div>
       </div>
 
-      {/* Thumbnails — only if more than 1 image */}
+      {/* Thumbnails */}
       {slots.length > 1 && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto">
           {slots.map((src, i) => (
             <button
               key={i}
               onClick={() => setActive(i)}
-              className={`h-[72px] w-[72px] shrink-0 overflow-hidden bg-surface transition-all duration-200 ${
-                i === active ? "ring-2 ring-ink" : "ring-1 ring-transparent hover:ring-concrete"
+              className={`flex-shrink-0 h-20 w-16 overflow-hidden bg-[#f4f4f4] transition-all ${
+                i === active
+                  ? "ring-2 ring-[#1a1a1a] ring-offset-1"
+                  : "ring-1 ring-transparent hover:ring-[#d1d5db]"
               }`}
+              aria-label={`View image ${i + 1}`}
             >
-              <ImageSlot src={src} alt={`${title} view ${i + 1}`} />
+              <ImageSlot src={src} alt={`${title} view ${i + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
       )}
 
-      {/* Zoom overlay */}
+      {/* Zoom lightbox */}
       {zoomed && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/95 cursor-zoom-out"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 cursor-zoom-out"
           onClick={() => setZoomed(false)}
         >
           <img
@@ -54,21 +54,17 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
             className="max-h-[90vh] max-w-[90vw] object-contain"
           />
           <button
-            onClick={() => setZoomed(false)}
-            className="absolute right-6 top-6 text-paper/60 hover:text-paper transition-colors"
+            onClick={(e) => { e.stopPropagation(); setZoomed(false); }}
+            className="absolute top-5 right-5 bg-white/10 hover:bg-white/20 p-2 transition-colors"
             aria-label="Close zoom"
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-            </svg>
+            <X className="h-5 w-5 text-white" />
           </button>
+          {slots.length > 1 && (
+            <p className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/60 text-[12px] uppercase tracking-widest">
+              {active + 1} / {slots.length}
+            </p>
+          )}
         </div>
       )}
     </div>

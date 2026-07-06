@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductInfo } from "@/components/ProductInfo";
-import { ProductGrid } from "@/components/ProductGrid";
+import { ProductCard } from "@/components/ProductCard";
 import { getProductFn, getRelatedFn } from "@/lib/functions/products";
 
 export const Route = createFileRoute("/product/$id")({
@@ -31,15 +31,23 @@ export const Route = createFileRoute("/product/$id")({
   },
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <h1 className="text-xl font-semibold text-ink">Something went wrong</h1>
-      <p className="mt-2 text-sm text-grey">{error.message}</p>
+      <h1 className="text-[18px] font-semibold text-[#1a1a1a]">Something went wrong</h1>
+      <p className="mt-2 text-[13px] text-[#6b7280]">{error.message}</p>
     </div>
   ),
   notFoundComponent: () => (
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">404</p>
-      <h1 className="mt-2 text-xl font-semibold text-ink">Piece not found</h1>
-      <p className="mt-2 text-sm text-grey">It may have already been snapped up.</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#9ca3af]">404</p>
+      <h1 className="mt-3 text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+        Piece not found
+      </h1>
+      <p className="mt-2 text-[13px] text-[#6b7280]">It may have already been snapped up.</p>
+      <a
+        href="/shop"
+        className="mt-6 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors"
+      >
+        Back to Shop
+      </a>
     </div>
   ),
   component: ProductPage,
@@ -47,22 +55,41 @@ export const Route = createFileRoute("/product/$id")({
 
 function ProductPage() {
   const { product, related } = Route.useLoaderData();
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
-      <div className="grid gap-10 md:grid-cols-2 md:gap-16">
-        <ProductGallery images={product.images} title={product.title} />
-        <ProductInfo product={product} />
+    <div className="page-enter">
+      {/* Breadcrumb */}
+      <div className="border-b border-[#e5e7eb] px-4 py-3 md:px-8">
+        <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
+          <a href="/" className="hover:text-[#1a1a1a] transition-colors">Home</a>
+          <span className="mx-2">/</span>
+          <a href="/shop" className="hover:text-[#1a1a1a] transition-colors">Shop All</a>
+          <span className="mx-2">/</span>
+          <span className="text-[#1a1a1a]">{product.title}</span>
+        </p>
       </div>
 
-      <section className="mt-24 border-t border-concrete pt-12">
-        <div className="mb-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">
-            More Picks
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-ink">You may also like</h2>
+      {/* Product layout */}
+      <div className="mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-14">
+        <div className="grid gap-10 md:grid-cols-[3fr_2fr] md:gap-14">
+          <ProductGallery images={product.images} title={product.title} />
+          <ProductInfo product={product} />
         </div>
-        <ProductGrid products={related} />
-      </section>
+
+        {/* Related products */}
+        {related.length > 0 && (
+          <section className="mt-20 border-t border-[#e5e7eb] pt-12">
+            <h2 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a] mb-8">
+              You may also like
+            </h2>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {related.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

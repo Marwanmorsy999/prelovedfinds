@@ -1,7 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import hero from "@/assets/hero.jpeg";
 import { ProductGrid } from "@/components/ProductGrid";
-import { CategoryTiles } from "@/components/CategoryTiles";
 import { Newsletter } from "@/components/Newsletter";
 import { listProductsFn } from "@/lib/functions/products";
 
@@ -12,7 +11,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "One-of-one vintage and pre-owned streetwear. Band tees, denim, workwear - hand-picked.",
+          "One-of-one vintage and pre-owned streetwear. Band tees, denim, workwear - hand-picked from Cairo.",
       },
       { property: "og:title", content: "Preloved Finds - Curated Vintage Streetwear" },
       { property: "og:description", content: "One-of-one vintage and pre-owned streetwear." },
@@ -30,36 +29,38 @@ function Home() {
 
   return (
     <div className="page-enter">
-      {/* Section 1: Hero — full viewport, single product, editorial */}
-      <section className="relative h-screen">
-        <div className="absolute inset-0 overflow-hidden bg-surface">
-          <img src={hero} alt="Featured vintage piece" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-br from-ink/60 via-ink/20 to-ink/40" />
+      {/* Hero — full viewport */}
+      <section className="relative h-screen min-h-[600px]">
+        <div className="absolute inset-0 overflow-hidden bg-[#f4f4f4]">
+          <img
+            src={hero}
+            alt="Featured vintage piece"
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/30" />
         </div>
-        <div className="absolute inset-0 flex flex-col justify-end px-6 pb-16 md:px-12 md:pb-20">
-          <div className="max-w-3xl">
-            <p className="font-sans text-2xl font-semibold uppercase tracking-wide text-paper">
-              Preloved Finds
-            </p>
-            <a
-              href="/shop"
-              className="mt-6 inline-flex h-9 items-center justify-center border border-paper px-6 font-sans text-[13px] font-medium uppercase tracking-[0.1em] text-paper transition-colors hover:bg-paper hover:text-ink"
-            >
-              Shop All
-            </a>
-          </div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+          <h1 className="text-white font-bold text-[40px] md:text-[64px] uppercase tracking-[0.06em] leading-none mb-8">
+            Preloved Finds
+          </h1>
+          <a
+            href="/shop"
+            className="inline-flex h-12 items-center justify-center bg-white text-[#1a1a1a] px-10 text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-[#f4f4f4] transition-colors"
+          >
+            Shop All
+          </a>
         </div>
       </section>
 
-      {/* Section 2: Marquee — handled by MarqueeTicker in __root */}
-
-      {/* Section 3: Featured Drop */}
-      <section className="mx-auto max-w-7xl px-4 pt-16 pb-16 md:px-8 md:pt-20 md:pb-20">
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="font-sans text-lg font-medium text-ink">New Picks</h2>
+      {/* New Picks */}
+      <section className="mx-auto max-w-7xl px-4 py-14 md:px-8 md:py-16">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+            New Picks
+          </h2>
           <a
             href="/shop"
-            className="inline-flex h-9 items-center justify-center bg-ink px-6 font-sans text-[12px] font-medium uppercase tracking-[0.08em] text-paper transition-colors hover:bg-[#262626]"
+            className="text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] border-b border-[#1a1a1a] hover:text-[#6b7280] hover:border-[#6b7280] transition-colors pb-0.5"
           >
             View all
           </a>
@@ -67,41 +68,53 @@ function Home() {
         <ProductGrid products={newPicks} />
       </section>
 
-      {/* Section 4: Vintage Collections */}
-      <CategoryTiles />
-
-      {/* Section 5: Our story — quiet link through to About */}
-      <section className="mx-auto max-w-7xl px-4 py-16 text-center md:px-8 md:py-20">
-        <p className="mx-auto max-w-md text-base text-ink/70">
-          Hand-picked from Cairo's hidden markets. Every piece has a story.
-        </p>
-        <Link
-          to="/about"
-          className="mt-4 inline-flex h-9 items-center justify-center border border-ink px-6 font-sans text-[12px] font-medium uppercase tracking-[0.08em] text-ink transition-colors hover:bg-ink hover:text-paper"
-        >
-          Read our story
-        </Link>
-      </section>
-
-      {/* Section 6: Instagram Feed */}
-      <section className="mx-auto max-w-7xl px-4 py-16 text-center md:px-8 md:py-20">
-        <a
-          href="https://instagram.com/prelovedfinds"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-block font-sans text-base font-medium text-ink hover:opacity-70 transition-opacity"
-        >
-          @prelovedfinds
-        </a>
-        <p className="mt-1 text-sm text-ink/70">Follow us on Instagram</p>
-        <div className="mt-6 grid grid-cols-2 gap-0 md:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="aspect-square bg-surface" />
-          ))}
+      {/* Category quick links */}
+      <section className="border-t border-[#e5e7eb]">
+        <div className="mx-auto max-w-7xl px-4 py-14 md:px-8">
+          <h2 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a] mb-8 text-center">
+            Shop by Category
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: "Tops", sub: "Tees & shirts" },
+              { label: "Bottoms", sub: "Jeans & trousers" },
+              { label: "Jackets", sub: "Outerwear" },
+              { label: "Sweatshirts", sub: "Pullovers & hoodies" },
+            ].map((cat) => (
+              <a
+                key={cat.label}
+                href="/shop"
+                className="group flex flex-col items-center justify-center aspect-square bg-[#f4f4f4] hover:bg-[#ebebeb] transition-colors"
+              >
+                <span className="text-[18px] font-bold uppercase tracking-widest text-[#1a1a1a] group-hover:text-[#6b7280] transition-colors">
+                  {cat.label}
+                </span>
+                <span className="text-[11px] text-[#9ca3af] uppercase tracking-widest mt-1">
+                  {cat.sub}
+                </span>
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Section 7: Newsletter */}
+      {/* Story strip */}
+      <section className="border-t border-[#e5e7eb] bg-[#f9fafb]">
+        <div className="mx-auto max-w-7xl px-4 py-14 md:px-8 text-center">
+          <p className="text-[13px] text-[#6b7280] uppercase tracking-widest mb-3">Our Story</p>
+          <p className="mx-auto max-w-lg text-[15px] text-[#1a1a1a] leading-relaxed">
+            Hand-picked from Cairo's hidden markets. Every piece has a story — curated for character, condition, and place in fashion history.
+          </p>
+          <a
+            href="/about"
+            className="mt-6 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors"
+          >
+            Read our story
+          </a>
+        </div>
+      </section>
+
+      {/* Newsletter */}
       <Newsletter />
     </div>
   );

@@ -1,116 +1,110 @@
-import { Link } from "@tanstack/react-router";
-import { Logo } from "@/components/Logo";
-
 export function Footer() {
   return (
-    <footer className="bg-ink text-paper">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-20 md:grid-cols-4 md:px-8 md:py-20">
-        {/* Brand */}
-        <div className="col-span-2 md:col-span-1">
-          <Logo className="h-8 w-auto text-paper" />
-          <p className="mt-3 max-w-[220px] text-sm leading-relaxed text-concrete">
-            Curated vintage & pre-owned streetwear. One-of-one pieces, shipped from Cairo.
+    <footer className="bg-white border-t border-[#e5e7eb]">
+      {/* Newsletter */}
+      <div className="border-b border-[#e5e7eb] py-12 px-4 md:px-8">
+        <div className="mx-auto max-w-md text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7280] mb-3">
+            Newsletter
           </p>
+          <p className="text-[22px] font-bold uppercase tracking-tight text-[#1a1a1a] mb-2">
+            Sign up to access our fly community perks
+          </p>
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="mt-6 flex flex-col sm:flex-row gap-2"
+          >
+            <input
+              type="email"
+              required
+              placeholder="Email"
+              className="flex-1 h-11 px-4 border border-[#e5e7eb] text-[13px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-[#9ca3af]"
+            />
+            <button
+              type="submit"
+              className="h-11 px-6 bg-[#1a1a1a] text-white text-[12px] font-semibold uppercase tracking-widest hover:bg-black transition-colors whitespace-nowrap"
+            >
+              Subscribe
+            </button>
+          </form>
         </div>
+      </div>
 
-        {/* Shop */}
+      {/* Links */}
+      <div className="mx-auto max-w-7xl grid grid-cols-2 gap-8 px-4 py-10 md:grid-cols-4 md:px-8">
         <div>
-          <p className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-paper/50">
-            Shop
-          </p>
-          <ul className="space-y-3">
-            {["New Arrivals", "Denim", "Band Tees", "Outerwear"].map((item) => (
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7280] mb-4">Collections</p>
+          <ul className="space-y-2.5">
+            {["Shop All", "Tops", "Bottoms", "Jackets", "Sweatshirts"].map((item) => (
               <li key={item}>
-                <a
-                  href="/shop"
-                  className="text-sm text-concrete hover:text-paper transition-colors"
-                >
+                <a href="/shop" className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors">
                   {item}
                 </a>
               </li>
             ))}
           </ul>
         </div>
-
-        {/* Support */}
         <div>
-          <p className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-paper/50">
-            Support
-          </p>
-          <ul className="space-y-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7280] mb-4">Info</p>
+          <ul className="space-y-2.5">
             {[
-              { label: "Size Guide", href: "/shop" },
+              { label: "About Us", href: "/about" },
+              { label: "Contact", href: "/contact" },
               { label: "Shipping", href: "/contact" },
               { label: "Returns", href: "/contact" },
-              { label: "Contact", href: "/contact" },
             ].map((item) => (
               <li key={item.label}>
-                <a
-                  href={item.href}
-                  className="text-sm text-concrete hover:text-paper transition-colors"
-                >
+                <a href={item.href} className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors">
                   {item.label}
                 </a>
               </li>
             ))}
           </ul>
         </div>
-
-        {/* Social */}
         <div>
-          <p className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-paper/50">
-            Social
-          </p>
-          <ul className="space-y-3">
-            {[
-              { label: "Instagram", href: "https://instagram.com/prelovedfinds" },
-              { label: "Email", href: "mailto:hello@prelovedfinds.com" },
-            ].map((item) => (
-              <li key={item.label}>
-                <a
-                  href={item.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm text-concrete hover:text-paper transition-colors"
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7280] mb-4">Follow</p>
+          <ul className="space-y-2.5">
+            <li>
+              <a
+                href="https://instagram.com/prelovedfinds"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+              >
+                Instagram
+              </a>
+            </li>
+            <li>
+              <a
+                href="mailto:hello@prelovedfinds.com"
+                className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+              >
+                Email Us
+              </a>
+            </li>
           </ul>
+        </div>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7280] mb-4">About</p>
+          <p className="text-[13px] text-[#6b7280] leading-relaxed">
+            Curated vintage & pre-owned pieces. One-of-one, shipped from Cairo.
+          </p>
         </div>
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-paper/10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 md:flex-row md:px-8">
-          <p className="font-mono text-[11px] uppercase tracking-[0.05em] text-concrete/50">
-            © {new Date().getFullYear()} Preloved Finds. All rights reserved.
+      <div className="border-t border-[#e5e7eb] px-4 py-5 md:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col items-center justify-between gap-2 md:flex-row">
+          <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
+            © {new Date().getFullYear()} Preloved Finds
           </p>
-          <div className="flex gap-6">
-            {["Privacy", "Terms", "FAQ"].map((item) => (
-              <span
-                key={item}
-                className="font-mono text-[11px] uppercase tracking-[0.05em] text-concrete/50"
-              >
+          <div className="flex gap-5">
+            {["Terms and Policies", "Privacy", "FAQ"].map((item) => (
+              <span key={item} className="text-[11px] text-[#9ca3af] uppercase tracking-widest cursor-default">
                 {item}
               </span>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Payment icons placeholder */}
-      <div className="border-t border-paper/10">
-        <div className="mx-auto flex max-w-7xl items-center justify-center gap-4 px-4 py-4 md:px-8">
-          {["Visa", "Mastercard", "PayPal"].map((method) => (
-            <span
-              key={method}
-              className="font-mono text-[10px] uppercase tracking-[0.08em] text-concrete/40"
-            >
-              {method}
-            </span>
-          ))}
         </div>
       </div>
     </footer>
