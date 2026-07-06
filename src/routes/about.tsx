@@ -1,5 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import aboutPhoto from "@/assets/about-founder.jpeg";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -8,7 +7,7 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "From zero to hero — the story behind Preloved Finds, curated vintage streetwear from Cairo.",
+          "From Cairo's markets to your door — the story behind Preloved Finds, curated vintage streetwear.",
       },
       { property: "og:title", content: "About Us — Preloved Finds" },
       { property: "og:description", content: "The story behind Preloved Finds." },
@@ -19,57 +18,85 @@ export const Route = createFileRoute("/about")({
 
 function About() {
   return (
-    <div>
-      <section className="relative">
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-surface md:aspect-[21/9]">
-          <img
-            src={aboutPhoto}
-            alt="Preloved Finds founder setting up a vintage clothing stall outdoors"
-            className="h-full w-full object-cover grayscale-[15%] contrast-[1.05]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent mix-blend-multiply" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-paper/80">
-              Our Story
-            </p>
-            <h1 className="mt-4 font-display text-5xl uppercase tracking-tight text-paper md:text-8xl">
-              About Us
-            </h1>
-          </div>
+    <div className="page-enter">
+      {/* Hero */}
+      <section className="relative h-[60vh] overflow-hidden bg-surface">
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent" />
+        <div className="absolute inset-0 flex flex-col justify-end px-6 pb-12 md:px-12 md:pb-16">
+          <p className="font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-paper/70">
+            Our Story
+          </p>
+          <h1 className="mt-3 max-w-2xl font-display text-5xl font-bold uppercase leading-[1] tracking-tight text-paper md:text-[48px]">
+            From Cairo's markets to your door.
+          </h1>
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-4 py-20 md:px-8">
-        <div className="space-y-6 text-[15px] leading-relaxed text-ink md:text-base">
-          <p className="font-display text-2xl uppercase tracking-tight text-ink md:text-3xl">
+      {/* Story */}
+      <section className="mx-auto max-w-3xl px-4 py-20 md:px-8 md:py-20">
+        <div className="space-y-6 text-base leading-relaxed text-ink/80">
+          <p className="font-display text-3xl font-bold uppercase tracking-tight text-ink md:text-[28px]">
             Welcome to Preloved Finds.
           </p>
 
           <p>
-            From zero to hero — a boy who started with nothing. That journey is the inspiration
-            behind Preloved Finds, and the passion to build something meaningful.
+            I started Preloved Finds because I couldn't find the pieces I wanted — vintage with
+            soul, not just vintage for the sake of it. Every Friday morning, I'm at the markets
+            outside Cairo, digging through piles of denim, band tees, and workwear. Looking for
+            the one piece that tells a story.
           </p>
 
           <p>
-            We curate unique vintage pieces with a focus on timeless style, quality, and
-            authenticity. Our goal is to make it easier for vintage lovers to discover standout
-            items from different eras, all in one place.
+            Each item here has been inspected, measured, and photographed by hand. We don't buy
+            bulk. We don't source from wholesale lots. Every piece is individually selected for
+            its character, condition, and place in fashion history.
           </p>
 
           <p>
-            Every piece is selected with care to offer something distinctive and full of character.
+            Vintage isn't a trend — it's an alternative to fast fashion. It's wearing something
+            that existed before you, and will exist after. That's the feeling we're after.
           </p>
 
-          <p className="pt-4 font-medium">Thank you for visiting Preloved Finds.</p>
+          <div className="border-l-3 border-rust pl-6 italic text-ink/90">
+            "Every piece has a story. We're just the ones who find it."
+          </div>
+
+          <p className="font-medium text-ink">— Founder, Preloved Finds</p>
         </div>
 
-        <div className="mt-14 flex justify-center">
-          <Link
-            to="/shop"
-            className="border border-ink bg-transparent px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink transition-colors hover:bg-ink hover:text-background"
+        {/* Stats */}
+        <div className="mt-16 grid grid-cols-3 gap-8 border-y border-concrete py-12 text-center">
+          <div>
+            <p className="font-display text-6xl font-extrabold text-ink md:text-[64px]">50+</p>
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-concrete">
+              Pieces Curated
+            </p>
+          </div>
+          <div>
+            <p className="font-display text-6xl font-extrabold text-ink md:text-[64px]">12</p>
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-concrete">
+              Countries Shipped To
+            </p>
+          </div>
+          <div>
+            <p className="font-display text-6xl font-extrabold text-ink md:text-[64px]">100%</p>
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-concrete">
+              Authentic Guaranteed
+            </p>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="mt-16 text-center">
+          <a
+            href="/shop"
+            className="group inline-flex items-center gap-2 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-ink transition-all hover:opacity-60"
           >
-            Shop All
-          </Link>
+            Shop the collection
+            <span className="inline-block transition-transform duration-200 group-hover:translate-x-1">
+              →
+            </span>
+          </a>
         </div>
       </section>
     </div>

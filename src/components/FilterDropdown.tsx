@@ -15,14 +15,14 @@ export function FilterDropdown({
   onChange: (v: string) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 bg-surface px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-grey">
+    <label className="flex h-10 items-center gap-2 border border-concrete bg-paper px-3">
+      <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-concrete">
         {label}
       </span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="cursor-pointer bg-transparent text-xs font-medium uppercase tracking-[0.12em] text-ink outline-none"
+        className="cursor-pointer bg-transparent text-[12px] font-medium uppercase tracking-[0.08em] text-ink outline-none"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

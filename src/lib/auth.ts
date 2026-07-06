@@ -15,12 +15,12 @@ function toBytes(str: string): Uint8Array {
 async function hmac(message: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
-    toBytes(getSecret()),
+    toBytes(getSecret()) as BufferSource,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
   );
-  const sig = await crypto.subtle.sign("HMAC", key, toBytes(message));
+  const sig = await crypto.subtle.sign("HMAC", key, toBytes(message) as BufferSource);
   return Array.from(new Uint8Array(sig))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");

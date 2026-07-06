@@ -5,11 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: "Helvetica Now Text", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -31,40 +31,40 @@
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
 
-  /* Preloved Finds tokens — quiet white-on-white gallery palette */
+  /* Preloved Finds — redesigned palette */
   --font-display: "Big Shoulders Display", "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
-  --color-ink: #1a1a1a;
-  --color-grey: #8a8a8a;
-  --color-hairline: rgba(0,0,0,0.06);
-  --color-surface: #f7f6f4;
-  --color-rust: #ab4423;
-  --color-rust-dark: #8a3419;
-  --color-olive: #565a35;
-  --color-paper: #fefefe;
+  --color-ink: #0f0f0f;
+  --color-concrete: #c4bfb8;
+  --color-surface: #e8e4de;
+  --color-paper: #f5f3ef;
+  --color-rust: #c4512b;
+  --color-rust-dark: #a03e1f;
+  --color-olive: #5a6b3c;
+  --color-grain: rgba(15,15,15,0.03);
 }
 
 :root {
   --radius: 0.25rem;
-  --background: #fefefe;
-  --foreground: #1a1a1a;
-  --card: #fefefe;
-  --card-foreground: #1a1a1a;
-  --popover: #fefefe;
-  --popover-foreground: #1a1a1a;
-  --primary: #1a1a1a;
-  --primary-foreground: #fefefe;
-  --secondary: #f7f6f4;
-  --secondary-foreground: #1a1a1a;
-  --muted: #f2f1ee;
-  --muted-foreground: #8a8a8a;
-  --accent: #f2f1ee;
-  --accent-foreground: #1a1a1a;
+  --background: #f5f3ef;
+  --foreground: #0f0f0f;
+  --card: #f5f3ef;
+  --card-foreground: #0f0f0f;
+  --popover: #f5f3ef;
+  --popover-foreground: #0f0f0f;
+  --primary: #0f0f0f;
+  --primary-foreground: #f5f3ef;
+  --secondary: #e8e4de;
+  --secondary-foreground: #0f0f0f;
+  --muted: #e8e4de;
+  --muted-foreground: #c4bfb8;
+  --accent: #e8e4de;
+  --accent-foreground: #0f0f0f;
   --destructive: oklch(0.6 0.22 27);
   --destructive-foreground: oklch(1 0 0);
-  --border: rgba(0,0,0,0.06);
-  --input: rgba(0,0,0,0.06);
-  --ring: rgba(0,0,0,0.12);
+  --border: #c4bfb8;
+  --input: #c4bfb8;
+  --ring: rgba(15,15,15,0.12);
 }
 
 .dark {
@@ -97,20 +97,105 @@
   html, body {
     background-color: var(--color-paper);
     color: var(--color-ink);
-    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-family: "Helvetica Now Text", "Inter", ui-sans-serif, system-ui, sans-serif;
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
   }
+
+  ::selection {
+    background-color: var(--color-rust);
+    color: var(--color-paper);
+  }
 }
 
-/* Subtle film-grain texture — sits fixed over the whole viewport so it never
-   scrolls with content. Pure CSS (inline SVG turbulence), no image request. */
+/* Film grain overlay — sits fixed over the whole viewport */
 .grain-overlay {
   position: fixed;
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  opacity: 0.04;
+  opacity: 0.03;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Marquee animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 30s linear infinite;
+}
+
+/* Page transition */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-paper) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Button press */
+@keyframes button-press {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+.button-press:active {
+  animation: button-press 0.2s ease;
+}
+
+/* Focus visible */
+*:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-concrete);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink);
 }

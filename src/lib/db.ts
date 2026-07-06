@@ -20,12 +20,8 @@ interface D1Result {
   meta: unknown;
 }
 
-declare global {
-  var __env__: { DB?: unknown } | undefined;
-}
-
 export function getDB(): D1Database {
-  const env = globalThis.__env__;
+  const env = globalThis.__env__ as { DB?: unknown } | undefined;
   const db = env?.DB as D1Database | undefined;
   if (!db) {
     throw new Error(

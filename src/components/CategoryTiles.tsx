@@ -1,40 +1,36 @@
 import { Link } from "@tanstack/react-router";
 
 const CATEGORIES = [
-  { label: "Denim", sublabel: "12 pieces" },
-  { label: "Band Tees", sublabel: "8 pieces" },
-  { label: "Outerwear", sublabel: "5 pieces" },
+  { label: "Denim", sublabel: "12 pieces", image: null },
+  { label: "Band Tees", sublabel: "8 pieces", image: null },
+  { label: "Outerwear", sublabel: "5 pieces", image: null },
+  { label: "Footwear", sublabel: "3 pieces", image: null },
 ];
 
-/**
- * CategoryTiles
- * Three evocative entry points between the hero and "New Picks" — gives the
- * homepage a second beat instead of jumping straight to the product grid.
- * Tiles currently all route to /shop (no category filter wired up yet since
- * lib/products.ts has no category field) — swap `to="/shop"` for
- * `to="/shop" search={{ category: cat.label }}` once that's added.
- */
 export function CategoryTiles() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 md:px-8">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+    <section className="mx-auto max-w-7xl px-4 py-20 md:px-8">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {CATEGORIES.map((cat) => (
-          <Link
+          <a
             key={cat.label}
-            to="/shop"
-            className="group relative flex aspect-[4/3] flex-col items-start justify-end overflow-hidden bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+            href="/shop"
+            className="group relative flex aspect-[3/2] flex-col items-start justify-end overflow-hidden bg-surface"
           >
+            {/* Background image placeholder — replace with actual product images */}
             <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
-            <p className="relative font-mono text-[10px] uppercase tracking-[0.2em] text-paper/70">
-              {cat.sublabel}
-            </p>
-            <h3 className="relative font-display text-3xl uppercase tracking-tight text-paper">
-              {cat.label}
-            </h3>
-            <span className="relative mt-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-paper/80 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              Shop now →
-            </span>
-          </Link>
+            <div className="relative z-10 p-5">
+              <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-paper/70">
+                {cat.sublabel}
+              </p>
+              <h3 className="mt-1 font-display text-3xl font-bold uppercase tracking-tight text-paper">
+                {cat.label}
+              </h3>
+              <span className="mt-2 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-paper/80 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                Shop now →
+              </span>
+            </div>
+          </a>
         ))}
       </div>
     </section>
