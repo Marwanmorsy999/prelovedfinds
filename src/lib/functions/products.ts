@@ -5,8 +5,10 @@ import {
   getProductById,
   getRelated,
   createProduct,
+  createProducts,
   updateProduct,
   deleteProduct,
+  deleteSoldProducts,
   toggleSold,
   getDashboardStats,
   type ProductInput,
@@ -64,12 +66,24 @@ export const updateProductFn = createServerFn({ method: "POST" })
     return updateProduct(data.id, data.patch);
   });
 
+export const createProductsBulkFn = createServerFn({ method: "POST" })
+  .validator(z.object({ items: z.array(productInputSchema).min(1).max(50) }))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    return createProducts(data.items as ProductInput[]);
+  });
+
 export const deleteProductFn = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     await requireAdmin();
     return deleteProduct(data.id);
   });
+
+export const deleteSoldProductsFn = createServerFn({ method: "POST" }).handler(async () => {
+  await requireAdmin();
+  return deleteSoldProducts();
+});
 
 export const toggleSoldFn = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))

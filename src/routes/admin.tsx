@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LogOut, ArrowUpDown } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, ArrowUpDown, Layers } from "lucide-react";
 
 import { getIsAuthed } from "@/lib/auth";
 import { logoutFn } from "@/lib/functions/auth";
@@ -21,6 +21,8 @@ import {
 } from "@/lib/functions/products";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Product, Availability } from "@/lib/products";
+import { BulkDropDialog } from "@/components/admin/BulkDropDialog";
+import { AdvancedSettingsPanel } from "@/components/admin/AdvancedSettingsPanel";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,8 +124,10 @@ function AdminDashboard() {
   const [availability, setAvailability] = useState<Availability | "all">("all");
   const [sort, setSort] = useState<"featured" | "price-asc" | "price-desc" | "newest">("newest");
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(PER_PAGE);
 
   const [formOpen, setFormOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [uploading, setUploading] = useState(false);
@@ -133,7 +137,7 @@ function AdminDashboard() {
 
   const reload = async () => {
     const [products, s] = await Promise.all([
-      listProductsFn({ data: { availability, sort, page, perPage: PER_PAGE } }),
+      listProductsFn({ data: { availability, sort, page, perPage } }),
       dashboardStatsFn(),
     ]);
     setData(products);
@@ -142,12 +146,12 @@ function AdminDashboard() {
 
   useEffect(() => {
     setPage(1);
-  }, [availability, sort]);
+  }, [availability, sort, perPage]);
 
   useEffect(() => {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availability, sort, page]);
+  }, [availability, sort, page, perPage]);
 
   // /admin/login is a child route; render only its outlet (the login form)
   // without the dashboard chrome when on that path.
@@ -314,7 +318,19 @@ function AdminDashboard() {
           </SelectContent>
         </Select>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex flex-wrap items-center gap-3">
+          <AdvancedSettingsPanel
+            perPage={perPage}
+            onPerPageChange={setPerPage}
+            onDataChanged={reload}
+          />
+          <Button
+            variant="outline"
+            className="border-rust text-rust hover:bg-rust hover:text-paper"
+            onClick={() => setBulkOpen(true)}
+          >
+            <Layers className="mr-2 h-4 w-4" /> Bulk Drop
+          </Button>
           <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" /> Add Product
           </Button>
@@ -549,6 +565,8 @@ function AdminDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <BulkDropDialog open={bulkOpen} onOpenChange={setBulkOpen} onDone={reload} />
     </div>
   );
 }

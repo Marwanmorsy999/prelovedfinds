@@ -20,7 +20,7 @@ export const Route = createFileRoute("/contact")({
 function Contact() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-20 md:px-8">
-      <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-rust">
+      <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-grey">
         Get in touch
       </p>
       <h1 className="mt-2 font-display text-4xl uppercase tracking-tight text-ink md:text-6xl">
@@ -75,7 +75,7 @@ function Contact() {
         </div>
         <button
           type="submit"
-          className="border border-ink bg-ink px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-background transition-colors hover:border-rust hover:bg-rust"
+          className="border border-ink bg-ink px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-background transition-colors hover:opacity-80"
         >
           Send Message
         </button>

@@ -157,6 +157,57 @@ export async function createProduct(input: ProductInput): Promise<Product> {
   return product;
 }
 
+export async function createProducts(inputs: ProductInput[]): Promise<Product[]> {
+  const db = getDB();
+  const now = Date.now();
+  const products: Product[] = inputs.map((input, i) => ({
+    id: input.id,
+    title: input.title,
+    brand: input.brand,
+    era: input.era,
+    price: input.price,
+    currency: input.currency ?? "EGP",
+    availability: input.availability,
+    size: input.size,
+    images: input.images ?? [],
+    productId: input.productId ?? [],
+    measurements: input.measurements ?? [],
+    createdAt: now + i, // preserve row order in "newest" sort
+  }));
+
+  const stmt = db.prepare(
+    `INSERT INTO products (id, title, brand, era, price, currency, availability, size, images, productId, measurements, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  );
+
+  await db.batch(
+    products.map((p) =>
+      stmt.bind(
+        p.id,
+        p.title,
+        p.brand,
+        p.era,
+        p.price,
+        p.currency,
+        p.availability,
+        p.size,
+        JSON.stringify(p.images),
+        JSON.stringify(p.productId),
+        JSON.stringify(p.measurements),
+        p.createdAt,
+      ),
+    ),
+  );
+
+  return products;
+}
+
+export async function deleteSoldProducts(): Promise<number> {
+  const db = getDB();
+  const res = await db.prepare("DELETE FROM products WHERE availability = 'sold'").run();
+  return (res.meta as { changes?: number } | undefined)?.changes ?? 0;
+}
+
 export async function updateProduct(
   id: string,
   patch: Partial<ProductInput>,

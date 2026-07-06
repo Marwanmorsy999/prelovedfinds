@@ -27,7 +27,7 @@ function About() {
             alt="Preloved Finds founder setting up a vintage clothing stall outdoors"
             className="h-full w-full object-cover grayscale-[15%] contrast-[1.05]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-rust/25 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent mix-blend-multiply" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-paper/80">
               Our Story
@@ -41,7 +41,7 @@ function About() {
 
       <section className="mx-auto max-w-3xl px-4 py-20 md:px-8">
         <div className="space-y-6 text-[15px] leading-relaxed text-ink md:text-base">
-          <p className="font-display text-2xl uppercase tracking-tight text-rust md:text-3xl">
+          <p className="font-display text-2xl uppercase tracking-tight text-ink md:text-3xl">
             Welcome to Preloved Finds.
           </p>
 
@@ -66,7 +66,7 @@ function About() {
         <div className="mt-14 flex justify-center">
           <Link
             to="/shop"
-            className="border border-ink bg-transparent px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink transition-colors hover:border-rust hover:bg-rust hover:text-paper"
+            className="border border-ink bg-transparent px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink transition-colors hover:bg-ink hover:text-background"
           >
             Shop All
           </Link>

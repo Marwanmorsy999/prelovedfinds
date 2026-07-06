@@ -59,7 +59,7 @@ function Shop() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
       <div className="border-b border-hairline pb-6">
-        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-rust">
+        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-grey">
           Collection
         </p>
         <h1 className="mt-2 font-display text-4xl uppercase tracking-tight text-ink md:text-6xl">
@@ -128,7 +128,7 @@ function Shop() {
             <button
               key={n}
               onClick={() => updateSearch({ page: n })}
-              className={`h-10 w-10 border text-xs font-semibold ${n === currentPage ? "border-rust bg-rust text-paper" : "border-hairline text-ink hover:border-rust hover:text-rust"}`}
+              className={`h-10 w-10 border text-xs font-semibold ${n === currentPage ? "border-ink bg-ink text-paper" : "border-hairline text-ink hover:opacity-60"}`}
             >
               {n}
             </button>
@@ -140,7 +140,7 @@ function Shop() {
         <div className="mt-4 text-center">
           <Link
             to="/shop"
-            className="text-[10px] font-semibold uppercase tracking-[0.2em] text-grey hover:text-rust"
+            className="text-[10px] font-semibold uppercase tracking-[0.2em] text-grey hover:opacity-60"
           >
             Clear filters
           </Link>

@@ -22,9 +22,9 @@ export function CategoryTiles() {
           <Link
             key={cat.label}
             to="/shop"
-            className="group relative flex aspect-[4/3] flex-col items-start justify-end overflow-hidden border border-hairline bg-ink p-5"
+            className="group relative flex aspect-[4/3] flex-col items-start justify-end overflow-hidden bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-rust/30 opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
             <p className="relative font-mono text-[10px] uppercase tracking-[0.2em] text-paper/70">
               {cat.sublabel}
             </p>

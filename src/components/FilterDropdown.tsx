@@ -15,7 +15,7 @@ export function FilterDropdown({
   onChange: (v: string) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 border border-hairline px-3 py-2">
+    <label className="flex items-center gap-2 bg-surface px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-grey">
         {label}
       </span>

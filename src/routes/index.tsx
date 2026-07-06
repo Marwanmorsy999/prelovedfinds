@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import hero from "@/assets/hero.jpeg";
+import logo from "@/assets/logo.jpeg";
 import { ProductGrid } from "@/components/ProductGrid";
 import { CategoryTiles } from "@/components/CategoryTiles";
 import { Newsletter } from "@/components/Newsletter";
@@ -36,19 +37,21 @@ function Home() {
             alt="Featured vintage Public Enemy tee"
             className="h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-rust/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-paper/80">
-              Cairo
-            </p>
-            <h1 className="mt-4 max-w-3xl font-display text-5xl uppercase leading-[0.95] tracking-tight text-paper md:text-8xl">
+            <img
+              src={logo}
+              alt="Preloved Finds"
+              className="mb-8 h-32 w-32 rounded-full object-cover shadow-lg md:h-48 md:w-48"
+            />
+            <h1 className="max-w-3xl font-display text-5xl uppercase leading-[0.95] tracking-tight text-paper md:text-8xl">
               Worn once. Worn well.
               <br />
               Now yours.
             </h1>
             <Link
               to="/shop"
-              className="mt-8 border border-paper bg-transparent px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-paper transition-colors hover:bg-rust hover:border-rust hover:text-paper"
+              className="mt-8 border border-paper bg-transparent px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-paper transition-colors hover:bg-white/20"
             >
               Shop All
             </Link>
@@ -61,7 +64,7 @@ function Home() {
       <section className="mx-auto max-w-7xl px-4 py-20 md:px-8">
         <div className="mb-10 flex items-end justify-between border-b border-hairline pb-4">
           <div>
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-rust">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-grey">
               Just In
             </p>
             <h2 className="mt-2 font-display text-3xl uppercase tracking-tight text-ink md:text-5xl">
@@ -70,7 +73,7 @@ function Home() {
           </div>
           <Link
             to="/shop"
-            className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink hover:text-rust"
+            className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink hover:opacity-60"
           >
             View all →
           </Link>

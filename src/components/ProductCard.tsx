@@ -7,7 +7,7 @@ export function ProductCard({ product }: { product: Product }) {
   const sold = product.availability === "sold";
   return (
     <Link to="/product/$id" params={{ id: product.id }} className="group block">
-      <div className="relative aspect-[4/5] overflow-hidden border border-hairline bg-surface transition-colors duration-200 group-hover:border-rust">
+      <div className="relative aspect-[4/5] overflow-hidden bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <ImageSlot
           src={product.images[0]}
           alt={product.title}
@@ -27,7 +27,7 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-grey">
           {product.brand} · {product.era}
         </p>
-        <h3 className="text-sm font-medium text-ink line-clamp-2 group-hover:text-rust">
+        <h3 className="text-sm font-medium text-ink line-clamp-2">
           {product.title}
         </h3>
         <p className="text-sm text-ink">
