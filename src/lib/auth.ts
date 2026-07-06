@@ -5,7 +5,22 @@ const SESSION_COOKIE = "session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 
 function getSecret(): string {
-  return getEnv().SESSION_SECRET || "dev-insecure-secret-change-me";
+  const s = getEnv().SESSION_SECRET;
+  if (!s) {
+    // In dev, fall back to a known insecure secret with a loud warning.
+    if (import.meta.env?.DEV || process.env.NODE_ENV === "development") {
+      console.warn(
+        "[auth] SESSION_SECRET is not set — using insecure dev fallback. " +
+          "Set SESSION_SECRET in Cloudflare Worker Secrets before deploying.",
+      );
+      return "dev-insecure-secret-change-me";
+    }
+    throw new Error(
+      "SESSION_SECRET env var is required in production. " +
+        "Add it as a Cloudflare Worker Secret: wrangler secret put SESSION_SECRET",
+    );
+  }
+  return s;
 }
 
 function toBytes(str: string): Uint8Array {
@@ -48,9 +63,6 @@ async function verifySessionToken(token: string | undefined): Promise<boolean> {
   return mismatch === 0;
 }
 
-// Isomorphic cookie reader: on the server use TanStack's request-scoped
-// getCookie; on the client read document.cookie. This keeps the
-// server-only @tanstack/start-server-core module out of the client bundle.
 const readSessionCookie = createIsomorphicFn()
   .server(async () => {
     const { getCookie } = await import("@tanstack/start-server-core");

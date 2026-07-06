@@ -9,6 +9,8 @@ export interface ListParams {
   sort?: SortKey;
   page?: number;
   perPage?: number;
+  /** Full-text search across title, brand, era, size */
+  q?: string;
 }
 
 export interface ProductInput {
@@ -51,6 +53,13 @@ function buildWhere(params: ListParams): { clause: string; args: unknown[] } {
   } else if (params.priceRange === "over-900") {
     where.push("price > ?");
     args.push(900);
+  }
+
+  // Server-side full-text search across key columns
+  if (params.q?.trim()) {
+    const term = `%${params.q.trim()}%`;
+    where.push("(title LIKE ? OR brand LIKE ? OR era LIKE ? OR size LIKE ?)");
+    args.push(term, term, term, term);
   }
 
   const clause = where.length ? `WHERE ${where.join(" AND ")}` : "";
@@ -102,7 +111,10 @@ export async function listProducts(params: ListParams = {}): Promise<ListResult>
 
 export async function getProductById(id: string): Promise<Product | null> {
   const db = getDB();
-  const row = await db.prepare("SELECT * FROM products WHERE id = ?").bind(id).first<ProductRow>();
+  const row = await db
+    .prepare("SELECT * FROM products WHERE id = ?")
+    .bind(id)
+    .first<ProductRow>();
   return row ? rowToProduct(row) : null;
 }
 
@@ -172,7 +184,7 @@ export async function createProducts(inputs: ProductInput[]): Promise<Product[]>
     images: input.images ?? [],
     productId: input.productId ?? [],
     measurements: input.measurements ?? [],
-    createdAt: now + i, // preserve row order in "newest" sort
+    createdAt: now + i,
   }));
 
   const stmt = db.prepare(
@@ -303,7 +315,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     if (r.availability === "one-left") stats.oneLeft = count;
   }
 
-  // Top brands
   const brandRows = await db
     .prepare(
       `SELECT brand, COUNT(*) as count FROM products WHERE brand != '' GROUP BY brand ORDER BY count DESC LIMIT 5`,
@@ -311,7 +322,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     .all<{ brand: string; count: number }>();
   stats.topBrands = (brandRows.results ?? []).map((r) => ({ brand: r.brand, count: r.count }));
 
-  // Recent revenue (last 30 days)
   const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
   const recentRow = await db
     .prepare(
@@ -321,7 +331,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     .first<{ revenue: number }>();
   stats.recentRevenue = recentRow?.revenue ?? 0;
 
-  // Average price of available items
   const avgRow = await db
     .prepare(
       `SELECT COALESCE(ROUND(AVG(price)), 0) as avg FROM products WHERE availability IN ('available', 'one-left')`,

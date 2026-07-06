@@ -92,9 +92,7 @@ function Shop() {
 
       {/* Header */}
       <div className="mt-2 border-b border-concrete pb-6">
-        <h1 className="font-display text-5xl font-bold uppercase tracking-tight text-ink md:text-[48px]">
-          Shop All
-        </h1>
+        <h1 className="font-sans text-3xl font-semibold text-ink">Shop All</h1>
       </div>
 
       {/* Top bar: search + filters */}
@@ -193,7 +191,7 @@ function Shop() {
           </div>
           <button
             onClick={() => setFilterOpen(false)}
-            className="mt-6 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink hover:opacity-60 transition-opacity"
+            className="mt-6 inline-flex h-9 items-center justify-center border border-ink px-6 font-sans text-[11px] font-medium uppercase tracking-[0.08em] text-ink transition-colors hover:bg-ink hover:text-paper"
           >
             Apply filters
           </button>
@@ -217,7 +215,7 @@ function Shop() {
                 setSearchQuery("");
                 updateSearch({ availability: "all", priceRange: "all", sort: "featured", page: 1 });
               }}
-              className="mt-6 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-ink underline underline-offset-4 hover:opacity-60 transition-opacity"
+              className="mt-6 inline-flex h-9 items-center justify-center border border-ink px-6 font-sans text-[12px] font-medium uppercase tracking-[0.08em] text-ink transition-colors hover:bg-ink hover:text-paper"
             >
               Clear all filters
             </button>
@@ -230,22 +228,19 @@ function Shop() {
         <div className="mt-16 text-center">
           <button
             onClick={loadMore}
-            className="group inline-flex items-center gap-2 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-ink transition-all hover:opacity-60"
+            className="inline-flex h-9 items-center justify-center border border-ink px-6 font-sans text-[12px] font-medium uppercase tracking-[0.08em] text-ink transition-colors hover:bg-ink hover:text-paper"
           >
             Load more
-            <span className="inline-block transition-transform duration-200 group-hover:translate-y-0.5">
-              ↓
-            </span>
           </button>
         </div>
       )}
 
-      {/* Clear filters link */}
+      {/* Clear filters */}
       {totalPages > 1 && (
         <div className="mt-4 text-center">
           <a
             href="/shop"
-            className="font-mono text-[11px] uppercase tracking-[0.08em] text-concrete hover:opacity-60 transition-opacity"
+            className="font-sans text-[11px] uppercase tracking-[0.08em] text-concrete hover:opacity-60 transition-opacity"
           >
             Clear filters
           </a>

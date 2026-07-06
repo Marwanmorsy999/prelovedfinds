@@ -18,6 +18,10 @@ import { CartProvider } from "@/lib/cart";
 import { Toaster } from "@/components/ui/sonner";
 import { getIsAuthed } from "@/lib/auth";
 
+// Change to your production domain once deployed
+const SITE_URL = "https://prelovedfinds.com";
+const OG_IMAGE = `${SITE_URL}/og.jpg`;
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
@@ -72,45 +76,65 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient; admin: boolean }>()({
-  beforeLoad: async () => {
-    const admin = await getIsAuthed();
-    return { admin };
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient; admin: boolean }>()(
+  {
+    beforeLoad: async () => {
+      const admin = await getIsAuthed();
+      return { admin };
+    },
+    head: () => ({
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { title: "Preloved Finds" },
+        {
+          name: "description",
+          content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
+        },
+        { name: "author", content: "Preloved Finds" },
+        // Open Graph
+        { property: "og:site_name", content: "Preloved Finds" },
+        { property: "og:title", content: "Preloved Finds" },
+        {
+          property: "og:description",
+          content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
+        },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: SITE_URL },
+        { property: "og:image", content: OG_IMAGE },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        // Twitter
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: "Preloved Finds" },
+        {
+          name: "twitter:description",
+          content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
+        },
+        { name: "twitter:image", content: OG_IMAGE },
+      ],
+      links: [
+        { rel: "stylesheet", href: appCss },
+        { rel: "canonical", href: SITE_URL },
+        { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        {
+          rel: "preconnect",
+          href: "https://fonts.gstatic.com",
+          crossOrigin: "anonymous",
+        },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+        },
+      ],
+    }),
+    shellComponent: RootShell,
+    component: RootComponent,
+    notFoundComponent: NotFoundComponent,
+    errorComponent: ErrorComponent,
   },
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Preloved Finds" },
-      {
-        name: "description",
-        content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
-      },
-      { name: "author", content: "Preloved Finds" },
-      { property: "og:title", content: "Preloved Finds" },
-      {
-        property: "og:description",
-        content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap",
-      },
-    ],
-  }),
-  shellComponent: RootShell,
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
-});
+);
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
@@ -119,7 +143,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <div className="grain-overlay" />
+        <div className="grain-overlay" aria-hidden="true" />
         {children}
         <Scripts />
       </body>
@@ -136,7 +160,7 @@ function RootComponent() {
         <div className="flex min-h-screen flex-col bg-background">
           <Navigation />
           <MarqueeTicker />
-          <main className="flex-1 pt-14">
+          <main className="flex-1 pt-14" id="main-content">
             <Outlet />
           </main>
           <Footer />
