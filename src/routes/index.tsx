@@ -8,13 +8,13 @@ import { listProductsFn } from "@/lib/functions/products";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Preloved Finds — Curated Vintage Streetwear" },
+      { title: "Preloved Finds - Curated Vintage Streetwear" },
       {
         name: "description",
         content:
-          "One-of-one vintage and pre-owned streetwear. Band tees, denim, workwear — hand-picked.",
+          "One-of-one vintage and pre-owned streetwear. Band tees, denim, workwear - hand-picked.",
       },
-      { property: "og:title", content: "Preloved Finds — Curated Vintage Streetwear" },
+      { property: "og:title", content: "Preloved Finds - Curated Vintage Streetwear" },
       { property: "og:description", content: "One-of-one vintage and pre-owned streetwear." },
     ],
   }),
@@ -74,7 +74,7 @@ function Home() {
               New Arrivals
             </h2>
             <p className="mt-3 max-w-md text-base text-ink/70">
-              Curated this week — each piece inspected, photographed, and ready to ship.
+              Curated this week - each piece inspected, photographed, and ready to ship.
             </p>
           </div>
           <a

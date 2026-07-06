@@ -7,7 +7,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-20 md:grid-cols-4 md:px-8 md:py-20">
         {/* Brand */}
         <div className="col-span-2 md:col-span-1">
-          <img src={logo} alt="Preloved Finds" className="h-8 w-auto" />
+          <img src={logo} alt="Preloved Finds" className="h-12 w-auto invert" />
           <p className="mt-3 max-w-[220px] text-sm leading-relaxed text-concrete">
             Curated vintage & pre-owned streetwear. One-of-one pieces, shipped from Cairo.
           </p>

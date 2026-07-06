@@ -4,13 +4,13 @@ import aboutFounder from "@/assets/about-founder.jpeg";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Us — Preloved Finds" },
+      { title: "About Us - Preloved Finds" },
       {
         name: "description",
         content:
-          "From Cairo's markets to your door — the story behind Preloved Finds, curated vintage streetwear.",
+          "From Cairo's markets to your door - the story behind Preloved Finds, curated vintage streetwear.",
       },
-      { property: "og:title", content: "About Us — Preloved Finds" },
+      { property: "og:title", content: "About Us - Preloved Finds" },
       { property: "og:description", content: "The story behind Preloved Finds." },
     ],
   }),
@@ -46,7 +46,7 @@ function About() {
           </p>
 
           <p>
-            I started Preloved Finds because I couldn't find the pieces I wanted — vintage with
+            I started Preloved Finds because I couldn't find the pieces I wanted - vintage with
             soul, not just vintage for the sake of it. Every Friday morning, I'm at the markets
             outside Cairo, digging through piles of denim, band tees, and workwear. Looking for the
             one piece that tells a story.
@@ -59,7 +59,7 @@ function About() {
           </p>
 
           <p>
-            Vintage isn't a trend — it's an alternative to fast fashion. It's wearing something that
+            Vintage isn't a trend - it's an alternative to fast fashion. It's wearing something that
             existed before you, and will exist after. That's the feeling we're after.
           </p>
 
@@ -67,25 +67,27 @@ function About() {
             "Every piece has a story. We're just the ones who find it."
           </div>
 
-          <p className="font-medium text-ink">— Founder, Preloved Finds</p>
+          <p className="font-medium text-ink">- Founder, Preloved Finds</p>
         </div>
 
         {/* Stats */}
         <div className="mt-16 grid grid-cols-3 gap-8 border-y border-concrete py-12 text-center">
           <div>
-            <p className="font-display text-6xl font-extrabold text-ink md:text-[64px]">50+</p>
+            <p className="font-display text-6xl font-extrabold text-ink md:text-[64px]">
+              Countless
+            </p>
             <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-concrete">
               Pieces Curated
             </p>
           </div>
           <div>
-            <p className="font-display text-6xl font-extrabold text-ink md:text-[64px]">12</p>
+            <p className="font-display text-6xl font-extrabold text-ink md:text-[64px]">Global</p>
             <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-concrete">
               Countries Shipped To
             </p>
           </div>
           <div>
-            <p className="font-display text-6xl font-extrabold text-ink md:text-[64px]">100%</p>
+            <p className="font-display text-6xl font-extrabold text-ink md:text-[64px]">Full</p>
             <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-concrete">
               Authentic Guaranteed
             </p>

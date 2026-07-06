@@ -5,13 +5,13 @@ import { useState } from "react";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact — Preloved Finds" },
+      { title: "Contact - Preloved Finds" },
       {
         name: "description",
         content:
-          "Get in touch with Preloved Finds — questions about an order, a piece, or a custom request.",
+          "Get in touch with Preloved Finds - questions about an order, a piece, or a custom request.",
       },
-      { property: "og:title", content: "Contact — Preloved Finds" },
+      { property: "og:title", content: "Contact - Preloved Finds" },
       { property: "og:description", content: "Get in touch with Preloved Finds." },
     ],
   }),

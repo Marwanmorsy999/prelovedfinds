@@ -14,11 +14,11 @@ export const Route = createFileRoute("/product/$id")({
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Not found — Preloved Finds" }, { name: "robots", content: "noindex" }],
+        meta: [{ title: "Not found - Preloved Finds" }, { name: "robots", content: "noindex" }],
       };
     }
     const { product } = loaderData;
-    const title = `${product.title} — Preloved Finds`;
+    const title = `${product.title} - Preloved Finds`;
     const desc = `${product.brand} · ${product.era} · ${product.size}. One-of-one at Preloved Finds.`;
     return {
       meta: [
@@ -54,7 +54,7 @@ function ProductPage() {
         <ProductInfo product={product} />
       </div>
 
-      <section className="mt-24 border-t border-hairline pt-12">
+      <section className="mt-24 border-t border-concrete pt-12">
         <div className="mb-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">
             More Picks

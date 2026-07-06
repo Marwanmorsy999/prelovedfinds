@@ -8,12 +8,12 @@ import { listProductsFn } from "@/lib/functions/products";
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "Shop All — Preloved Finds" },
+      { title: "Shop All - Preloved Finds" },
       {
         name: "description",
         content: "Browse every one-of-one vintage piece in stock at Preloved Finds.",
       },
-      { property: "og:title", content: "Shop All — Preloved Finds" },
+      { property: "og:title", content: "Shop All - Preloved Finds" },
       { property: "og:description", content: "Every one-of-one vintage piece in stock." },
     ],
   }),

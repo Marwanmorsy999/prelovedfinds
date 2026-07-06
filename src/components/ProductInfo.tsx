@@ -4,16 +4,16 @@ import { Heart } from "lucide-react";
 import { useState } from "react";
 
 export function ProductInfo({ product }: { product: Product }) {
-  const { add } = useCart();
+  const { add, isInCart } = useCart();
   const sold = product.availability === "sold";
   const oneLeft = product.availability === "one-left";
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const alreadyInCart = isInCart(product.id);
 
   const handleAdd = () => {
-    if (sold || adding) return;
+    if (sold || adding || alreadyInCart) return;
     setAdding(true);
-    // Simulate async add
     setTimeout(() => {
       add(product.id);
       setAdding(false);
@@ -57,7 +57,7 @@ export function ProductInfo({ product }: { product: Product }) {
           Size
         </p>
         <p className="text-[15px] text-ink">
-          {product.size} <span className="text-concrete">— One-of-one</span>
+          {product.size} <span className="text-concrete">- One-of-one</span>
         </p>
         <p className="font-mono text-[11px] text-concrete">
           Each piece is one-of-one. No restocks.
@@ -66,25 +66,20 @@ export function ProductInfo({ product }: { product: Product }) {
 
       {/* Add to cart */}
       <button
-        disabled={sold}
+        disabled={sold || alreadyInCart}
         onClick={handleAdd}
         className="button-press flex h-[52px] w-full items-center justify-center border border-ink bg-ink font-mono text-[13px] font-medium uppercase tracking-[0.1em] text-paper transition-colors hover:bg-[#2a2a2a] disabled:cursor-not-allowed disabled:border-concrete disabled:bg-surface disabled:text-concrete"
       >
         {sold
           ? "Sold out"
-          : added
-            ? "Added ✓"
-            : adding
-              ? "Adding..."
-              : `Add to cart — ${product.price} ${product.currency}`}
+          : alreadyInCart
+            ? "In cart"
+            : added
+              ? "Added ✓"
+              : adding
+                ? "Adding..."
+                : `Add to cart - ${product.price} ${product.currency}`}
       </button>
-
-      {/* Trust line */}
-      <div className="flex flex-wrap gap-4 font-mono text-[11px] text-concrete">
-        <span className="flex items-center gap-1">✓ Ships within 24 hours</span>
-        <span className="flex items-center gap-1">✓ 14-day returns</span>
-        <span className="flex items-center gap-1">✓ Authenticity guaranteed</span>
-      </div>
 
       {/* Save */}
       <button className="flex items-center gap-2 text-sm text-concrete hover:text-ink transition-colors">
@@ -133,13 +128,8 @@ export function ProductInfo({ product }: { product: Product }) {
         <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink">
           Shipping & Returns
         </p>
-        <p className="text-sm text-ink/80">Ships from Cairo. 3-7 business days. 14-day returns.</p>
+        <p className="text-sm text-ink/80">Ships from Cairo. 3-7 business days.</p>
       </div>
-
-      {/* Social proof */}
-      <p className="flex items-center gap-1.5 text-sm text-concrete">
-        <span>♡</span> 24 people saved this
-      </p>
     </div>
   );
 }

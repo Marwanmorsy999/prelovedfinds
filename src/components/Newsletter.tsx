@@ -14,7 +14,7 @@ export function Newsletter() {
           Get first dibs.
         </h2>
         <p className="mx-auto mt-4 max-w-md text-base text-ink/70">
-          New drops, restocks, and member-only pricing — straight to your inbox.
+          New drops, restocks, and member-only pricing - straight to your inbox.
         </p>
 
         <form
