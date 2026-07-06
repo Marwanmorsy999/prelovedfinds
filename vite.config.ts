@@ -14,11 +14,13 @@ export default defineConfig({
   },
   // Outside Lovable's own build pipeline, the preset/output overrides below
   // actually apply (inside Lovable they're force-pinned to Cloudflare).
-  // "node-server" produces a plain Node.js server you can run anywhere
-  // (a VPS, Docker, Railway, Render, etc.) via `node .output/server/index.mjs`.
-  // Deploying to Vercel/Netlify/Cloudflare instead? Change the preset string
-  // to "vercel" / "netlify" / "cloudflare-module" and redeploy.
+  // "cloudflare-module" builds a Cloudflare Workers module entry
+  // (deployed via `wrangler deploy`). For a plain Node.js server instead
+  // (VPS/Docker/Railway/Render) change back to "node-server".
   nitro: {
-    preset: "node-server",
+    preset: "cloudflare-module",
+    cloudflare: {
+      nodeCompat: true,
+    },
   },
 });
