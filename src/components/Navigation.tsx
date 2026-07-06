@@ -2,6 +2,7 @@ import { useRouterState, Link } from "@tanstack/react-router";
 import { Search, ShoppingBag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
+import logo from "@/assets/logo.jpeg";
 
 export function Navigation() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -33,7 +34,6 @@ export function Navigation() {
   ];
   if (admin) items.push({ label: "Admin", href: "/admin" });
 
-
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-out ${
@@ -42,11 +42,8 @@ export function Navigation() {
     >
       <div className="flex h-14 items-center justify-between border-b border-concrete bg-paper/85 px-4 backdrop-blur-[16px] md:px-8">
         {/* Logo */}
-        <Link
-          to="/"
-          className="font-display text-[22px] font-bold uppercase tracking-tight text-ink hover:opacity-80 transition-opacity"
-        >
-          Preloved Finds
+        <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+          <img src={logo} alt="Preloved Finds" className="h-8 w-auto" />
         </Link>
 
         {/* Desktop Nav */}
@@ -58,9 +55,7 @@ export function Navigation() {
                 key={item.href}
                 to={item.href}
                 className={`relative text-[13px] font-medium uppercase tracking-[0.08em] transition-colors duration-200 ${
-                  isActive
-                    ? "text-ink"
-                    : "text-ink/60 hover:text-ink"
+                  isActive ? "text-ink" : "text-ink/60 hover:text-ink"
                 }`}
               >
                 {item.label}
@@ -133,23 +128,31 @@ function MobileMenu({
         aria-label="Open menu"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path
+            d="M2 5h16M2 10h16M2 15h16"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex flex-col bg-paper">
           <div className="flex h-14 items-center justify-between border-b border-concrete px-4">
-            <span className="font-display text-[22px] font-bold uppercase tracking-tight text-ink">
-              Preloved Finds
-            </span>
+            <img src={logo} alt="Preloved Finds" className="h-8 w-auto" />
             <button
               onClick={() => setOpen(false)}
               className="flex items-center justify-center text-ink/60 hover:text-ink transition-colors"
               aria-label="Close menu"
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <path
+                  d="M5 5l10 10M15 5L5 15"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
               </svg>
             </button>
           </div>

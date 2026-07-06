@@ -37,9 +37,7 @@ function Contact() {
             Message sent ✓
           </p>
         </div>
-        <p className="mt-6 text-base text-ink/70">
-          We'll get back to you within 24 hours.
-        </p>
+        <p className="mt-6 text-base text-ink/70">We'll get back to you within 24 hours.</p>
         <a
           href="/"
           className="group mt-8 inline-flex items-center gap-2 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-ink transition-all hover:opacity-60"
@@ -62,13 +60,11 @@ function Contact() {
         Contact
       </h1>
       <p className="mt-4 max-w-xl text-base text-ink/70">
-        Questions about an order, sizing, or a specific piece? We'll get back to you within 24 hours.
+        Questions about an order, sizing, or a specific piece? We'll get back to you within 24
+        hours.
       </p>
 
-      <form
-        onSubmit={handleSubmit}
-        className="mt-12 max-w-lg space-y-6"
-      >
+      <form onSubmit={handleSubmit} className="mt-12 max-w-lg space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           <Field
             label="Name"

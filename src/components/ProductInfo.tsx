@@ -70,7 +70,13 @@ export function ProductInfo({ product }: { product: Product }) {
         onClick={handleAdd}
         className="button-press flex h-[52px] w-full items-center justify-center border border-ink bg-ink font-mono text-[13px] font-medium uppercase tracking-[0.1em] text-paper transition-colors hover:bg-[#2a2a2a] disabled:cursor-not-allowed disabled:border-concrete disabled:bg-surface disabled:text-concrete"
       >
-        {sold ? "Sold out" : added ? "Added ✓" : adding ? "Adding..." : `Add to cart — ${product.price} ${product.currency}`}
+        {sold
+          ? "Sold out"
+          : added
+            ? "Added ✓"
+            : adding
+              ? "Adding..."
+              : `Add to cart — ${product.price} ${product.currency}`}
       </button>
 
       {/* Trust line */}
@@ -127,9 +133,7 @@ export function ProductInfo({ product }: { product: Product }) {
         <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink">
           Shipping & Returns
         </p>
-        <p className="text-sm text-ink/80">
-          Ships from Cairo. 3-7 business days. 14-day returns.
-        </p>
+        <p className="text-sm text-ink/80">Ships from Cairo. 3-7 business days. 14-day returns.</p>
       </div>
 
       {/* Social proof */}

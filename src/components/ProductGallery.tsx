@@ -58,7 +58,14 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
             className="absolute right-6 top-6 text-paper/60 hover:text-paper transition-colors"
             aria-label="Close zoom"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
               <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
             </svg>
           </button>

@@ -37,10 +37,9 @@ function toCsv(rows: Record<string, unknown>[]): string {
   if (!rows.length) return "";
   const headers = Object.keys(rows[0]);
   const escape = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  return [
-    headers.join(","),
-    ...rows.map((r) => headers.map((h) => escape(r[h])).join(",")),
-  ].join("\n");
+  return [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h])).join(","))].join(
+    "\n",
+  );
 }
 
 export function AdvancedSettingsPanel({
@@ -137,10 +136,13 @@ export function AdvancedSettingsPanel({
           </section>
 
           <section className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-grey">
-              Data
-            </p>
-            <Button variant="outline" className="w-full justify-start" onClick={exportCsv} disabled={exporting}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-grey">Data</p>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={exportCsv}
+              disabled={exporting}
+            >
               <Download className="mr-2 h-4 w-4" />
               {exporting ? "Exporting…" : "Export inventory as CSV"}
             </Button>
@@ -152,7 +154,10 @@ export function AdvancedSettingsPanel({
             </p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="w-full justify-start border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
                   <AlertTriangle className="mr-2 h-4 w-4" />
                   Clear all sold items
                 </Button>
@@ -162,8 +167,8 @@ export function AdvancedSettingsPanel({
                   <AlertDialogTitle>Clear all sold items?</AlertDialogTitle>
                   <AlertDialogDescription>
                     Permanently deletes every product marked "sold" to tidy the catalog. Your
-                    revenue total is calculated from sold items, so it will drop to zero after
-                    this. This cannot be undone.
+                    revenue total is calculated from sold items, so it will drop to zero after this.
+                    This cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

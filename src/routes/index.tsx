@@ -33,11 +33,7 @@ function Home() {
       {/* Section 1: Hero — full viewport, single product, editorial */}
       <section className="relative h-screen">
         <div className="absolute inset-0 overflow-hidden bg-surface">
-          <img
-            src={hero}
-            alt="Featured vintage piece"
-            className="h-full w-full object-cover"
-          />
+          <img src={hero} alt="Featured vintage piece" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-br from-ink/60 via-ink/20 to-ink/40" />
         </div>
         <div className="absolute inset-0 flex flex-col justify-end px-6 pb-20 md:px-12 md:pb-24">

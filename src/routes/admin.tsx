@@ -7,7 +7,17 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LogOut, ArrowUpDown, Layers, Search, Eye, EyeOff } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  LogOut,
+  ArrowUpDown,
+  Layers,
+  Search,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 import { getIsAuthed } from "@/lib/auth";
 import { logoutFn } from "@/lib/functions/auth";
@@ -192,7 +202,6 @@ function AdminDashboard() {
       }
     }, 300);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   // /admin/login is a child route; render only its outlet (the login form)

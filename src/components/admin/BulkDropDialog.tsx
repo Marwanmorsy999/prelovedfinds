@@ -93,9 +93,7 @@ export function BulkDropDialog({
   const setTitle = (key: string, title: string) =>
     setItems((prev) =>
       prev.map((it) =>
-        it.key === key
-          ? { ...it, title, id: it.idTouched ? it.id : slugify(title) }
-          : it,
+        it.key === key ? { ...it, title, id: it.idTouched ? it.id : slugify(title) } : it,
       ),
     );
 
@@ -212,8 +210,8 @@ export function BulkDropDialog({
             <Layers className="h-4 w-4 text-rust" /> Bulk Drop
           </DialogTitle>
           <DialogDescription>
-            Add a whole drop at once. Set shared details below, then fine-tune each item —
-            every item gets its own set of photos.
+            Add a whole drop at once. Set shared details below, then fine-tune each item — every
+            item gets its own set of photos.
           </DialogDescription>
         </DialogHeader>
 

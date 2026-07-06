@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import aboutFounder from "@/assets/about-founder.jpeg";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -20,7 +21,12 @@ function About() {
   return (
     <div className="page-enter">
       {/* Hero */}
-      <section className="relative h-[60vh] overflow-hidden bg-surface">
+      <section className="relative h-[60vh] overflow-hidden">
+        <img
+          src={aboutFounder}
+          alt="Founder at Cairo market"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-end px-6 pb-12 md:px-12 md:pb-16">
           <p className="font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-paper/70">
@@ -42,19 +48,19 @@ function About() {
           <p>
             I started Preloved Finds because I couldn't find the pieces I wanted — vintage with
             soul, not just vintage for the sake of it. Every Friday morning, I'm at the markets
-            outside Cairo, digging through piles of denim, band tees, and workwear. Looking for
-            the one piece that tells a story.
+            outside Cairo, digging through piles of denim, band tees, and workwear. Looking for the
+            one piece that tells a story.
           </p>
 
           <p>
             Each item here has been inspected, measured, and photographed by hand. We don't buy
-            bulk. We don't source from wholesale lots. Every piece is individually selected for
-            its character, condition, and place in fashion history.
+            bulk. We don't source from wholesale lots. Every piece is individually selected for its
+            character, condition, and place in fashion history.
           </p>
 
           <p>
-            Vintage isn't a trend — it's an alternative to fast fashion. It's wearing something
-            that existed before you, and will exist after. That's the feeling we're after.
+            Vintage isn't a trend — it's an alternative to fast fashion. It's wearing something that
+            existed before you, and will exist after. That's the feeling we're after.
           </p>
 
           <div className="border-l-3 border-rust pl-6 italic text-ink/90">

@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import logo from "@/assets/logo.jpeg";
 
 export function Footer() {
   return (
@@ -6,9 +7,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-20 md:grid-cols-4 md:px-8 md:py-20">
         {/* Brand */}
         <div className="col-span-2 md:col-span-1">
-          <p className="font-display text-2xl font-bold uppercase tracking-tight text-paper">
-            Preloved Finds
-          </p>
+          <img src={logo} alt="Preloved Finds" className="h-8 w-auto" />
           <p className="mt-3 max-w-[220px] text-sm leading-relaxed text-concrete">
             Curated vintage & pre-owned streetwear. One-of-one pieces, shipped from Cairo.
           </p>
@@ -22,7 +21,10 @@ export function Footer() {
           <ul className="space-y-3">
             {["New Arrivals", "Denim", "Band Tees", "Outerwear"].map((item) => (
               <li key={item}>
-                <a href="/shop" className="text-sm text-concrete hover:text-paper transition-colors">
+                <a
+                  href="/shop"
+                  className="text-sm text-concrete hover:text-paper transition-colors"
+                >
                   {item}
                 </a>
               </li>

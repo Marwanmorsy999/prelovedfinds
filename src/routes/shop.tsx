@@ -71,7 +71,7 @@ function Shop() {
       (p) =>
         p.title.toLowerCase().includes(q) ||
         p.brand.toLowerCase().includes(q) ||
-        p.era.toLowerCase().includes(q)
+        p.era.toLowerCase().includes(q),
     );
   }, [paged, searchQuery]);
 

@@ -21,7 +21,10 @@ export function MarqueeTicker({ items = DEFAULT_ITEMS }: { items?: string[] }) {
   );
 
   return (
-    <div className="overflow-hidden border-y border-concrete bg-surface text-ink" aria-hidden="true">
+    <div
+      className="overflow-hidden border-y border-concrete bg-surface text-ink"
+      aria-hidden="true"
+    >
       <div className="marquee-track flex w-max py-2">
         {content}
         {content}
