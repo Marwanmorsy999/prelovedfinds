@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Navigation } from "@/components/Navigation";
+import { MarqueeTicker } from "@/components/MarqueeTicker";
 import { Footer } from "@/components/Footer";
 import { CartProvider } from "@/lib/cart";
 
@@ -78,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" },
     ],
   }),
   shellComponent: RootShell,
@@ -94,6 +95,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <div className="grain-overlay" />
         {children}
         <Scripts />
       </body>
@@ -109,6 +111,7 @@ function RootComponent() {
       <CartProvider>
         <div className="flex min-h-screen flex-col bg-background">
           <Navigation />
+          <MarqueeTicker />
           <main className="flex-1">
             <Outlet />
           </main>

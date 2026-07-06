@@ -24,12 +24,12 @@ function About() {
           <img
             src={aboutPhoto}
             alt="Preloved Finds founder setting up a vintage clothing stall outdoors"
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover grayscale-[15%] contrast-[1.05]"
           />
-          <div className="absolute inset-0 bg-ink/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-rust/25 mix-blend-multiply" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-background/80">Our Story</p>
-            <h1 className="mt-4 text-4xl font-semibold uppercase leading-tight text-background md:text-6xl">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-paper/80">Our Story</p>
+            <h1 className="mt-4 font-display text-5xl uppercase tracking-tight text-paper md:text-8xl">
               About Us
             </h1>
           </div>
@@ -38,7 +38,9 @@ function About() {
 
       <section className="mx-auto max-w-3xl px-4 py-20 md:px-8">
         <div className="space-y-6 text-[15px] leading-relaxed text-ink md:text-base">
-          <p className="text-lg font-semibold md:text-xl">Welcome to Preloved Finds.</p>
+          <p className="font-display text-2xl uppercase tracking-tight text-rust md:text-3xl">
+            Welcome to Preloved Finds.
+          </p>
 
           <p>
             From zero to hero — a boy who started with nothing. That journey is the inspiration
@@ -59,7 +61,7 @@ function About() {
         <div className="mt-14 flex justify-center">
           <Link
             to="/shop"
-            className="border border-ink bg-transparent px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink hover:bg-ink hover:text-background"
+            className="border border-ink bg-transparent px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink transition-colors hover:border-rust hover:bg-rust hover:text-paper"
           >
             Shop All
           </Link>

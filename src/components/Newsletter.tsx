@@ -7,8 +7,8 @@ export function Newsletter() {
     <section className="border-y border-hairline bg-background">
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 md:grid-cols-2 md:items-center md:px-8">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">Newsletter</p>
-          <h2 className="mt-3 text-2xl font-semibold text-ink md:text-3xl">Sign up to access our fly community perks.</h2>
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-rust">Newsletter</p>
+          <h2 className="mt-3 font-display text-2xl uppercase tracking-tight text-ink md:text-4xl">Sign up to access our fly community perks.</h2>
         </div>
         <form
           onSubmit={(e) => { e.preventDefault(); setDone(true); }}
@@ -24,7 +24,7 @@ export function Newsletter() {
           />
           <button
             type="submit"
-            className="border-l border-ink bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-background hover:opacity-80"
+            className="border-l border-ink bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-background transition-colors hover:bg-rust"
           >
             {done ? "Subscribed" : "Subscribe"}
           </button>

@@ -46,8 +46,8 @@ function Shop() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
       <div className="border-b border-hairline pb-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">Collection</p>
-        <h1 className="mt-2 text-3xl font-semibold text-ink md:text-4xl">Shop All</h1>
+        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-rust">Collection</p>
+        <h1 className="mt-2 font-display text-4xl uppercase tracking-tight text-ink md:text-6xl">Shop All</h1>
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -93,7 +93,7 @@ function Shop() {
             <button
               key={c}
               onClick={() => setCols(c as 3 | 4)}
-              className={`border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] ${cols === c ? "border-ink text-ink" : "border-hairline text-grey"}`}
+              className={`border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] ${cols === c ? "border-rust text-rust" : "border-hairline text-grey"}`}
             >
               {c} cols
             </button>
@@ -118,7 +118,7 @@ function Shop() {
             <button
               key={n}
               onClick={() => setPage(n)}
-              className={`h-10 w-10 border text-xs font-semibold ${n === currentPage ? "border-ink bg-ink text-background" : "border-hairline text-ink hover:border-ink"}`}
+              className={`h-10 w-10 border text-xs font-semibold ${n === currentPage ? "border-rust bg-rust text-paper" : "border-hairline text-ink hover:border-rust hover:text-rust"}`}
             >
               {n}
             </button>

@@ -19,7 +19,7 @@ export function Navigation() {
           { label: "Home", href: "/" },
           { label: "Shop", href: "/shop" },
           { label: "About", href: "/about" },
-          { label: "Contact", href: "/#contact" },
+          { label: "Contact", href: "/contact" },
         ]}
       />
     </div>

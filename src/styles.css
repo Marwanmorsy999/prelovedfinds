@@ -31,34 +31,40 @@
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
 
-  /* Preloved Finds tokens */
-  --color-ink: #111111;
-  --color-grey: #767676;
-  --color-hairline: #e6e6e6;
-  --color-surface: #f5f5f5;
+  /* Preloved Finds tokens — warm archival "hang-tag" palette */
+  --font-display: "Big Shoulders Display", "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --color-ink: #1b1812;
+  --color-grey: #6e6858;
+  --color-hairline: #d9d0ba;
+  --color-surface: #e7e1d0;
+  --color-rust: #ab4423;
+  --color-rust-dark: #8a3419;
+  --color-olive: #565a35;
+  --color-paper: #ede8db;
 }
 
 :root {
   --radius: 0.25rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.15 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.15 0 0);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.15 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.55 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.15 0 0);
+  --background: #ede8db;
+  --foreground: #1b1812;
+  --card: #ede8db;
+  --card-foreground: #1b1812;
+  --popover: #ede8db;
+  --popover-foreground: #1b1812;
+  --primary: #1b1812;
+  --primary-foreground: #ede8db;
+  --secondary: #e7e1d0;
+  --secondary-foreground: #1b1812;
+  --muted: #e7e1d0;
+  --muted-foreground: #6e6858;
+  --accent: #ab4423;
+  --accent-foreground: #ede8db;
   --destructive: oklch(0.6 0.22 27);
   --destructive-foreground: oklch(1 0 0);
-  --border: #e6e6e6;
-  --input: #e6e6e6;
-  --ring: oklch(0.55 0 0);
+  --border: #d9d0ba;
+  --input: #d9d0ba;
+  --ring: #ab4423;
 }
 
 .dark {
@@ -89,10 +95,22 @@
   }
 
   html, body {
-    background-color: #ffffff;
+    background-color: var(--color-paper);
     color: var(--color-ink);
     font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
   }
+}
+
+/* Subtle film-grain texture — sits fixed over the whole viewport so it never
+   scrolls with content. Pure CSS (inline SVG turbulence), no image request. */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
