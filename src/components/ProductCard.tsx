@@ -6,13 +6,13 @@ import { ImageSlot } from "./ImageSlot";
 export function ProductCard({ product }: { product: Product }) {
   const sold = product.availability === "sold";
   return (
-    <Link
-      to="/product/$id"
-      params={{ id: product.id }}
-      className="group block"
-    >
+    <Link to="/product/$id" params={{ id: product.id }} className="group block">
       <div className="relative aspect-[4/5] overflow-hidden border border-hairline bg-surface transition-colors duration-200 group-hover:border-rust">
-        <ImageSlot src={product.images[0]} alt={product.title} className="transition-transform duration-500 group-hover:scale-[1.04]" />
+        <ImageSlot
+          src={product.images[0]}
+          alt={product.title}
+          className="transition-transform duration-500 group-hover:scale-[1.04]"
+        />
         <div className="absolute left-3 top-3">
           <StatusBadge status={product.availability} />
         </div>
@@ -24,9 +24,15 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
       </div>
       <div className="mt-3 space-y-1">
-        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-grey">{product.brand} · {product.era}</p>
-        <h3 className="text-sm font-medium text-ink line-clamp-2 group-hover:text-rust">{product.title}</h3>
-        <p className="text-sm text-ink">{product.price.toLocaleString()} {product.currency}</p>
+        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-grey">
+          {product.brand} · {product.era}
+        </p>
+        <h3 className="text-sm font-medium text-ink line-clamp-2 group-hover:text-rust">
+          {product.title}
+        </h3>
+        <p className="text-sm text-ink">
+          {product.price.toLocaleString()} {product.currency}
+        </p>
       </div>
     </Link>
   );

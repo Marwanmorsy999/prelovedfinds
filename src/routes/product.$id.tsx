@@ -1,18 +1,21 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { getProduct, getRelated } from "@/lib/products";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductInfo } from "@/components/ProductInfo";
 import { ProductGrid } from "@/components/ProductGrid";
+import { getProductFn, getRelatedFn } from "@/lib/functions/products";
 
 export const Route = createFileRoute("/product/$id")({
-  loader: ({ params }) => {
-    const product = getProduct(params.id);
+  loader: async ({ params }) => {
+    const product = await getProductFn({ data: { id: params.id } });
     if (!product) throw notFound();
-    return { product, related: getRelated(product.id) };
+    const related = await getRelatedFn({ data: { id: product.id } });
+    return { product, related };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Not found — Preloved Finds" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [{ title: "Not found — Preloved Finds" }, { name: "robots", content: "noindex" }],
+      };
     }
     const { product } = loaderData;
     const title = `${product.title} — Preloved Finds`;
@@ -53,7 +56,9 @@ function ProductPage() {
 
       <section className="mt-24 border-t border-hairline pt-12">
         <div className="mb-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">More Picks</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">
+            More Picks
+          </p>
           <h2 className="mt-2 text-2xl font-semibold text-ink">You may also like</h2>
         </div>
         <ProductGrid products={related} />

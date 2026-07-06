@@ -5,7 +5,11 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact — Preloved Finds" },
-      { name: "description", content: "Get in touch with Preloved Finds — questions about an order, a piece, or a custom request." },
+      {
+        name: "description",
+        content:
+          "Get in touch with Preloved Finds — questions about an order, a piece, or a custom request.",
+      },
       { property: "og:title", content: "Contact — Preloved Finds" },
       { property: "og:description", content: "Get in touch with Preloved Finds." },
     ],
@@ -16,11 +20,15 @@ export const Route = createFileRoute("/contact")({
 function Contact() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-20 md:px-8">
-      <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-rust">Get in touch</p>
-      <h1 className="mt-2 font-display text-4xl uppercase tracking-tight text-ink md:text-6xl">Contact</h1>
+      <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-rust">
+        Get in touch
+      </p>
+      <h1 className="mt-2 font-display text-4xl uppercase tracking-tight text-ink md:text-6xl">
+        Contact
+      </h1>
       <p className="mt-4 max-w-xl text-sm text-grey">
-        Questions about an order, sizing, or a specific piece? Send us a message and
-        we'll get back to you — usually within a day.
+        Questions about an order, sizing, or a specific piece? Send us a message and we'll get back
+        to you — usually within a day.
       </p>
 
       <div className="mt-8 flex flex-wrap gap-6">
@@ -55,7 +63,9 @@ function Contact() {
           <Field label="Email" name="email" type="email" required />
         </div>
         <div>
-          <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">Message</label>
+          <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">
+            Message
+          </label>
           <textarea
             name="message"
             required
@@ -74,10 +84,22 @@ function Contact() {
   );
 }
 
-function Field({ label, name, type, required }: { label: string; name: string; type: string; required?: boolean }) {
+function Field({
+  label,
+  name,
+  type,
+  required,
+}: {
+  label: string;
+  name: string;
+  type: string;
+  required?: boolean;
+}) {
   return (
     <div>
-      <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">{label}</label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">
+        {label}
+      </label>
       <input
         name={name}
         type={type}

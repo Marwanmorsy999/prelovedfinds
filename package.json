@@ -12,7 +12,10 @@
     "preview:cf": "npm run build && wrangler dev",
     "cf-typegen": "wrangler types",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:create": "wrangler d1 create prelovedfinds-db",
+    "db:migrate:local": "wrangler d1 migrations apply prelovedfinds-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply prelovedfinds-db --remote"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

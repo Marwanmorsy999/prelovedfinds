@@ -9,19 +9,30 @@ export function ProductInfo({ product }: { product: Product }) {
   return (
     <div className="space-y-8 md:sticky md:top-28 md:self-start">
       <div className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">{product.brand} · {product.era}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">
+          {product.brand} · {product.era}
+        </p>
         <h1 className="text-3xl font-semibold text-ink">{product.title}</h1>
-        <p className="text-lg text-ink">{product.price.toLocaleString()} {product.currency}</p>
-        <div><StatusBadge status={product.availability} /></div>
+        <p className="text-lg text-ink">
+          {product.price.toLocaleString()} {product.currency}
+        </p>
+        <div>
+          <StatusBadge status={product.availability} />
+        </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">Size</label>
+        <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-grey">
+          Size
+        </label>
         <select
           disabled
           className="w-full cursor-not-allowed border border-hairline bg-surface px-3 py-3 text-sm text-ink"
         >
-          <option>{product.size}{sold ? " — Sold out" : " — One-of-one"}</option>
+          <option>
+            {product.size}
+            {sold ? " — Sold out" : " — One-of-one"}
+          </option>
         </select>
         <p className="text-xs text-grey">Each piece is one-of-one secondhand stock.</p>
       </div>
@@ -37,14 +48,20 @@ export function ProductInfo({ product }: { product: Product }) {
       <div className="border-t border-hairline pt-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink">Product ID</p>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-grey">
-          {product.productId.map((line, i) => <li key={i}>{line}</li>)}
+          {product.productId.map((line, i) => (
+            <li key={i}>{line}</li>
+          ))}
         </ul>
       </div>
 
       <div className="border-t border-hairline pt-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink">Measurements</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink">
+          Measurements
+        </p>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-grey">
-          {product.measurements.map((line, i) => <li key={i}>{line}</li>)}
+          {product.measurements.map((line, i) => (
+            <li key={i}>{line}</li>
+          ))}
         </ul>
       </div>
     </div>

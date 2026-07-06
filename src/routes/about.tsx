@@ -7,7 +7,8 @@ export const Route = createFileRoute("/about")({
       { title: "About Us — Preloved Finds" },
       {
         name: "description",
-        content: "From zero to hero — the story behind Preloved Finds, curated vintage streetwear from Cairo.",
+        content:
+          "From zero to hero — the story behind Preloved Finds, curated vintage streetwear from Cairo.",
       },
       { property: "og:title", content: "About Us — Preloved Finds" },
       { property: "og:description", content: "The story behind Preloved Finds." },
@@ -28,7 +29,9 @@ function About() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-rust/25 mix-blend-multiply" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-paper/80">Our Story</p>
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-paper/80">
+              Our Story
+            </p>
             <h1 className="mt-4 font-display text-5xl uppercase tracking-tight text-paper md:text-8xl">
               About Us
             </h1>
@@ -53,7 +56,9 @@ function About() {
             items from different eras, all in one place.
           </p>
 
-          <p>Every piece is selected with care to offer something distinctive and full of character.</p>
+          <p>
+            Every piece is selected with care to offer something distinctive and full of character.
+          </p>
 
           <p className="pt-4 font-medium">Thank you for visiting Preloved Finds.</p>
         </div>

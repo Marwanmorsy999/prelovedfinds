@@ -4,6 +4,17 @@ import logo from "@/assets/logo.jpeg";
 
 export function Navigation() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const admin = useRouterState({
+    select: (s) => s.matches[0]?.context?.admin as boolean | undefined,
+  });
+
+  const items = [
+    { label: "Home", href: "/" },
+    { label: "Shop", href: "/shop" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact" },
+  ];
+  if (admin) items.push({ label: "Admin", href: "/admin" });
 
   return (
     <div className="relative h-20 md:h-24">
@@ -15,12 +26,7 @@ export function Navigation() {
         pillColor="#ffffff"
         hoveredPillTextColor="#ffffff"
         pillTextColor="#111111"
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Shop", href: "/shop" },
-          { label: "About", href: "/about" },
-          { label: "Contact", href: "/contact" },
-        ]}
+        items={items}
       />
     </div>
   );

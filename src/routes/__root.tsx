@@ -15,6 +15,8 @@ import { Navigation } from "@/components/Navigation";
 import { MarqueeTicker } from "@/components/MarqueeTicker";
 import { Footer } from "@/components/Footer";
 import { CartProvider } from "@/lib/cart";
+import { Toaster } from "@/components/ui/sonner";
+import { getIsAuthed } from "@/lib/auth";
 
 function NotFoundComponent() {
   return (
@@ -24,7 +26,10 @@ function NotFoundComponent() {
         <h1 className="mt-3 text-2xl font-semibold text-ink">Page not found</h1>
         <p className="mt-2 text-sm text-grey">The page you're looking for doesn't exist.</p>
         <div className="mt-6">
-          <Link to="/" className="border border-ink bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-background hover:opacity-80">
+          <Link
+            to="/"
+            className="border border-ink bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-background hover:opacity-80"
+          >
             Go home
           </Link>
         </div>
@@ -47,12 +52,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="mt-2 text-sm text-grey">Something went wrong on our end.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => { router.invalidate(); reset(); }}
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
             className="border border-ink bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-background hover:opacity-80"
           >
             Try again
           </button>
-          <a href="/" className="border border-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink hover:bg-ink hover:text-background">
+          <a
+            href="/"
+            className="border border-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink hover:bg-ink hover:text-background"
+          >
             Go home
           </a>
         </div>
@@ -61,16 +72,26 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient; admin: boolean }>()({
+  beforeLoad: async () => {
+    const admin = await getIsAuthed();
+    return { admin };
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Preloved Finds" },
-      { name: "description", content: "Curated vintage and pre-owned streetwear. One-of-one pieces." },
+      {
+        name: "description",
+        content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
+      },
       { name: "author", content: "Preloved Finds" },
       { property: "og:title", content: "Preloved Finds" },
-      { property: "og:description", content: "Curated vintage and pre-owned streetwear. One-of-one pieces." },
+      {
+        property: "og:description",
+        content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -79,7 +100,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -117,6 +141,7 @@ function RootComponent() {
           </main>
           <Footer />
         </div>
+        <Toaster />
       </CartProvider>
     </QueryClientProvider>
   );
