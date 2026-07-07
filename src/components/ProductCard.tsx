@@ -22,6 +22,7 @@ export function ProductCard({ product }: { product: Product }) {
       name: product.title,
       price: product.price,
       priceLabel: product.priceLabel,
+      imageUrl: product.imageUrl ?? product.images[0],
     });
     if (ok) setAdded(true);
   };

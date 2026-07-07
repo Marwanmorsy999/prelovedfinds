@@ -138,6 +138,7 @@ function Checkout() {
           customerPhone: phone.trim(),
           governorate,
           address: address.trim(),
+          subtotal,
           total,
         },
       });
@@ -147,8 +148,9 @@ function Checkout() {
         to: "/order-confirmation",
         search: { orderId },
       });
-    } catch {
-      toast.error("Failed to place order. Try again.");
+    } catch (err) {
+      console.error("Failed to place order:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to place order. Try again.");
     } finally {
       setPlacing(false);
     }

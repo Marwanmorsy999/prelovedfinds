@@ -2,6 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { ShoppingBag, X, Menu } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
+import { ImageSlot } from "@/components/ImageSlot";
 import { Logo } from "@/components/Logo";
 
 export function Navigation() {
@@ -160,14 +161,16 @@ export function Navigation() {
           ) : (
             items.map((item) => (
               <div key={item.id} className="flex items-start gap-3 group">
-                <div className="h-20 w-16 bg-surface flex-shrink-0 overflow-hidden" />
+                <div className="h-20 w-16 bg-surface flex-shrink-0 overflow-hidden">
+                  <ImageSlot src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                </div>
                 <div className="flex-1 min-w-0 pt-0.5">
                    <p className="text-[13px] font-medium text-ink leading-snug line-clamp-2">{item.name}</p>
                   <p className="text-[12px] text-[#9ca3af] mt-1">LE {item.price.toLocaleString()}</p>
                 </div>
                 <button
                   onClick={() => remove(item.id)}
-                   className="mt-0.5 p-1 text-[#d1d5db] hover:text-ink transition-colors rounded hover:bg-surface flex-shrink-0"
+                   className="mt-0.5 p-1.5 text-[#9ca3af] hover:text-red-500 active:text-red-700 hover:bg-red-50 active:bg-red-100 transition-colors rounded flex-shrink-0"
                    aria-label={`Remove ${item.name}`}
                 >
                   <X className="h-3.5 w-3.5" />

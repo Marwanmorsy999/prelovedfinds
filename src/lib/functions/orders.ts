@@ -84,11 +84,12 @@ export const createOrderFn = createServerFn({ method: "POST" })
           priceLabel: z.string().optional(),
         }),
       ),
+      subtotal: z.number().nonnegative(),
       total: z.number().nonnegative(),
     }),
   )
   .handler(async ({ data }) => {
-    return createOrder(data as Order);
+    return createOrder(data as Parameters<typeof createOrder>[0]);
   });
 
 export const updateOrderStatusFn = createServerFn({ method: "POST" })

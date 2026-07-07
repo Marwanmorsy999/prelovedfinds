@@ -8,6 +8,7 @@ export interface CartItem {
   name: string;
   price: number;
   priceLabel?: string;
+  imageUrl?: string;
 }
 
 interface CartCtx {

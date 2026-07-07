@@ -25,6 +25,7 @@ export async function createOrder(input: {
   pickup?: 0 | 1;
   address: string;
   items: { name: string; size?: string; price?: number; priceLabel?: string }[];
+  subtotal: number;
   total: number;
 }): Promise<Order> {
   const db = getDB();
@@ -41,12 +42,13 @@ export async function createOrder(input: {
     address: input.address,
     governorate: input.governorate || "",
     items: input.items,
+    subtotal: input.subtotal,
     total: input.total,
   };
   await db
     .prepare(
-      `INSERT INTO orders (id, createdAt, status, customerName, customerPhone, customerInstagram, notes, pickup, address, items, total)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO orders (id, createdAt, status, customerName, customerPhone, customerInstagram, notes, pickup, address, governorate, items, subtotal, total)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       order.id,
@@ -58,7 +60,9 @@ export async function createOrder(input: {
       order.notes,
       order.pickup,
       order.address,
+      order.governorate,
       JSON.stringify(order.items),
+      order.subtotal,
       order.total,
     )
     .run();
@@ -123,3 +127,5 @@ export async function getOrderStats(): Promise<{
 
   return stats;
 }
+
+export type { Order };

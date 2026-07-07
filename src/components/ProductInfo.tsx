@@ -34,7 +34,7 @@ export function ProductInfo({ product }: { product: Product }) {
     if (sold || adding || alreadyInCart) return;
     setAdding(true);
     setTimeout(() => {
-      add({ id: product.id, name: product.title, price: product.price, priceLabel: product.priceLabel });
+      add({ id: product.id, name: product.title, price: product.price, priceLabel: product.priceLabel, imageUrl: product.imageUrl ?? product.images[0] });
       setAdding(false);
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
@@ -104,7 +104,7 @@ export function ProductInfo({ product }: { product: Product }) {
         {!sold && (
           <button
             onClick={() => {
-              buyNow({ id: product.id, name: product.title, price: product.price, priceLabel: product.priceLabel });
+              buyNow({ id: product.id, name: product.title, price: product.price, priceLabel: product.priceLabel, imageUrl: product.imageUrl ?? product.images[0] });
               navigate({ to: "/checkout" });
             }}
             className="w-full h-12 border border-ink bg-paper text-ink text-[13px] font-semibold uppercase tracking-widest hover:bg-surface transition-colors"
