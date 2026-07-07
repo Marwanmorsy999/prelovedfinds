@@ -88,7 +88,6 @@ export const createOrderFn = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
     return createOrder(data as Order);
   });
 
