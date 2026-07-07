@@ -19,7 +19,7 @@ export function CategoryTiles() {
           <Link
             key={cat.name}
             to="/shop"
-            search={{ tag: cat.name.toLowerCase(), size: "all", condition: "all", priceRange: "all", availability: "all", sort: "newest", q: "", page: 1 }}
+            search={{ tag: cat.name.toLowerCase(), size: "all", condition: "all", priceRange: "all", sort: "newest", q: "", page: 1 }}
             className="group relative flex aspect-[3/2] flex-col items-start justify-end overflow-hidden bg-surface"
           >
             <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />

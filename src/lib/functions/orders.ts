@@ -72,8 +72,9 @@ export const createOrderFn = createServerFn({ method: "POST" })
       customerName: z.string().min(1).max(200),
       customerPhone: z.string().min(1).max(40),
       customerInstagram: z.string().optional(),
+      governorate: z.string().optional(),
       notes: z.string().optional(),
-      pickup: z.coerce.number().int().min(0).max(1),
+      pickup: z.coerce.number().int().min(0).max(1).optional(),
       address: z.string().min(1).max(400),
       items: z.array(
         z.object({

@@ -24,7 +24,6 @@ export const Route = createFileRoute("/shop")({
     size: typeof search.size === "string" ? search.size : "all",
     condition: typeof search.condition === "string" ? search.condition : "all",
     priceRange: typeof search.priceRange === "string" ? search.priceRange : "all",
-    availability: typeof search.availability === "string" ? search.availability : "all",
     sort: typeof search.sort === "string" ? search.sort : "newest",
     q: typeof search.q === "string" ? search.q : "",
     page: typeof search.page === "number" ? search.page : 1,
@@ -35,7 +34,6 @@ export const Route = createFileRoute("/shop")({
       size?: string;
       condition?: string;
       priceRange?: string;
-      availability?: string;
       sort?: string;
       q?: string;
       page?: number;
@@ -47,7 +45,6 @@ export const Route = createFileRoute("/shop")({
           size: search.size === "all" ? undefined : search.size,
           condition: search.condition === "all" ? undefined : (search.condition as never),
           priceRange: search.priceRange === "all" ? undefined : (search.priceRange as never),
-          availability: search.availability === "all" ? undefined : (search.availability as never),
           sort: search.sort as never,
           page: search.page,
           perPage: 16,
@@ -97,8 +94,7 @@ function Shop() {
     search.tag !== "all" ||
     search.size !== "all" ||
     search.condition !== "all" ||
-    search.priceRange !== "all" ||
-    search.availability !== "all";
+    search.priceRange !== "all";
 
   return (
     <div className="page-enter">
@@ -184,7 +180,7 @@ function Shop() {
         </div>
 
         <div className={`${filterOpen ? "block" : "hidden"} md:block mb-6`}>
-          <div className={`grid grid-cols-1 md:grid-cols-5 gap-4`}>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-widest text-concrete mb-1.5">
                 Category
@@ -251,20 +247,6 @@ function Shop() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          <div className="relative">
-            <select
-              value={search.availability}
-              onChange={(e) => updateSearch({ availability: e.target.value, page: 1 })}
-              className="h-10 appearance-none border border-hairline bg-paper pl-3 pr-8 text-[12px] font-semibold uppercase tracking-widest text-ink outline-none hover:border-ink transition-colors cursor-pointer"
-            >
-              <option value="all">All</option>
-              <option value="available">In Stock</option>
-              <option value="one-left">1 Left</option>
-              <option value="sold">Sold</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-concrete" />
-          </div>
-
           {hasActiveFilters && (
             <button
               onClick={() =>
@@ -273,7 +255,6 @@ function Shop() {
                   size: "all",
                   condition: "all",
                   priceRange: "all",
-                  availability: "all",
                   page: 1,
                 })
               }
@@ -341,7 +322,6 @@ function Shop() {
                   size: "all",
                   condition: "all",
                   priceRange: "all",
-                  availability: "all",
                   sort: "newest",
                   page: 1,
                 });

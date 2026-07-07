@@ -20,8 +20,9 @@ export async function createOrder(input: {
   customerName: string;
   customerPhone: string;
   customerInstagram?: string;
+  governorate?: string;
   notes?: string;
-  pickup: 0 | 1;
+  pickup?: 0 | 1;
   address: string;
   items: { name: string; size?: string; price?: number; priceLabel?: string }[];
   total: number;
@@ -36,8 +37,9 @@ export async function createOrder(input: {
     customerPhone: input.customerPhone,
     customerInstagram: input.customerInstagram || "",
     notes: input.notes || "",
-    pickup: input.pickup,
+    pickup: input.pickup ?? 0,
     address: input.address,
+    governorate: input.governorate || "",
     items: input.items,
     total: input.total,
   };

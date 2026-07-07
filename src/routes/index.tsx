@@ -63,7 +63,7 @@ function Home() {
           </div>
           <Link
             to="/shop"
-            search={{ tag: "all", size: "all", condition: "all", priceRange: "all", availability: "all", sort: "newest", q: "", page: 1 }}
+            search={{ tag: "all", size: "all", condition: "all", priceRange: "all", sort: "newest", q: "", page: 1 }}
             className="relative inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors mt-10 md:mt-14"
             style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif", fontSize: "14px" }}
           >
@@ -80,7 +80,7 @@ function Home() {
           </h2>
           <Link
             to="/shop"
-            search={{ tag: "all", size: "all", condition: "all", priceRange: "all", availability: "all", sort: "newest", q: "", page: 1 }}
+            search={{ tag: "all", size: "all", condition: "all", priceRange: "all", sort: "newest", q: "", page: 1 }}
             className="text-[12px] font-semibold uppercase tracking-widest text-ink border-b border-ink hover:text-concrete hover:border-concrete transition-colors pb-0.5"
           >
             View all

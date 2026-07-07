@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Phone, MapPin } from "lucide-react";
+import { ArrowLeft, Phone, MapPin, User, ChevronDown, Shield, Truck } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { createOrderFn } from "@/lib/functions/orders";
 
@@ -15,47 +15,95 @@ export const Route = createFileRoute("/checkout")({
   component: Checkout,
 });
 
+const EGYPTIAN_GOVERNORATES = [
+  "Alexandria",
+  "Aswan",
+  "Asyut",
+  "Beheira",
+  "Beni Suef",
+  "Cairo",
+  "Dakahlia",
+  "Damietta",
+  "Faiyum",
+  "Gharbia",
+  "Giza",
+  "Ismailia",
+  "Kafr El Sheikh",
+  "Luxor",
+  "Matrouh",
+  "Minya",
+  "Monufia",
+  "New Valley",
+  "North Sinai",
+  "Port Said",
+  "Qalyubia",
+  "Qena",
+  "Red Sea",
+  "Sharqia",
+  "Sohag",
+  "South Sinai",
+  "Suez",
+];
+
 function Checkout() {
   const { items, clear, count } = useCart();
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [pickup, setPickup] = useState(0);
+  const [governorate, setGovernorate] = useState("");
   const [address, setAddress] = useState("");
 
   const total = items.reduce((sum, i) => sum + i.price, 0);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !phone.trim() || !address.trim()) {
-      toast.error("Please fill in all fields");
-      return;
+  const validateForm = () => {
+    if (!name.trim()) {
+      toast.error("Please enter your full name");
+      return false;
+    }
+    if (!phone.trim()) {
+      toast.error("Please enter your phone number");
+      return false;
     }
     if (!/^01[0-2,5]{1}[0-9]{7}$/.test(phone)) {
       toast.error("Enter a valid Egyptian phone number (01xxxxxxxxx)");
-      return;
+      return false;
+    }
+    if (!governorate) {
+      toast.error("Please select your governorate");
+      return false;
+    }
+    if (!address.trim()) {
+      toast.error("Please enter your delivery address");
+      return false;
     }
     if (!count) {
       toast.error("Your cart is empty");
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
     setPlacing(true);
     try {
       const orderId = `ORD-${Date.now()}`;
       await createOrderFn({
         data: {
           id: orderId,
-           items: items.map((i) => ({ name: i.name, size: (i as any).size, price: i.price, priceLabel: i.priceLabel })),
+          items: items.map((i) => ({ name: i.name, size: (i as any).size, price: i.price, priceLabel: i.priceLabel })),
           customerName: name.trim(),
           customerPhone: phone.trim(),
-          pickup,
+          governorate,
           address: address.trim(),
           total,
         },
       });
       clear();
-      toast.success("Order placed successfully");
+      toast.success("Order placed successfully! We'll contact you soon.");
       navigate({ to: "/", search: {} });
     } catch {
       toast.error("Failed to place order. Try again.");
@@ -66,148 +114,227 @@ function Checkout() {
 
   if (!count) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-24 text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#9ca3af] mb-2">
-          Checkout
-        </p>
-        <h1 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a] mb-4">
-          No items yet
-        </h1>
-        <button
-                onClick={() => navigate({ to: "/shop", search: {} })}
-          className="h-11 bg-[#1a1a1a] text-white px-8 text-[12px] font-bold uppercase tracking-widest hover:bg-[#6b7280] transition-colors"
-        >
-          Shop All
-        </button>
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f5f5]">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-[#1a1a1a] mb-2">Your cart is empty</h1>
+          <p className="text-[14px] text-[#6b7280] mb-8">
+            Add some vintage pieces to get started.
+          </p>
+          <button
+            onClick={() => navigate({ to: "/shop", search: { tag: "all", size: "all", condition: "all", priceRange: "all", sort: "newest", q: "", page: 1 } })}
+            className="inline-flex h-12 items-center justify-center bg-[#1a1a1a] text-white px-10 text-[12px] font-bold uppercase tracking-widest hover:bg-[#6b7280] transition-colors"
+          >
+            Shop All
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="page-enter">
-      <div className="border-b border-[#e5e7eb] px-4 py-6 md:px-8">
-        <div className="mx-auto max-w-7xl flex items-center gap-3">
-          <button
-                  onClick={() => navigate({ to: "/shop", search: {} })}
-            className="p-1 text-[#6b7280] hover:text-[#1a1a1a] transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <p className="text-[11px] font-bold uppercase tracking-widest text-[#9ca3af]">Checkout</p>
+    <div className="min-h-screen bg-[#fafafa]">
+      {/* Top bar */}
+      <div className="border-b border-[#e5e7eb] bg-white">
+        <div className="mx-auto max-w-5xl px-4 py-4 md:px-8">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate({ to: "/shop", search: { tag: "all", size: "all", condition: "all", priceRange: "all", sort: "newest", q: "", page: 1 } })}
+              className="p-1.5 text-[#6b7280] hover:text-[#1a1a1a] transition-colors rounded-lg hover:bg-[#f5f5f5]"
+              aria-label="Back to shop"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="h-5 w-px bg-[#e5e7eb]" />
+            <p className="text-[13px] font-semibold text-[#1a1a1a] tracking-tight">Checkout</p>
+          </div>
         </div>
       </div>
 
-      <form onSubmit={submit} className="mx-auto max-w-7xl px-4 py-10 md:px-8">
-        <div className="grid gap-10 md:grid-cols-[1fr_320px]">
+      <form onSubmit={submit} className="mx-auto max-w-5xl px-4 py-8 md:px-8 md:py-12">
+        <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:gap-12">
+          {/* Left column — form */}
           <div className="space-y-8">
-            <section>
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#6b7280] mb-4">
-                Contact
-              </h2>
-              <div className="grid gap-4">
-                <div>
-                  <label className="block text-[12px] font-semibold text-[#1a1a1a] mb-1.5">
-                    Full name
-                  </label>
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your name"
-                    className="w-full border border-[#e5e7eb] bg-white px-4 py-3 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-[#9ca3af]"
-                  />
+            {/* Shipping information */}
+            <div className="bg-white rounded-xl border border-[#e5e7eb] overflow-hidden">
+              <div className="px-6 py-5 border-b border-[#e5e7eb]">
+                <div className="flex items-center gap-2.5">
+                  <Truck className="h-4 w-4 text-[#6b7280]" />
+                  <h2 className="text-[13px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+                    Shipping Information
+                  </h2>
                 </div>
+              </div>
+              <div className="px-6 py-6 space-y-5">
+                {/* Full Name */}
                 <div>
-                  <label className="block text-[12px] font-semibold text-[#1a1a1a] mb-1.5">
-                    Phone number
+                  <label htmlFor="name" className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5">
+                    Full Name
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
                     <input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your full name"
+                      className="w-full h-12 border border-[#e5e7eb] bg-white pl-10 pr-4 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg placeholder:text-[#9ca3af]"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone Number */}
+                <div>
+                  <label htmlFor="phone" className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+                    <input
+                      id="phone"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="01xxxxxxxxx"
-                      className="w-full border border-[#e5e7eb] bg-white pl-9 pr-4 py-3 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-[#9ca3af]"
+                      className="w-full h-12 border border-[#e5e7eb] bg-white pl-10 pr-4 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg placeholder:text-[#9ca3af]"
                     />
                   </div>
                 </div>
-              </div>
-            </section>
 
-            <section>
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#6b7280] mb-4">
-                Delivery details
-              </h2>
-              <div className="grid gap-4">
+                {/* Governorate */}
                 <div>
-                  <label className="block text-[12px] font-semibold text-[#1a1a1a] mb-1.5">
-                    Address
+                  <label htmlFor="governorate" className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5">
+                    Governorate
                   </label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
-                    <input
+                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af] z-10" />
+                    <select
+                      id="governorate"
+                      value={governorate}
+                      onChange={(e) => setGovernorate(e.target.value)}
+                      className="w-full h-12 appearance-none border border-[#e5e7eb] bg-white pl-10 pr-10 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg cursor-pointer"
+                    >
+                      <option value="">Select governorate</option>
+                      {EGYPTIAN_GOVERNORATES.map((g) => (
+                        <option key={g} value={g}>{g}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+                  </div>
+                </div>
+
+                {/* Full Address */}
+                <div>
+                  <label htmlFor="address" className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5">
+                    Full Delivery Address
+                  </label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3.5 top-3.5 h-4 w-4 text-[#9ca3af]" />
+                    <textarea
+                      id="address"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Street, building, apartment"
-                      className="w-full border border-[#e5e7eb] bg-white pl-9 pr-4 py-3 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-[#9ca3af]"
+                      placeholder="Street name, building number, apartment, landmark..."
+                      rows={3}
+                      className="w-full border border-[#e5e7eb] bg-white pl-10 pr-4 py-3 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg placeholder:text-[#9ca3af] resize-none"
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-[12px] font-semibold text-[#1a1a1a] mb-1.5">
-                    Pickup
-                  </label>
-                  <select
-                    value={String(pickup)}
-                    onChange={(e) => setPickup(Number(e.target.value))}
-                    className="w-full h-10 appearance-none border border-[#e5e7eb] bg-white pl-3 pr-8 text-[12px] font-medium text-[#1a1a1a] outline-none hover:border-[#1a1a1a] transition-colors cursor-pointer"
-                  >
-                    <option value="0">Delivery</option>
-                    <option value="1">Zamalek pickup</option>
-                  </select>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          <div className="md:sticky md:top-28 md:self-start space-y-4">
-            <div className="border border-[#e5e7eb] bg-white p-5">
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#6b7280] mb-4">
-                Order Summary
-              </h3>
-              <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                {items.map((item) => (
-                  <div key={item.id} className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-[#1a1a1a] truncate">
-                        {item.name}
-                      </p>
-                      <p className="text-[11px] text-[#9ca3af]">Qty 1</p>
-                    </div>
-                    <p className="text-[13px] font-medium text-[#1a1a1a]">
-                      LE {item.price.toLocaleString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-[#e5e7eb] mt-4 pt-4 flex items-center justify-between">
-                <span className="text-[12px] font-semibold uppercase tracking-widest text-[#6b7280]">
-                  Total
-                </span>
-                <span className="text-[16px] font-bold text-[#1a1a1a]">
-                  LE {total.toLocaleString()}
-                </span>
               </div>
             </div>
-            <button
-              type="submit"
-              disabled={placing}
-              className="w-full h-12 bg-[#1a1a1a] text-white text-[12px] font-bold uppercase tracking-widest hover:bg-black transition-colors disabled:opacity-50"
-            >
-              {placing ? "Placing order..." : "Place order"}
-            </button>
-            <p className="text-[11px] text-[#9ca3af] text-center">
-              You will be contacted to confirm your order.
-            </p>
+
+            {/* Trust indicators */}
+            <div className="bg-white rounded-xl border border-[#e5e7eb] px-6 py-5">
+              <div className="flex items-start gap-3">
+                <Shield className="h-5 w-5 text-[#9ca3af] mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-[12px] font-semibold text-[#1a1a1a] mb-0.5">Secure Checkout</p>
+                  <p className="text-[12px] text-[#6b7280] leading-relaxed">
+                    Your information is safe. We'll contact you via WhatsApp to confirm your order.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right column — order summary */}
+          <div className="lg:sticky lg:top-8 lg:self-start">
+            <div className="bg-white rounded-xl border border-[#e5e7eb] overflow-hidden">
+              <div className="px-6 py-5 border-b border-[#e5e7eb]">
+                <h2 className="text-[13px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+                  Order Summary
+                </h2>
+              </div>
+
+              <div className="px-6 py-5 space-y-4">
+                {/* Items */}
+                <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-medium text-[#1a1a1a] truncate">
+                          {item.name}
+                        </p>
+                        {(item as any).size && (
+                          <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                            Size: {(item as any).size}
+                          </p>
+                        )}
+                        <p className="text-[11px] text-[#9ca3af]">Qty 1</p>
+                      </div>
+                      <p className="text-[13px] font-medium text-[#1a1a1a] whitespace-nowrap">
+                        LE {item.price.toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Totals */}
+              <div className="px-6 py-5 border-t border-[#e5e7eb] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] text-[#6b7280]">Subtotal</span>
+                  <span className="text-[13px] text-[#1a1a1a]">LE {total.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] text-[#6b7280]">Shipping</span>
+                  <span className="text-[13px] text-[#22c55e] font-medium">Free</span>
+                </div>
+                <div className="border-t border-[#e5e7eb] pt-3 flex items-center justify-between">
+                  <span className="text-[14px] font-bold text-[#1a1a1a]">Total</span>
+                  <span className="text-[18px] font-bold text-[#1a1a1a]">
+                    LE {total.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Place order button */}
+              <div className="px-6 pb-6">
+                <button
+                  type="submit"
+                  disabled={placing}
+                  className="w-full h-13 bg-[#1a1a1a] text-white text-[13px] font-bold uppercase tracking-widest rounded-lg hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{ height: "52px" }}
+                >
+                  {placing ? (
+                    <>
+                      <span className="inline-block h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                      Placing Order...
+                    </>
+                  ) : (
+                    "Place Order"
+                  )}
+                </button>
+                <p className="text-[11px] text-[#9ca3af] text-center mt-3">
+                  You'll receive a WhatsApp confirmation after ordering.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </form>
