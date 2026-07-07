@@ -65,11 +65,11 @@ export const Route = createFileRoute("/shop")({
 function Shop() {
   const navigate = useNavigate();
   const search = Route.useSearch();
-  const loader = Route.useLoaderData();
+const loader = Route.useLoaderData();
   const { items, total, totalPages, page } = loader.products;
-  const initialCategories = loader.categories;
-  const initialSizes = loader.sizes;
-  const initialConditions = loader.conditions;
+  const initialCategories = Array.isArray(loader.categories) ? loader.categories : [];
+  const initialSizes = Array.isArray(loader.sizes) ? loader.sizes : [];
+  const initialConditions = Array.isArray(loader.conditions) ? loader.conditions : [];
   const [categories] = useState<string[]>(initialCategories);
   const [sizes] = useState<string[]>(initialSizes);
   const [conditions, setConditions] = useState<string[]>(initialConditions);

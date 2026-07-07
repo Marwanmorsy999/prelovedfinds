@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie, setCookie, deleteCookie } from "@tanstack/start-server-core";
 import { z } from "zod";
-import { verifyPassword, signSessionToken } from "@/lib/auth";
+import { verifyPassword, signSessionToken } from "@/lib/auth.ts";
 
 const SESSION_COOKIE = "session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
