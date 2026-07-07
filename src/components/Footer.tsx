@@ -1,3 +1,5 @@
+import { Logo } from "@/components/Logo";
+
 export function Footer() {
   return (
     <footer className="bg-white border-t border-[#e5e7eb]">
@@ -32,6 +34,26 @@ export function Footer() {
 
       {/* Links */}
       <div className="mx-auto max-w-7xl grid grid-cols-2 gap-8 px-4 py-10 md:grid-cols-4 md:px-8">
+        {/* Brand block */}
+        <div className="col-span-2 md:col-span-1">
+          <a href="/" className="block mb-3 hover:opacity-70 transition-opacity">
+            <Logo className="text-[20px] text-[#1a1a1a]" />
+          </a>
+          <p className="text-[13px] text-[#6b7280] leading-relaxed max-w-[200px]">
+            Curated vintage & pre-owned pieces. One-of-one, shipped from Cairo.
+          </p>
+          <div className="mt-4 flex gap-4">
+            <a
+              href="https://instagram.com/prelovedfinds"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+            >
+              Instagram
+            </a>
+          </div>
+        </div>
+
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7280] mb-4">Collections</p>
           <ul className="space-y-2.5">

@@ -47,10 +47,8 @@ export function Navigation() {
 
   const collectionLinks = [
     { label: "Shop All", href: "/shop" },
-    { label: "Tops", href: "/shop?availability=all&priceRange=all&sort=featured&page=1" },
-    { label: "Bottoms", href: "/shop?availability=all&priceRange=all&sort=featured&page=1" },
-    { label: "Jackets", href: "/shop?availability=all&priceRange=all&sort=featured&page=1" },
-    { label: "Sweatshirts", href: "/shop?availability=all&priceRange=all&sort=featured&page=1" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact" },
   ];
 
   const menuItems = [
@@ -64,11 +62,6 @@ export function Navigation() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#e5e7eb]">
-      {/* Top announcement bar */}
-      <div className="bg-[#1a1a1a] text-white text-center py-2 text-[12px] tracking-widest font-medium">
-        FREE SHIPPING ON ORDERS OVER 1500 EGP
-      </div>
-
       {/* Main nav row */}
       <div className="flex h-14 items-center justify-between px-4 md:px-8">
         {/* Left: hamburger on mobile, search on desktop */}
@@ -252,17 +245,6 @@ export function Navigation() {
               </Link>
             ))}
           </nav>
-          <div className="px-6 border-t border-[#e5e7eb] pt-6 space-y-4">
-            {collectionLinks.slice(1).map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="block text-[14px] font-medium text-[#6b7280] hover:text-[#1a1a1a] uppercase tracking-widest transition-colors"
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
         </div>
       )}
     </header>

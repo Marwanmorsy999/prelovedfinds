@@ -159,7 +159,6 @@ export function ProductInfo({ product }: { product: Product }) {
           Shipping & Returns
         </p>
         <p className="text-[13px] text-[#6b7280]">Ships from Cairo. 3–7 business days.</p>
-        <p className="text-[13px] text-[#6b7280] mt-1">Free shipping on orders over LE 1500.</p>
       </div>
     </div>
   );

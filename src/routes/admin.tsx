@@ -5,19 +5,9 @@ import {
   Outlet,
   useRouterState,
 } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  LogOut,
-  ArrowUpDown,
-  Layers,
-  Search,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { Trash2, LogOut, Search, X, Plus, ImagePlus } from "lucide-react";
 
 import { getIsAuthed } from "@/lib/auth";
 import { logoutFn } from "@/lib/functions/auth";
@@ -25,6 +15,7 @@ import {
   listProductsFn,
   dashboardStatsFn,
   createProductFn,
+  createProductsBulkFn,
   updateProductFn,
   deleteProductFn,
   toggleSoldFn,
@@ -32,50 +23,8 @@ import {
 } from "@/lib/functions/products";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Product, Availability } from "@/lib/products";
-import type { DashboardStats } from "@/lib/products.server";
-import { BulkDropDialog } from "@/components/admin/BulkDropDialog";
-import { AdvancedSettingsPanel } from "@/components/admin/AdvancedSettingsPanel";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const PER_PAGE = 8;
+const PER_PAGE = 24;
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ location }) => {
@@ -89,16 +38,7 @@ export const Route = createFileRoute("/admin")({
     if (location.pathname === "/admin/login") {
       return {
         products: { items: [], total: 0, page: 1, perPage: PER_PAGE, totalPages: 1 },
-        stats: {
-          total: 0,
-          available: 0,
-          sold: 0,
-          oneLeft: 0,
-          revenue: 0,
-          topBrands: [],
-          recentRevenue: 0,
-          averagePrice: 0,
-        },
+        stats: { total: 0, available: 0, sold: 0, oneLeft: 0, revenue: 0, topBrands: [], recentRevenue: 0, averagePrice: 0 },
       };
     }
     const [products, stats] = await Promise.all([
@@ -110,31 +50,44 @@ export const Route = createFileRoute("/admin")({
   component: AdminDashboard,
 });
 
-interface FormState {
-  id: string;
-  title: string;
-  brand: string;
-  era: string;
-  price: string;
-  size: string;
-  availability: Availability;
-  images: string[];
-  productId: string;
-  measurements: string;
+const CATEGORIES = ["TEE", "SHIRT", "HOODIE", "SWEATSHIRT", "JACKET", "JEANS", "PANTS", "SHORTS", "OTHER"];
+const CONDITIONS = ["Excellent", "Good", "Fair"];
+
+function slugify(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-const emptyForm: FormState = {
-  id: "",
-  title: "",
-  brand: "",
-  era: "",
-  price: "",
-  size: "",
-  availability: "available",
-  images: [],
-  productId: "",
-  measurements: "",
+interface SingleForm {
+  title: string;
+  size: string;
+  price: string;
+  category: string;
+  condition: string;
+  description: string;
+  images: string[];
+  uploading: boolean;
+}
+
+const emptySingle: SingleForm = {
+  title: "", size: "", price: "", category: "TEE", condition: "Good",
+  description: "", images: [], uploading: false,
 };
+
+interface BulkRow {
+  key: string;
+  title: string;
+  size: string;
+  price: string;
+  category: string;
+  condition: string;
+  description: string;
+  images: string[];
+  uploading: boolean;
+}
+
+function newRow(): BulkRow {
+  return { key: Math.random().toString(36).slice(2), title: "", size: "", price: "", category: "TEE", condition: "Good", description: "", images: [], uploading: false };
+}
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -142,29 +95,23 @@ function AdminDashboard() {
   const initial = Route.useLoaderData();
   const [data, setData] = useState(initial.products);
   const [stats, setStats] = useState(initial.stats);
-  const [availability, setAvailability] = useState<Availability | "all">("all");
-  const [sort, setSort] = useState<"featured" | "price-asc" | "price-desc" | "newest">("newest");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(PER_PAGE);
-
-  const [formOpen, setFormOpen] = useState(false);
-  const [bulkOpen, setBulkOpen] = useState(false);
-  const [editing, setEditing] = useState<Product | null>(null);
-  const [form, setForm] = useState<FormState>(emptyForm);
-  const [uploading, setUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "settings">("products");
+  const [addMode, setAddMode] = useState<"single" | "bulk">("single");
+  const [single, setSingle] = useState<SingleForm>(emptySingle);
+  const [bulkRows, setBulkRows] = useState<BulkRow[]>([newRow()]);
   const [saving, setSaving] = useState(false);
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searchActive, setSearchActive] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [editTarget, setEditTarget] = useState<Product | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
-  // Search state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [searching, setSearching] = useState(false);
+  if (pathname === "/admin/login") return <Outlet />;
 
   const reload = async () => {
     const [products, s] = await Promise.all([
-      listProductsFn({ data: { availability, sort, page, perPage } }),
+      listProductsFn({ data: { page: 1, perPage: PER_PAGE } }),
       dashboardStatsFn(),
     ]);
     setData(products);
@@ -173,129 +120,72 @@ function AdminDashboard() {
     setSearchQuery("");
   };
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
-    setPage(1);
-  }, [availability, sort, perPage]);
-
-  useEffect(() => {
-    reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availability, sort, page, perPage]);
-
-  // Debounced search
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchActive(false);
-      setSearchResults([]);
-      return;
-    }
-    const timer = setTimeout(async () => {
+    if (!searchQuery.trim()) { setSearchActive(false); setSearchResults([]); return; }
+    const t = setTimeout(async () => {
       setSearching(true);
       try {
-        const results = await searchProductsFn({ data: { query: searchQuery.trim() } });
-        setSearchResults(results);
-        setSearchActive(true);
-      } catch {
-        toast.error("Search failed");
-      } finally {
-        setSearching(false);
-      }
+        const r = await searchProductsFn({ data: { query: searchQuery.trim() } });
+        setSearchResults(r); setSearchActive(true);
+      } catch { toast.error("Search failed"); }
+      finally { setSearching(false); }
     }, 300);
-    return () => clearTimeout(timer);
+    return () => clearTimeout(t);
   }, [searchQuery]);
 
-  // /admin/login is a child route; render only its outlet (the login form)
-  // without the dashboard chrome when on that path.
-  if (pathname === "/admin/login") return <Outlet />;
-
-  const openCreate = () => {
-    setEditing(null);
-    setForm(emptyForm);
-    setFormOpen(true);
+  const logout = async () => {
+    try { await logoutFn(); } catch { /* ignore */ }
+    window.location.href = "/admin/login";
   };
 
-  const openEdit = (p: Product) => {
-    setEditing(p);
-    setForm({
-      id: p.id,
-      title: p.title,
-      brand: p.brand,
-      era: p.era,
-      price: String(p.price),
-      size: p.size,
-      availability: p.availability,
-      images: p.images,
-      productId: p.productId.join("\n"),
-      measurements: p.measurements.join("\n"),
-    });
-    setFormOpen(true);
+  const uploadFiles = async (files: FileList | null): Promise<string[]> => {
+    if (!files?.length) return [];
+    return Promise.all(Array.from(files).map((f) => uploadToCloudinary(f)));
   };
 
-  const onFiles = async (files: FileList | null) => {
-    if (!files?.length) return;
-    setUploading(true);
-    try {
-      const urls = await Promise.all(Array.from(files).map((f) => uploadToCloudinary(f)));
-      setForm((f) => ({ ...f, images: [...f.images, ...urls] }));
-      toast.success(`Uploaded ${urls.length} image(s)`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const save = async () => {
-    if (!form.id || !form.title || !form.price) {
-      toast.error("ID, title and price are required");
-      return;
-    }
+  const submitSingle = async () => {
+    if (!single.title || !single.price) { toast.error("Name and price are required"); return; }
     setSaving(true);
     try {
-      const payload = {
-        id: form.id,
-        title: form.title,
-        brand: form.brand,
-        era: form.era,
-        price: parseInt(form.price, 10),
-        size: form.size,
-        availability: form.availability,
-        images: form.images,
-        productId: form.productId
-          .split("\n")
-          .map((s) => s.trim())
-          .filter(Boolean),
-        measurements: form.measurements
-          .split("\n")
-          .map((s) => s.trim())
-          .filter(Boolean),
-      };
-      if (editing) {
-        await updateProductFn({ data: { id: editing.id, patch: payload } });
-        toast.success("Product updated");
-      } else {
-        await createProductFn({ data: payload });
-        toast.success("Product created");
-      }
-      setFormOpen(false);
+      const id = slugify(single.title) || `product-${Date.now()}`;
+      await createProductFn({
+        data: {
+          id, title: single.title, brand: single.category, era: single.condition,
+          price: parseInt(single.price, 10), size: single.size || "One Size",
+          availability: "available", images: single.images,
+          productId: single.description ? [single.description] : [],
+          measurements: [],
+        },
+      });
+      toast.success("Product added");
+      setSingle(emptySingle);
       await reload();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Save failed");
-    } finally {
-      setSaving(false);
-    }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setSaving(false); }
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
+  const submitBulk = async () => {
+    const ready = bulkRows.filter((r) => r.title && r.price);
+    if (!ready.length) { toast.error("Add at least one item with name and price"); return; }
+    setSaving(true);
     try {
-      await deleteProductFn({ data: { id: deleteTarget.id } });
-      toast.success("Product deleted");
-      setDeleteTarget(null);
+      await createProductsBulkFn({
+        data: {
+          items: ready.map((r) => ({
+            id: slugify(r.title) + "-" + Math.random().toString(36).slice(2, 6),
+            title: r.title, brand: r.category, era: r.condition,
+            price: parseInt(r.price, 10), size: r.size || "One Size",
+            availability: "available" as Availability, images: r.images,
+            productId: r.description ? [r.description] : [], measurements: [],
+          })),
+        },
+      });
+      toast.success(`Published ${ready.length} item${ready.length > 1 ? "s" : ""}`);
+      setBulkRows([newRow()]);
       await reload();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Delete failed");
-    }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setSaving(false); }
   };
 
   const toggle = async (p: Product) => {
@@ -303,431 +193,419 @@ function AdminDashboard() {
       await toggleSoldFn({ data: { id: p.id } });
       toast.success(p.availability === "sold" ? "Marked available" : "Marked sold");
       await reload();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Update failed");
-    }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
-  const logout = async () => {
+  const confirmDelete = async (p: Product) => {
     try {
-      await logoutFn();
-    } catch {
-      /* ignore */
-    }
-    navigate({ to: "/admin/login" });
+      await deleteProductFn({ data: { id: p.id } });
+      toast.success("Deleted");
+      setDeleteTarget(null);
+      await reload();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
-  // Determine which products to show
+  const bulkSold = async () => {
+    const available = data.items.filter((p) => p.availability !== "sold");
+    for (const p of available) { try { await toggleSoldFn({ data: { id: p.id } }); } catch { /* skip */ } }
+    toast.success(`Marked ${available.length} items sold`);
+    await reload();
+  };
+
   const displayedProducts = searchActive ? searchResults : data.items;
-  const totalCount = searchActive ? searchResults.length : data.total;
+  const availableCount = data.items.filter((p) => p.availability !== "sold").length;
+  const readyCount = bulkRows.filter((r) => r.title && r.price).length;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
-      <div className="flex items-end justify-between border-b border-hairline pb-6">
-        <div>
-          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-rust">
-            Console
-          </p>
-          <h1 className="mt-2 font-display text-4xl uppercase tracking-tight text-ink md:text-5xl">
-            Admin
-          </h1>
+    <div className="min-h-screen bg-[#111] text-white">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[#2a2a2a]">
+        <span className="font-bold text-[16px] uppercase tracking-widest">Admin</span>
+        <div className="flex items-center gap-4">
+          <span className="text-[12px] text-[#888]">Preloved Finds</span>
+          <button onClick={logout} className="flex items-center gap-1.5 text-[12px] text-[#888] hover:text-white transition-colors">
+            <LogOut className="h-4 w-4" /> Logout
+          </button>
         </div>
-        <Button variant="outline" onClick={logout}>
-          <LogOut className="mr-2 h-4 w-4" /> Logout
-        </Button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-6">
-        <StatCard label="Total" value={stats.total} />
-        <StatCard label="Available" value={stats.available} />
-        <StatCard label="1 Left" value={stats.oneLeft} />
-        <StatCard label="Sold" value={stats.sold} />
-        <StatCard label="Revenue (EGP)" value={stats.revenue.toLocaleString()} />
-        <StatCard label="Avg Price" value={`${stats.averagePrice} EGP`} />
-      </div>
-
-      {/* Secondary Stats */}
-      <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="30d Revenue" value={`${stats.recentRevenue.toLocaleString()} EGP`} />
-        {stats.topBrands.slice(0, 3).map((b) => (
-          <StatCard key={b.brand} label={`Top: ${b.brand}`} value={b.count} />
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-6 py-5 border-b border-[#2a2a2a]">
+        {[
+          { label: "TOTAL REVENUE", value: `${stats.revenue.toLocaleString()} EGP` },
+          { label: "AVG ORDER", value: `${stats.averagePrice.toLocaleString()} EGP (${stats.sold})` },
+          { label: "AVAILABLE", value: stats.available },
+          { label: "SOLD", value: stats.sold },
+        ].map((s) => (
+          <div key={s.label} className="bg-[#1a1a1a] border border-[#2a2a2a] px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#555] mb-1">{s.label}</p>
+            <p className="text-[22px] font-bold text-white leading-none">{s.value}</p>
+          </div>
         ))}
       </div>
 
-      {/* Controls */}
-      <div className="mt-10 flex flex-wrap items-center gap-3">
-        {/* Search */}
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-grey" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search products..."
-            className="pl-9"
-          />
-          {searching && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-grey border-t-transparent" />
-            </div>
-          )}
-        </div>
-
-        <Select
-          value={availability}
-          onValueChange={(v) => setAvailability(v as Availability | "all")}
-        >
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Availability" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="one-left">1 Left</SelectItem>
-            <SelectItem value="sold">Sold</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Sort" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="featured">Featured</SelectItem>
-            <SelectItem value="price-asc">Price low–high</SelectItem>
-            <SelectItem value="price-desc">Price high–low</SelectItem>
-            <SelectItem value="newest">Newest</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {searchActive && (
-          <Badge variant="secondary" className="text-xs">
-            {searchResults.length} result{searchResults.length !== 1 ? "s" : ""}
-          </Badge>
-        )}
-
-        <div className="ml-auto flex flex-wrap items-center gap-3">
-          <AdvancedSettingsPanel
-            perPage={perPage}
-            onPerPageChange={setPerPage}
-            onDataChanged={reload}
-          />
-          <Button
-            variant="outline"
-            className="border-rust text-rust hover:bg-rust hover:text-paper"
-            onClick={() => setBulkOpen(true)}
+      {/* Tabs */}
+      <div className="flex gap-0 px-6 border-b border-[#2a2a2a]">
+        {(["products", "orders", "settings"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-5 py-3 text-[12px] font-bold uppercase tracking-widest border-b-2 transition-colors ${
+              activeTab === tab ? "border-white text-white" : "border-transparent text-[#555] hover:text-[#aaa]"
+            }`}
           >
-            <Layers className="mr-2 h-4 w-4" /> Bulk Drop
-          </Button>
-          <Button onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" /> Add Product
-          </Button>
-        </div>
+            {tab}
+          </button>
+        ))}
       </div>
 
-      {/* Products Table */}
-      <div className="mt-6 rounded-md border border-hairline">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">Img</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Brand</TableHead>
-              <TableHead>Era</TableHead>
-              <TableHead>Size</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {displayedProducts.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={8} className="py-10 text-center text-grey">
-                  {searchActive ? "No results found" : "No products"}
-                </TableCell>
-              </TableRow>
-            )}
-            {displayedProducts.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell>
-                  {p.images[0] ? (
-                    <img
-                      src={p.images[0]}
-                      alt={p.title}
-                      className="h-10 w-10 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded bg-surface" />
-                  )}
-                </TableCell>
-                <TableCell className="max-w-[180px] truncate font-medium" title={p.title}>
-                  {p.title}
-                </TableCell>
-                <TableCell className="text-grey">{p.brand}</TableCell>
-                <TableCell className="text-xs text-grey">{p.era}</TableCell>
-                <TableCell className="text-xs text-grey">{p.size}</TableCell>
-                <TableCell className="font-mono text-xs">{p.price} EGP</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      p.availability === "sold"
-                        ? "destructive"
-                        : p.availability === "one-left"
-                          ? "default"
-                          : "secondary"
-                    }
-                  >
-                    <div className="flex items-center gap-1">
-                      {p.availability === "sold" ? (
-                        <EyeOff className="h-3 w-3" />
-                      ) : (
-                        <Eye className="h-3 w-3" />
-                      )}
-                      {p.availability === "one-left" ? "1 Left" : p.availability}
-                    </div>
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-rust text-rust hover:bg-rust hover:text-paper"
-                      onClick={() => toggle(p)}
-                      title={p.availability === "sold" ? "Mark available" : "Mark sold"}
-                    >
-                      <ArrowUpDown className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => openEdit(p)} title="Edit">
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setDeleteTarget(p)}
-                      title="Delete"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {!searchActive && data.totalPages > 1 && (
-        <nav className="mt-6 flex items-center justify-center gap-2">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page <= 1}
-            className="h-9 border border-hairline px-3 text-xs font-semibold text-ink hover:border-rust hover:text-rust disabled:opacity-30"
-          >
-            ← Prev
-          </button>
-          {Array.from({ length: data.totalPages }, (_, i) => i + 1).map((n) => (
-            <button
-              key={n}
-              onClick={() => setPage(n)}
-              className={`h-9 w-9 border text-xs font-semibold ${n === data.page ? "border-rust bg-rust text-paper" : "border-hairline text-ink hover:border-rust hover:text-rust"}`}
-            >
-              {n}
-            </button>
-          ))}
-          <button
-            onClick={() => setPage(Math.min(data.totalPages, page + 1))}
-            disabled={page >= data.totalPages}
-            className="h-9 border border-hairline px-3 text-xs font-semibold text-ink hover:border-rust hover:text-rust disabled:opacity-30"
-          >
-            Next →
-          </button>
-        </nav>
-      )}
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Edit Product" : "Add Product"}</DialogTitle>
-            <DialogDescription>
-              {editing ? "Update the product details below." : "Fill in the product details."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-2">
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="ID (slug)" required>
-                <Input
-                  value={form.id}
-                  disabled={!!editing}
-                  onChange={(e) => setForm({ ...form, id: e.target.value })}
-                  placeholder="levis-501-black"
-                />
-              </Field>
-              <Field label="Title" required>
-                <Input
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                />
-              </Field>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Brand">
-                <Input
-                  value={form.brand}
-                  onChange={(e) => setForm({ ...form, brand: e.target.value })}
-                />
-              </Field>
-              <Field label="Era">
-                <Input
-                  value={form.era}
-                  onChange={(e) => setForm({ ...form, era: e.target.value })}
-                />
-              </Field>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <Field label="Price (EGP)" required>
-                <Input
-                  type="number"
-                  value={form.price}
-                  onChange={(e) => setForm({ ...form, price: e.target.value })}
-                />
-              </Field>
-              <Field label="Size">
-                <Input
-                  value={form.size}
-                  onChange={(e) => setForm({ ...form, size: e.target.value })}
-                />
-              </Field>
-              <Field label="Availability">
-                <Select
-                  value={form.availability}
-                  onValueChange={(v) => setForm({ ...form, availability: v as Availability })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="available">Available</SelectItem>
-                    <SelectItem value="one-left">1 Left</SelectItem>
-                    <SelectItem value="sold">Sold</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-
-            <Field label="Images">
-              <div className="flex flex-wrap gap-2">
-                {form.images.map((url, i) => (
-                  <div key={i} className="relative">
-                    <img src={url} alt="" className="h-16 w-16 rounded object-cover" />
+      <div className="px-6 py-6 max-w-5xl">
+        {activeTab === "products" && (
+          <>
+            {/* Add product panel */}
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-5 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[12px] font-bold uppercase tracking-widest text-white">Add Product</p>
+                <div className="flex gap-1">
+                  {(["single", "bulk"] as const).map((m) => (
                     <button
-                      type="button"
-                      onClick={() =>
-                        setForm({ ...form, images: form.images.filter((_, j) => j !== i) })
-                      }
-                      className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-paper"
+                      key={m}
+                      onClick={() => setAddMode(m)}
+                      className={`px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest border transition-colors ${
+                        addMode === m ? "bg-white text-[#111] border-white" : "bg-transparent text-[#888] border-[#333] hover:border-[#555]"
+                      }`}
                     >
-                      ×
+                      {m === "single" ? "Single Item" : "Bulk Drop"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Single item form */}
+              {addMode === "single" && (
+                <div className="space-y-3">
+                  <input
+                    placeholder="Name *"
+                    value={single.title}
+                    onChange={(e) => setSingle({ ...single, title: e.target.value })}
+                    className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]"
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <input placeholder="Size (e.g. L, XL, OS)" value={single.size} onChange={(e) => setSingle({ ...single, size: e.target.value })} className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]" />
+                    <input placeholder="Price (EGP)" type="number" value={single.price} onChange={(e) => setSingle({ ...single, price: e.target.value })} className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <select value={single.category} onChange={(e) => setSingle({ ...single, category: e.target.value })} className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]">
+                      {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <select value={single.condition} onChange={(e) => setSingle({ ...single, condition: e.target.value })} className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]">
+                      {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <textarea placeholder="Description (optional)" value={single.description} onChange={(e) => setSingle({ ...single, description: e.target.value })} rows={2} className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444] resize-none" />
+                  {/* Images */}
+                  <div className="flex flex-wrap gap-2 items-center">
+                    {single.images.map((url, i) => (
+                      <div key={i} className="relative">
+                        <img src={url} className="h-14 w-14 object-cover" />
+                        <button type="button" onClick={() => setSingle({ ...single, images: single.images.filter((_, j) => j !== i) })} className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]">×</button>
+                      </div>
+                    ))}
+                    <label className="flex items-center gap-2 bg-[#222] border border-[#333] px-3 py-2 text-[12px] text-[#888] hover:border-[#555] cursor-pointer">
+                      <ImagePlus className="h-4 w-4" />
+                      {single.images.length === 0 ? "Upload main image" : "+ Add extra images"}
+                      <input type="file" accept="image/*" multiple className="hidden" disabled={single.uploading}
+                        onChange={async (e) => {
+                          setSingle((s) => ({ ...s, uploading: true }));
+                          try { const urls = await uploadFiles(e.target.files); setSingle((s) => ({ ...s, images: [...s.images, ...urls], uploading: false })); }
+                          catch { toast.error("Upload failed"); setSingle((s) => ({ ...s, uploading: false })); }
+                        }} />
+                    </label>
+                    {single.uploading && <span className="text-[11px] text-[#888]">Uploading…</span>}
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button onClick={submitSingle} disabled={saving} className="bg-white text-[#111] px-5 py-2 text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-50">
+                      {saving ? "Adding…" : "+ ADD PRODUCT"}
                     </button>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
+
+              {/* Bulk drop form */}
+              {addMode === "bulk" && (
+                <div className="space-y-2">
+                  {bulkRows.map((row, idx) => (
+                    <div key={row.key} className="flex flex-wrap items-center gap-2 bg-[#111] border border-[#2a2a2a] p-2">
+                      {/* Image slots */}
+                      <div className="flex gap-1">
+                        {row.images.slice(0, 2).map((url, i) => (
+                          <div key={i} className="relative">
+                            <img src={url} className="h-9 w-9 object-cover" />
+                            <button type="button" onClick={() => setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, images: r.images.filter((_, j) => j !== i) } : r))} className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full h-3.5 w-3.5 flex items-center justify-center text-[8px]">×</button>
+                          </div>
+                        ))}
+                        {row.images.length < 2 && (
+                          <label className="h-9 w-9 flex items-center justify-center bg-[#1a1a1a] border border-[#333] cursor-pointer hover:border-[#555]">
+                            <Plus className="h-3.5 w-3.5 text-[#555]" />
+                            <input type="file" accept="image/*" multiple className="hidden"
+                              onChange={async (e) => {
+                                setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, uploading: true } : r));
+                                try {
+                                  const urls = await uploadFiles(e.target.files);
+                                  setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, images: [...r.images, ...urls].slice(0, 4), uploading: false } : r));
+                                } catch { toast.error("Upload failed"); setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, uploading: false } : r)); }
+                              }} />
+                          </label>
+                        )}
+                      </div>
+                      <input placeholder="Size" value={row.size} onChange={(e) => setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, size: e.target.value } : r))} className="w-20 bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555] placeholder:text-[#444]" />
+                      <input placeholder="Price" type="number" value={row.price} onChange={(e) => setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, price: e.target.value } : r))} className="w-24 bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555] placeholder:text-[#444]" />
+                      <select value={row.category} onChange={(e) => setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, category: e.target.value } : r))} className="bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555]">
+                        {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <select value={row.condition} onChange={(e) => setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, condition: e.target.value } : r))} className="bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555]">
+                        {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <input placeholder="Name *" value={row.title} onChange={(e) => setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, title: e.target.value } : r))} className="flex-1 min-w-[120px] bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555] placeholder:text-[#444]" />
+                      <input placeholder="Description (optional)" value={row.description} onChange={(e) => setBulkRows((prev) => prev.map((r) => r.key === row.key ? { ...r, description: e.target.value } : r))} className="flex-1 min-w-[120px] bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555] placeholder:text-[#444]" />
+                      {bulkRows.length > 1 && (
+                        <button type="button" onClick={() => setBulkRows((prev) => prev.filter((r) => r.key !== row.key))} className="text-[#555] hover:text-red-400 transition-colors"><X className="h-4 w-4" /></button>
+                      )}
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between pt-2">
+                    <button type="button" onClick={() => setBulkRows((prev) => [...prev, newRow()])} className="flex items-center gap-1.5 text-[12px] text-[#888] hover:text-white border border-[#333] px-3 py-2 hover:border-[#555] transition-colors">
+                      <Plus className="h-3.5 w-3.5" /> ADD ANOTHER ITEM
+                    </button>
+                    <button onClick={submitBulk} disabled={saving || readyCount === 0} className="flex items-center gap-2 bg-white text-[#111] px-5 py-2 text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-40">
+                      {saving ? "Publishing…" : `Publish Drop (${readyCount} Item${readyCount !== 1 ? "s" : ""}) ✓`}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#555]" />
               <input
-                type="file"
-                accept="image/*"
-                multiple
-                disabled={uploading}
-                onChange={(e) => onFiles(e.target.files)}
-                className="mt-2 block text-xs"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, tag, or size…"
+                className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[13px] pl-9 pr-3 py-2.5 outline-none focus:border-[#444] placeholder:text-[#444]"
               />
-              {uploading && <p className="text-xs text-grey">Uploading…</p>}
-            </Field>
+              {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin rounded-full border-2 border-[#555] border-t-white" />}
+            </div>
 
-            <Field label="Product details (one per line)">
-              <Textarea
-                value={form.productId}
-                onChange={(e) => setForm({ ...form, productId: e.target.value })}
-                rows={3}
-              />
-            </Field>
+            {/* List header */}
+            <div className="flex items-center gap-3 mb-3">
+              <p className="text-[12px] font-bold uppercase tracking-widest text-white">
+                Available ({availableCount})
+              </p>
+              <button onClick={bulkSold} className="px-3 py-1 bg-[#2a2a2a] text-[11px] font-semibold uppercase tracking-widest text-[#aaa] hover:text-white border border-[#333] hover:border-[#555] transition-colors">
+                Bulk sold
+              </button>
+              <button className="px-3 py-1 bg-[#2a2a2a] text-[11px] font-semibold uppercase tracking-widest text-[#aaa] hover:text-white border border-[#333] hover:border-[#555] transition-colors">
+                ⇅ Reorder
+              </button>
+            </div>
 
-            <Field label="Measurements (one per line)">
-              <Textarea
-                value={form.measurements}
-                onChange={(e) => setForm({ ...form, measurements: e.target.value })}
-                rows={3}
-              />
-            </Field>
+            {/* Product rows */}
+            <div className="space-y-1">
+              {displayedProducts.length === 0 && (
+                <p className="text-[13px] text-[#555] py-8 text-center">
+                  {searchActive ? "No results found" : "No products yet"}
+                </p>
+              )}
+              {displayedProducts.map((p) => (
+                <div key={p.id} className="flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-2.5 hover:border-[#333] transition-colors">
+                  {p.images[0] ? (
+                    <img src={p.images[0]} alt={p.title} className="h-10 w-10 object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="h-10 w-10 bg-[#2a2a2a] flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-medium text-white truncate">{p.title}</p>
+                    <p className="text-[11px] text-[#555]">
+                      {p.era} {p.brand} · LE {p.price.toLocaleString()} · {p.size}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button
+                      onClick={() => toggle(p)}
+                      className={`px-3 py-1 text-[11px] font-bold uppercase tracking-widest border transition-colors ${
+                        p.availability === "sold"
+                          ? "bg-[#2a2a2a] text-[#888] border-[#333] hover:border-white hover:text-white"
+                          : "bg-white text-[#111] border-white hover:bg-[#eee]"
+                      }`}
+                    >
+                      {p.availability === "sold" ? "Unsell" : "Sold"}
+                    </button>
+                    <button
+                      onClick={() => setEditTarget(p)}
+                      className="px-3 py-1 text-[11px] font-bold uppercase tracking-widest border border-[#333] text-[#888] hover:border-white hover:text-white transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setDeleteTarget(p)}
+                      className="p-1.5 text-[#555] hover:text-red-400 transition-colors"
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {activeTab === "orders" && (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <p className="text-[12px] font-bold uppercase tracking-widest text-[#555] mb-2">Orders</p>
+            <p className="text-[13px] text-[#444]">Order management coming soon.</p>
           </div>
+        )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={save} disabled={saving}>
-              {saving ? "Saving…" : "Save"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        {activeTab === "settings" && (
+          <div className="space-y-6 max-w-md">
+            <p className="text-[12px] font-bold uppercase tracking-widest text-[#888]">Settings</p>
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-4 space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[#555]">Danger Zone</p>
+              <p className="text-[12px] text-[#666]">Permanently delete all sold items from the catalog.</p>
+              <button
+                onClick={async () => {
+                  if (!confirm("Delete all sold items? This cannot be undone.")) return;
+                  const sold = data.items.filter((p) => p.availability === "sold");
+                  for (const p of sold) { try { await deleteProductFn({ data: { id: p.id } }); } catch { /* skip */ } }
+                  toast.success(`Cleared ${sold.length} sold items`);
+                  await reload();
+                }}
+                className="px-4 py-2 bg-red-900/50 border border-red-800 text-red-400 text-[12px] font-bold uppercase tracking-widest hover:bg-red-900 transition-colors"
+              >
+                Clear all sold items
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete product?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This permanently removes &ldquo;{deleteTarget?.title}&rdquo;. This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Edit modal */}
+      {editTarget && (
+        <EditModal
+          product={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={async () => { setEditTarget(null); await reload(); }}
+        />
+      )}
 
-      <BulkDropDialog open={bulkOpen} onOpenChange={setBulkOpen} onDone={reload} />
+      {/* Delete confirm */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 max-w-sm w-full mx-4">
+            <p className="text-[14px] font-bold text-white mb-2">Delete product?</p>
+            <p className="text-[13px] text-[#888] mb-5">
+              This permanently removes &ldquo;{deleteTarget.title}&rdquo;. Cannot be undone.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2 border border-[#333] text-[12px] font-bold uppercase tracking-widest text-[#888] hover:border-[#555] transition-colors">Cancel</button>
+              <button onClick={() => confirmDelete(deleteTarget)} className="flex-1 py-2 bg-red-700 text-white text-[12px] font-bold uppercase tracking-widest hover:bg-red-600 transition-colors">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function Field({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label>
-        {label}
-        {required && <span className="text-destructive"> *</span>}
-      </Label>
-      {children}
-    </div>
-  );
-}
+function EditModal({ product, onClose, onSaved }: { product: Product; onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState({
+    title: product.title,
+    size: product.size,
+    price: String(product.price),
+    category: product.brand,
+    condition: product.era,
+    description: product.productId.join("\n"),
+    images: product.images,
+    uploading: false,
+  });
+  const [saving, setSaving] = useState(false);
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
+  const uploadFiles = async (files: FileList | null): Promise<string[]> => {
+    if (!files?.length) return [];
+    return Promise.all(Array.from(files).map((f) => uploadToCloudinary(f)));
+  };
+
+  const save = async () => {
+    if (!form.title || !form.price) { toast.error("Name and price required"); return; }
+    setSaving(true);
+    try {
+      await updateProductFn({
+        data: {
+          id: product.id,
+          patch: {
+            title: form.title, brand: form.category, era: form.condition,
+            price: parseInt(form.price, 10), size: form.size || "One Size",
+            availability: product.availability, images: form.images,
+            productId: form.description.split("\n").map((s) => s.trim()).filter(Boolean),
+            measurements: product.measurements,
+          },
+        },
+      });
+      toast.success("Updated");
+      onSaved();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setSaving(false); }
+  };
+
   return (
-    <div className="border border-hairline bg-surface p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-grey">{label}</p>
-      <p className="mt-2 font-display text-2xl uppercase text-ink">{value}</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="bg-[#1a1a1a] border border-[#2a2a2a] w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#2a2a2a]">
+          <p className="text-[13px] font-bold uppercase tracking-widest text-white">Edit Product</p>
+          <button onClick={onClose} className="text-[#555] hover:text-white transition-colors"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <input placeholder="Name *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]" />
+          <div className="grid grid-cols-2 gap-3">
+            <input placeholder="Size" value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })} className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]" />
+            <input placeholder="Price (EGP)" type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]">
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })} className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]">
+              {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <textarea placeholder="Description (optional)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444] resize-none" />
+          <div className="flex flex-wrap gap-2 items-center">
+            {form.images.map((url, i) => (
+              <div key={i} className="relative">
+                <img src={url} className="h-14 w-14 object-cover" />
+                <button type="button" onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })} className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]">×</button>
+              </div>
+            ))}
+            <label className="flex items-center gap-2 bg-[#222] border border-[#333] px-3 py-2 text-[12px] text-[#888] hover:border-[#555] cursor-pointer">
+              <ImagePlus className="h-4 w-4" /> Add image
+              <input type="file" accept="image/*" multiple className="hidden" disabled={form.uploading}
+                onChange={async (e) => {
+                  setForm((f) => ({ ...f, uploading: true }));
+                  try { const urls = await uploadFiles(e.target.files); setForm((f) => ({ ...f, images: [...f.images, ...urls], uploading: false })); }
+                  catch { toast.error("Upload failed"); setForm((f) => ({ ...f, uploading: false })); }
+                }} />
+            </label>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <button onClick={onClose} className="flex-1 py-2.5 border border-[#333] text-[12px] font-bold uppercase tracking-widest text-[#888] hover:border-[#555] transition-colors">Cancel</button>
+            <button onClick={save} disabled={saving} className="flex-1 py-2.5 bg-white text-[#111] text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-50">
+              {saving ? "Saving…" : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

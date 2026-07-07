@@ -29,7 +29,7 @@ function AdminLogin() {
       const res = await loginFn({ data: { password } });
       if (res.ok) {
         toast.success("Welcome back");
-        navigate({ to: "/admin" });
+        window.location.href = "/admin";
       } else {
         toast.error(res.error ?? "Login failed");
       }
