@@ -1,0 +1,101 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - banner [ref=f3e3]:
+      - generic [ref=f3e4]:
+        - generic [ref=f3e5]:
+          - button "Open menu" [ref=f3e6]:
+            - img [ref=f3e7]
+          - navigation [ref=f3e8]:
+            - link "Shop All" [ref=f3e9] [cursor=pointer]:
+              - /url: /shop
+              - text: Shop All
+            - link "About" [ref=f3e10] [cursor=pointer]:
+              - /url: /about
+              - text: About
+            - link "Contact" [ref=f3e11] [cursor=pointer]:
+              - /url: /contact
+              - text: Contact
+        - link "Preloved Finds — home" [ref=f3e12] [cursor=pointer]:
+          - /url: /
+          - img "Preloved Finds" [ref=f3e13]
+        - button "Cart (0)" [ref=f3e15]:
+          - img [ref=f3e16]
+    - dialog "Shopping cart" [ref=f3e19]:
+      - generic [ref=f3e20]:
+        - paragraph [ref=f3e21]: Bag
+        - button "Close cart" [ref=f3e22]:
+          - img [ref=f3e23]
+      - generic [ref=f3e27]:
+        - img [ref=f3e29]
+        - paragraph [ref=f3e32]: Your bag is empty
+        - paragraph [ref=f3e33]: Add some pieces to get started
+        - button "Shop All" [ref=f3e34]
+    - dialog "Navigation" [ref=f3e35]:
+      - generic [ref=f3e36]:
+        - img "Preloved Finds" [ref=f3e37]
+        - button "Close menu" [ref=f3e38]:
+          - img [ref=f3e39]
+      - navigation [ref=f3e42]:
+        - link "Shop All" [ref=f3e43] [cursor=pointer]:
+          - /url: /shop
+        - link "About" [ref=f3e44] [cursor=pointer]:
+          - /url: /about
+        - link "Contact" [ref=f3e45] [cursor=pointer]:
+          - /url: /contact
+      - paragraph [ref=f3e47]: Preloved Finds · Cairo
+    - main [ref=f3e48]:
+      - generic [ref=f3e49]:
+        - generic [ref=f3e50]:
+          - img "Featured vintage piece" [ref=f3e52]
+          - generic [ref=f3e53]:
+            - generic [ref=f3e54]:
+              - paragraph [ref=f3e55]: WORN ONCE.
+              - paragraph [ref=f3e56]: WORN WELL.
+              - paragraph [ref=f3e57]: NOW YOURS.
+            - link "Shop All" [ref=f3e58] [cursor=pointer]:
+              - /url: /shop
+        - generic [ref=f3e60]:
+          - heading "New Picks" [level=2] [ref=f3e61]
+          - link "View all" [ref=f3e62] [cursor=pointer]:
+            - /url: /shop
+        - generic [ref=f3e64]:
+          - paragraph [ref=f3e65]: Newsletter
+          - heading "Sign up to access our fly community perks" [level=2] [ref=f3e66]
+          - paragraph [ref=f3e67]: New drops, early access, and member-only pricing — straight to your inbox.
+          - generic [ref=f3e68]:
+            - textbox "Email address" [ref=f3e69]:
+              - /placeholder: Email
+            - button "Subscribe" [ref=f3e70]
+          - paragraph [ref=f3e71]: No spam. Unsubscribe anytime.
+    - contentinfo [ref=f3e72]:
+      - generic [ref=f3e74]:
+        - generic [ref=f3e75]:
+          - link "Preloved Finds" [ref=f3e76] [cursor=pointer]:
+            - /url: /
+            - img "Preloved Finds" [ref=f3e77]
+          - paragraph [ref=f3e78]: Curated vintage & pre-owned pieces. One-of-one, shipped from Cairo.
+        - generic [ref=f3e79]:
+          - paragraph [ref=f3e80]: Navigate
+          - list [ref=f3e81]:
+            - listitem [ref=f3e82]:
+              - link "Shop All" [ref=f3e83] [cursor=pointer]:
+                - /url: /shop
+            - listitem [ref=f3e84]:
+              - link "About Us" [ref=f3e85] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=f3e86]:
+              - link "Contact" [ref=f3e87] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=f3e88]:
+          - paragraph [ref=f3e89]: Get in Touch
+          - list [ref=f3e90]:
+            - listitem [ref=f3e91]:
+              - link "Instagram" [ref=f3e92] [cursor=pointer]:
+                - /url: https://www.instagram.com/preloved.finds._
+            - listitem [ref=f3e93]:
+              - link "Contact" [ref=f3e94] [cursor=pointer]:
+                - /url: /contact
+      - generic [ref=f3e96]:
+        - paragraph [ref=f3e97]: © 2026 Preloved Finds. All rights reserved.
+        - paragraph [ref=f3e98]: Terms & Policies
+  - region "Notifications alt+T"
