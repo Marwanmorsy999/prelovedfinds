@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { ShoppingBag, X, Menu } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
