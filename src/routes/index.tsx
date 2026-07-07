@@ -45,7 +45,7 @@ function Home() {
           </h1>
           <a
             href="/shop"
-            className="inline-flex h-12 items-center justify-center bg-white text-[#1a1a1a] px-10 text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-[#f4f4f4] transition-colors"
+            className="inline-flex h-12 items-center justify-center bg-[#E8441A] text-white px-10 text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-[#c73a15] transition-colors"
           >
             Shop All
           </a>
@@ -95,22 +95,6 @@ function Home() {
               </a>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Story strip */}
-      <section className="border-t border-[#e5e7eb] bg-[#f9fafb]">
-        <div className="mx-auto max-w-7xl px-4 py-14 md:px-8 text-center">
-          <p className="text-[13px] text-[#6b7280] uppercase tracking-widest mb-3">Our Story</p>
-          <p className="mx-auto max-w-lg text-[15px] text-[#1a1a1a] leading-relaxed">
-            Hand-picked from Cairo's hidden markets. Every piece has a story — curated for character, condition, and place in fashion history.
-          </p>
-          <a
-            href="/about"
-            className="mt-6 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors"
-          >
-            Read our story
-          </a>
         </div>
       </section>
 

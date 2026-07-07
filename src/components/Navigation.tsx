@@ -1,7 +1,8 @@
 import { useRouterState, Link } from "@tanstack/react-router";
-import { ShoppingBag, X, Search, Menu } from "lucide-react";
+import { ShoppingBag, X, Menu } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
+import { Logo } from "@/components/Logo";
 
 export function Navigation() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -14,10 +15,7 @@ export function Navigation() {
   const cartRef = useRef<HTMLDivElement>(null);
   const cartTriggerRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    setMobileOpen(false);
-    setCartOpen(false);
-  }, [pathname]);
+  useEffect(() => { setMobileOpen(false); setCartOpen(false); }, [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = cartOpen || mobileOpen ? "hidden" : "";
@@ -25,33 +23,25 @@ export function Navigation() {
   }, [cartOpen, mobileOpen]);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (cartRef.current && !cartRef.current.contains(e.target as Node)) {
-        setCartOpen(false);
-      }
+    const handler = (e: MouseEvent) => {
+      if (cartRef.current && !cartRef.current.contains(e.target as Node)) setCartOpen(false);
     };
-    if (cartOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    if (cartOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [cartOpen]);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         if (cartOpen) { setCartOpen(false); cartTriggerRef.current?.focus(); }
         if (mobileOpen) setMobileOpen(false);
       }
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
   }, [cartOpen, mobileOpen]);
 
-  const collectionLinks = [
-    { label: "Shop All", href: "/shop" },
-    { label: "About", href: "/about" },
-    { label: "Contact", href: "/contact" },
-  ];
-
-  const menuItems = [
+  const navLinks = [
     { label: "Shop All", href: "/shop" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
@@ -61,192 +51,172 @@ export function Navigation() {
   const cartTotal = items.reduce((sum, i) => sum + i.price, 0);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#e5e7eb]">
-      {/* Main nav row */}
-      <div className="flex h-14 items-center justify-between px-4 md:px-8">
-        {/* Left: hamburger on mobile, search on desktop */}
-        <div className="flex items-center gap-3 w-1/3">
-          <button
-            className="md:hidden p-1 text-[#1a1a1a]"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <button
-            className="hidden md:flex p-1 text-[#6b7280] hover:text-[#1a1a1a] transition-colors"
-            aria-label="Search"
-          >
-            <Search className="h-[18px] w-[18px]" />
-          </button>
-        </div>
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e5e7eb]/80 transition-all duration-300">
+        <div className="mx-auto max-w-7xl flex h-16 items-center justify-between px-4 md:px-8">
 
-        {/* Center: wordmark */}
-        <Link
-          to="/"
-          className="flex items-center justify-center w-1/3 text-center"
-          aria-label="Preloved Finds — home"
-        >
-          <span className="font-bold text-[18px] tracking-[0.04em] text-[#1a1a1a] uppercase">
-            Preloved Finds
-          </span>
-        </Link>
+          {/* Left: hamburger mobile / nav links desktop */}
+          <div className="flex items-center gap-8 w-1/3">
+            <button
+              className="md:hidden p-1 text-[#1a1a1a] hover:text-[#E8441A] transition-colors"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <nav className="hidden md:flex items-center gap-7">
+              {navLinks.map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={`relative text-[12px] font-semibold uppercase tracking-widest transition-colors duration-200 group ${
+                      active ? "text-[#E8441A]" : "text-[#6b7280] hover:text-[#1a1a1a]"
+                    }`}
+                  >
+                    {item.label}
+                    <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-[#E8441A] transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"}`} />
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
 
-        {/* Right: cart */}
-        <div className="flex items-center justify-end gap-4 w-1/3">
-          <div className="relative" ref={cartRef}>
+          {/* Center: logo */}
+          <Link
+            to="/"
+            className="flex items-center justify-center w-1/3 hover:opacity-85 transition-opacity duration-200"
+            aria-label="Preloved Finds — home"
+          >
+            <Logo className="h-11 w-auto" />
+          </Link>
+
+          {/* Right: cart */}
+          <div className="flex items-center justify-end w-1/3" ref={cartRef}>
             <button
               ref={cartTriggerRef}
               onClick={() => setCartOpen(!cartOpen)}
-              className="relative flex items-center gap-1.5 text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+              className="relative flex items-center gap-2 text-[#1a1a1a] hover:text-[#E8441A] transition-colors duration-200 group"
               aria-label={`Cart (${count})`}
-              aria-expanded={cartOpen}
             >
-              <ShoppingBag className="h-5 w-5" />
+              <ShoppingBag className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
               {count > 0 && (
-                <span className="text-[12px] font-medium">{count}</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#E8441A] text-[10px] font-bold text-white">
+                  {count}
+                </span>
               )}
             </button>
-
-            {/* Cart drawer */}
-            {cartOpen && (
-              <>
-                <div
-                  className="fixed inset-0 bg-black/20 z-40"
-                  onClick={() => setCartOpen(false)}
-                />
-                <div
-                  id="cart-panel"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Shopping cart"
-                  className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white z-50 flex flex-col shadow-xl"
-                >
-                  {/* Cart header */}
-                  <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e7eb]">
-                    <p className="text-[14px] font-semibold uppercase tracking-widest text-[#1a1a1a]">
-                      Your Cart ({count})
-                    </p>
-                    <button
-                      onClick={() => { setCartOpen(false); cartTriggerRef.current?.focus(); }}
-                      className="text-[#6b7280] hover:text-[#1a1a1a] transition-colors"
-                      aria-label="Close cart"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  {/* Cart items */}
-                  <div className="flex-1 overflow-auto px-5 py-4 space-y-4">
-                    {items.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center h-full text-center gap-3">
-                        <ShoppingBag className="h-10 w-10 text-[#d1d5db]" />
-                        <p className="text-[13px] text-[#6b7280]">Your cart is empty</p>
-                        <button
-                          onClick={() => setCartOpen(false)}
-                          className="text-[12px] underline text-[#1a1a1a] hover:no-underline"
-                        >
-                          Continue shopping
-                        </button>
-                      </div>
-                    ) : (
-                      items.map((item) => (
-                        <div key={item.id} className="flex items-start gap-4">
-                          <div className="h-20 w-16 bg-[#f4f4f4] flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-medium text-[#1a1a1a] leading-tight">{item.title}</p>
-                            <p className="text-[12px] text-[#6b7280] mt-1">
-                              LE {item.price.toLocaleString()}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => remove(item.id)}
-                            className="text-[#9ca3af] hover:text-[#1a1a1a] transition-colors mt-0.5"
-                            aria-label={`Remove ${item.title}`}
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Cart footer */}
-                  {items.length > 0 && (
-                    <div className="px-5 py-4 border-t border-[#e5e7eb] space-y-3">
-                      <div className="flex items-center justify-between text-[13px]">
-                        <span className="font-medium text-[#1a1a1a]">Subtotal</span>
-                        <span className="font-semibold text-[#1a1a1a]">
-                          LE {cartTotal.toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-[#6b7280]">Shipping calculated at checkout</p>
-                      <button
-                        onClick={() => setCartOpen(false)}
-                        className="w-full bg-[#1a1a1a] text-white py-3.5 text-[13px] font-semibold uppercase tracking-widest hover:bg-black transition-colors"
-                      >
-                        Checkout
-                      </button>
-                      <button
-                        onClick={() => setCartOpen(false)}
-                        className="w-full border border-[#e5e7eb] py-3 text-[12px] font-medium text-[#1a1a1a] hover:border-[#1a1a1a] transition-colors"
-                      >
-                        Continue Shopping
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Desktop category nav */}
-      <div className="hidden md:flex items-center justify-center gap-8 py-2 border-t border-[#e5e7eb]">
-        {collectionLinks.map((item) => {
-          const isActive = pathname === item.href || (item.href === "/shop" && pathname === "/shop");
-          return (
-            <a
-              key={item.label}
-              href={item.href}
-              className={`text-[12px] font-medium uppercase tracking-widest transition-colors ${
-                isActive ? "text-[#1a1a1a]" : "text-[#6b7280] hover:text-[#1a1a1a]"
-              }`}
-            >
-              {item.label}
-            </a>
-          );
-        })}
-      </div>
+      {/* Cart overlay + drawer */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${cartOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        onClick={() => setCartOpen(false)}
+      />
+      <div
+        className={`fixed top-0 right-0 bottom-0 z-50 w-full max-w-[380px] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${cartOpen ? "translate-x-0" : "translate-x-full"}`}
+        role="dialog" aria-modal="true" aria-label="Shopping cart"
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#f0f0f0]">
+          <p className="text-[13px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+            Bag {count > 0 && <span className="text-[#E8441A]">({count})</span>}
+          </p>
+          <button
+            onClick={() => { setCartOpen(false); cartTriggerRef.current?.focus(); }}
+            className="p-1 text-[#9ca3af] hover:text-[#1a1a1a] transition-colors rounded-full hover:bg-[#f4f4f4]"
+            aria-label="Close cart"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
-      {/* Mobile menu overlay */}
-      {mobileOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Navigation"
-          className="fixed inset-0 z-50 bg-white flex flex-col md:hidden"
-        >
-          <div className="flex items-center justify-between px-4 h-14 border-b border-[#e5e7eb]">
-            <span className="font-bold text-[16px] tracking-[0.04em] uppercase">Preloved Finds</span>
-            <button onClick={() => setMobileOpen(false)} aria-label="Close menu">
-              <X className="h-5 w-5 text-[#1a1a1a]" />
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-4 text-center py-20">
+              <div className="h-16 w-16 rounded-full bg-[#f4f4f4] flex items-center justify-center">
+                <ShoppingBag className="h-7 w-7 text-[#d1d5db]" />
+              </div>
+              <p className="text-[14px] font-semibold text-[#1a1a1a]">Your bag is empty</p>
+              <p className="text-[12px] text-[#9ca3af]">Add some pieces to get started</p>
+              <button
+                onClick={() => setCartOpen(false)}
+                className="mt-2 h-10 bg-[#1a1a1a] text-white px-6 text-[11px] font-bold uppercase tracking-widest hover:bg-[#E8441A] transition-colors"
+              >
+                Shop All
+              </button>
+            </div>
+          ) : (
+            items.map((item) => (
+              <div key={item.id} className="flex items-start gap-3 group">
+                <div className="h-20 w-16 bg-[#f4f4f4] flex-shrink-0 overflow-hidden" />
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <p className="text-[13px] font-medium text-[#1a1a1a] leading-snug line-clamp-2">{item.title}</p>
+                  <p className="text-[12px] text-[#9ca3af] mt-1">LE {item.price.toLocaleString()}</p>
+                </div>
+                <button
+                  onClick={() => remove(item.id)}
+                  className="mt-0.5 p-1 text-[#d1d5db] hover:text-[#E8441A] transition-colors rounded hover:bg-[#fff5f3] flex-shrink-0"
+                  aria-label={`Remove ${item.title}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        {items.length > 0 && (
+          <div className="px-5 py-5 border-t border-[#f0f0f0] space-y-3 bg-[#fafafa]">
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] text-[#6b7280] uppercase tracking-widest">Subtotal</span>
+              <span className="text-[16px] font-bold text-[#1a1a1a]">LE {cartTotal.toLocaleString()}</span>
+            </div>
+            <button className="w-full h-12 bg-[#1a1a1a] text-white text-[12px] font-bold uppercase tracking-widest hover:bg-[#E8441A] transition-colors duration-200">
+              Checkout
+            </button>
+            <button onClick={() => setCartOpen(false)} className="w-full h-10 text-[11px] font-semibold uppercase tracking-widest text-[#9ca3af] hover:text-[#1a1a1a] transition-colors">
+              Continue Shopping
             </button>
           </div>
-          <nav className="flex flex-col px-6 py-8 gap-6">
-            {menuItems.map((item) => (
+        )}
+      </div>
+
+      {/* Mobile menu */}
+      <div
+        className={`fixed inset-0 z-50 bg-white flex flex-col md:hidden transition-transform duration-300 ease-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        role="dialog" aria-modal="true" aria-label="Navigation"
+      >
+        <div className="flex items-center justify-between px-4 h-16 border-b border-[#f0f0f0]">
+          <Logo className="h-11 w-auto" />
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="p-1 text-[#9ca3af] hover:text-[#1a1a1a] transition-colors"
+            aria-label="Close menu"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        <nav className="flex flex-col px-6 pt-10 gap-1">
+          {navLinks.map((item) => {
+            const active = pathname === item.href;
+            return (
               <Link
                 key={item.href}
                 to={item.href}
-                className="text-[22px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+                className={`py-3 text-[24px] font-bold uppercase tracking-widest border-b border-[#f4f4f4] transition-colors duration-150 ${active ? "text-[#E8441A]" : "text-[#1a1a1a]"}`}
               >
                 {item.label}
               </Link>
-            ))}
-          </nav>
+            );
+          })}
+        </nav>
+        <div className="mt-auto px-6 pb-8 pt-6">
+          <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">Preloved Finds · Cairo</p>
         </div>
-      )}
-    </header>
+      </div>
+    </>
   );
 }

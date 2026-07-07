@@ -1,14 +1,15 @@
+import logoSrc from "@/assets/logo.jpeg";
+
 type LogoProps = {
   className?: string;
 };
 
-export function Logo({ className = "" }: LogoProps) {
+export function Logo({ className = "h-10 w-auto" }: LogoProps) {
   return (
-    <span
-      className={`font-bold uppercase tracking-[0.06em] leading-none select-none ${className}`}
-      aria-label="Preloved Finds"
-    >
-      Preloved Finds
-    </span>
+    <img
+      src={logoSrc}
+      alt="Preloved Finds"
+      className={`object-contain ${className}`}
+    />
   );
 }

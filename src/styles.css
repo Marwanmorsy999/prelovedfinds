@@ -30,15 +30,15 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* The Vintage Guy palette — clean white/black, Inter */
+  /* Preloved Finds palette — matched to logo colors */
   --font-display: "Inter", sans-serif;
   --font-mono: "Inter", ui-monospace, "SFMono-Regular", monospace;
   --color-ink: #1a1a1a;
   --color-concrete: #6b7280;
   --color-surface: #f4f4f4;
   --color-paper: #ffffff;
-  --color-rust: #1a1a1a;
-  --color-rust-dark: #000000;
+  --color-rust: #E8441A;
+  --color-rust-dark: #c73a15;
   --color-olive: #16a34a;
   --color-grain: transparent;
   --color-hairline: #e5e7eb;
