@@ -5,15 +5,15 @@ export function Newsletter() {
   const [done, setDone] = useState(false);
 
   return (
-    <section className="border-t border-[#e5e7eb] bg-[#f9fafb]">
+    <section className="border-t border-hairline bg-bg-light">
       <div className="mx-auto max-w-xl px-4 py-16 text-center md:px-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9ca3af] mb-3">
           Newsletter
         </p>
-        <h2 className="text-[24px] font-bold uppercase tracking-widest text-[#1a1a1a] mb-2">
+        <h2 className="text-[24px] font-bold uppercase tracking-widest text-ink mb-2">
           Sign up to access our fly community perks
         </h2>
-        <p className="text-[13px] text-[#6b7280] mb-8">
+        <p className="text-[13px] text-concrete mb-8">
           New drops, early access, and member-only pricing — straight to your inbox.
         </p>
 
@@ -32,12 +32,12 @@ export function Newsletter() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 h-11 px-4 border border-[#e5e7eb] bg-white text-[13px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-[#9ca3af]"
+            className="flex-1 h-11 px-4 border border-hairline bg-paper text-[13px] text-ink outline-none focus:border-ink transition-colors placeholder:text-[#9ca3af]"
             aria-label="Email address"
           />
           <button
             type="submit"
-            className="h-11 px-6 bg-[#1a1a1a] text-white text-[12px] font-semibold uppercase tracking-widest hover:bg-black transition-colors whitespace-nowrap"
+            className="h-11 px-6 bg-ink text-paper text-[12px] font-semibold uppercase tracking-widest hover:bg-black transition-colors whitespace-nowrap"
           >
             {done ? "Subscribed ✓" : "Subscribe"}
           </button>

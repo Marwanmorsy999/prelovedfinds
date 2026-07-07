@@ -12,13 +12,13 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
     <div className="space-y-3">
       {/* Main image */}
       <div
-        className="relative overflow-hidden bg-[#f4f4f4] aspect-[4/5] cursor-zoom-in group"
+        className="relative overflow-hidden bg-surface aspect-[4/5] cursor-zoom-in group"
         onClick={() => setZoomed(true)}
       >
         <ImageSlot src={slots[active]} alt={title} className="w-full h-full object-cover" />
         {/* Zoom hint */}
-        <div className="absolute top-3 right-3 bg-white/80 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <ZoomIn className="h-4 w-4 text-[#1a1a1a]" />
+        <div className="absolute top-3 right-3 bg-white/80 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <ZoomIn className="h-4 w-4 text-ink" />
         </div>
       </div>
 
@@ -29,9 +29,9 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
             <button
               key={i}
               onClick={() => setActive(i)}
-              className={`flex-shrink-0 h-20 w-16 overflow-hidden bg-[#f4f4f4] transition-all ${
+              className={`flex-shrink-0 h-20 w-16 overflow-hidden bg-surface transition-all ${
                 i === active
-                  ? "ring-2 ring-[#1a1a1a] ring-offset-1"
+                  ? "ring-2 ring-ink ring-offset-1"
                   : "ring-1 ring-transparent hover:ring-[#d1d5db]"
               }`}
               aria-label={`View image ${i + 1}`}
@@ -42,10 +42,10 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
         </div>
       )}
 
-      {/* Zoom lightbox */}
+      {/* Zoom lightbox with scale-in animation */}
       {zoomed && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 cursor-zoom-out"
+          className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-black/90 cursor-zoom-out animate-[zoomFadeIn_0.25s_ease-out]"
           onClick={() => setZoomed(false)}
         >
           <img

@@ -34,6 +34,22 @@ import {
   getOrderStatsFn,
 } from "@/lib/functions/orders";
 import { getSettingFn, setSettingFn } from "@/lib/functions/settings";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 const PER_PAGE = 24;
 
@@ -993,41 +1009,40 @@ function AdminDashboard() {
       </div>
 
       {/* Edit modal */}
-      {editTarget && (
-        <EditModal
-          product={editTarget}
-          onClose={() => setEditTarget(null)}
-          onSaved={async () => {
-            setEditTarget(null);
-            await reload();
-          }}
-        />
-      )}
+      <Dialog open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
+        <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white sm:rounded-lg max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white">Edit Product</DialogTitle>
+          </DialogHeader>
+          {editTarget && (
+            <EditModal
+              product={editTarget}
+              onClose={() => setEditTarget(null)}
+              onSaved={async () => {
+                setEditTarget(null);
+                await reload();
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Delete confirm */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 max-w-sm w-full mx-4">
-            <p className="text-[14px] font-bold text-white mb-2">Delete product?</p>
-            <p className="text-[13px] text-[#888] mb-5">
-              This permanently removes &ldquo;{deleteTarget.title}&rdquo;. Cannot be undone.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                className="flex-1 py-2 border border-[#333] text-[12px] font-bold uppercase tracking-widest text-[#888] hover:border-[#555] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => confirmDelete(deleteTarget)}
-                className="flex-1 py-2 bg-red-700 text-white text-[12px] font-bold uppercase tracking-widest hover:bg-red-600 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete product?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This permanently removes &ldquo;{deleteTarget.title}&rdquo;. Cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => confirmDelete(deleteTarget)}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </div>
   );
@@ -1091,119 +1106,109 @@ function EditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#2a2a2a]">
-          <p className="text-[13px] font-bold uppercase tracking-widest text-white">Edit Product</p>
-          <button onClick={onClose} className="text-[#555] hover:text-white transition-colors">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="p-5 space-y-3">
+    <div className="p-5 space-y-3">
+      <input
+        placeholder="Name *"
+        value={form.title}
+        onChange={(e) => setForm({ ...form, title: e.target.value })}
+        className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]"
+      />
+      <div className="grid grid-cols-2 gap-3">
+        <input
+          placeholder="Size"
+          value={form.size}
+          onChange={(e) => setForm({ ...form, size: e.target.value })}
+          className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]"
+        />
+        <input
+          placeholder="Price (EGP)"
+          type="number"
+          value={form.price}
+          onChange={(e) => setForm({ ...form, price: e.target.value })}
+          className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <select
+          value={form.category}
+          onChange={(e) => setForm({ ...form, category: e.target.value })}
+          className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]"
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select
+          value={form.condition}
+          onChange={(e) => setForm({ ...form, condition: e.target.value })}
+          className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]"
+        >
+          {CONDITIONS.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+      <textarea
+        placeholder="Description (optional)"
+        value={form.description}
+        onChange={(e) => setForm({ ...form, description: e.target.value })}
+        rows={2}
+        className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444] resize-none"
+      />
+      <div className="flex flex-wrap gap-2 items-center">
+        {form.images.map((url, i) => (
+          <div key={i} className="relative">
+            <img src={url} className="h-14 w-14 object-cover" />
+            <button
+              type="button"
+              onClick={() =>
+                setForm({ ...form, images: form.images.filter((_, j) => j !== i) })
+              }
+              className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        <label className="flex items-center gap-2 bg-[#222] border border-[#333] px-3 py-2 text-[12px] text-[#888] hover:border-[#555] cursor-pointer">
+          <ImagePlus className="h-4 w-4" /> Add image
           <input
-            placeholder="Name *"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]"
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            disabled={form.uploading}
+            onChange={async (e) => {
+              setForm((f) => ({ ...f, uploading: true }));
+              try {
+                const urls = await uploadFiles(e.target.files);
+                setForm((f) => ({ ...f, images: [...f.images, ...urls], uploading: false }));
+              } catch {
+                toast.error("Upload failed");
+                setForm((f) => ({ ...f, uploading: false }));
+              }
+            }}
           />
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              placeholder="Size"
-              value={form.size}
-              onChange={(e) => setForm({ ...form, size: e.target.value })}
-              className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]"
-            />
-            <input
-              placeholder="Price (EGP)"
-              type="number"
-              value={form.price}
-              onChange={(e) => setForm({ ...form, price: e.target.value })}
-              className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444]"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <select
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]"
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            <select
-              value={form.condition}
-              onChange={(e) => setForm({ ...form, condition: e.target.value })}
-              className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]"
-            >
-              {CONDITIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-          <textarea
-            placeholder="Description (optional)"
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            rows={2}
-            className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] placeholder:text-[#444] resize-none"
-          />
-          <div className="flex flex-wrap gap-2 items-center">
-            {form.images.map((url, i) => (
-              <div key={i} className="relative">
-                <img src={url} className="h-14 w-14 object-cover" />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setForm({ ...form, images: form.images.filter((_, j) => j !== i) })
-                  }
-                  className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-            <label className="flex items-center gap-2 bg-[#222] border border-[#333] px-3 py-2 text-[12px] text-[#888] hover:border-[#555] cursor-pointer">
-              <ImagePlus className="h-4 w-4" /> Add image
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                disabled={form.uploading}
-                onChange={async (e) => {
-                  setForm((f) => ({ ...f, uploading: true }));
-                  try {
-                    const urls = await uploadFiles(e.target.files);
-                    setForm((f) => ({ ...f, images: [...f.images, ...urls], uploading: false }));
-                  } catch {
-                    toast.error("Upload failed");
-                    setForm((f) => ({ ...f, uploading: false }));
-                  }
-                }}
-              />
-            </label>
-          </div>
-          <div className="flex gap-2 pt-2">
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 border border-[#333] text-[12px] font-bold uppercase tracking-widest text-[#888] hover:border-[#555] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={save}
-              disabled={saving}
-              className="flex-1 py-2.5 bg-white text-[#111] text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-50"
-            >
-              {saving ? "Saving…" : "Save Changes"}
-            </button>
-          </div>
-        </div>
+        </label>
+      </div>
+      <div className="flex gap-2 pt-2">
+        <button
+          onClick={onClose}
+          className="flex-1 py-2.5 border border-[#333] text-[12px] font-bold uppercase tracking-widest text-[#888] hover:border-[#555] transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="flex-1 py-2.5 bg-white text-[#111] text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save Changes"}
+        </button>
       </div>
     </div>
   );

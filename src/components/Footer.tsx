@@ -1,17 +1,18 @@
+import { Link } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
 
 export function Footer() {
   return (
-    <footer className="bg-white border-t border-[#e5e7eb]">
+    <footer className="bg-paper border-t border-hairline">
       {/* Main footer */}
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-8">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
           {/* Brand */}
           <div>
-            <a href="/" className="inline-block mb-4 hover:opacity-80 transition-opacity">
+            <Link to="/" className="inline-block mb-4 hover:opacity-80 transition-opacity">
               <Logo className="h-14 w-auto" />
-            </a>
-            <p className="text-[13px] text-[#6b7280] leading-relaxed max-w-[220px]">
+            </Link>
+            <p className="text-[13px] text-concrete leading-relaxed max-w-[220px]">
               Curated vintage & pre-owned pieces. One-of-one, shipped from Cairo.
             </p>
           </div>
@@ -28,12 +29,12 @@ export function Footer() {
                 { label: "Contact", href: "/contact" },
               ].map((item) => (
                 <li key={item.label}>
-                  <a
-                    href={item.href}
-                    className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+                  <Link
+                    to={item.href}
+                    className="text-[13px] text-ink hover:text-concrete transition-colors"
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -50,18 +51,18 @@ export function Footer() {
                    href="https://www.instagram.com/preloved.finds._"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+                  className="text-[13px] text-ink hover:text-concrete transition-colors"
                 >
                   Instagram
                 </a>
               </li>
               <li>
-                <a
-                  href="/contact"
-                  className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+                <Link
+                  to="/contact"
+                  className="text-[13px] text-ink hover:text-concrete transition-colors"
                 >
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -69,13 +70,13 @@ export function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-[#e5e7eb] px-4 py-4 md:px-8">
+      <div className="border-t border-hairline px-4 py-4 md:px-8">
         <div className="mx-auto max-w-7xl flex flex-col items-center justify-between gap-2 md:flex-row">
           <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
             © {new Date().getFullYear()} Preloved Finds. All rights reserved.
           </p>
           <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
-            Terms &amp; Policies
+            Terms & Policies
           </p>
         </div>
       </div>

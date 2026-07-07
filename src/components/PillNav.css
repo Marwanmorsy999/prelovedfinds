@@ -3,7 +3,7 @@
   top: 1em;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 99;
+  z-index: var(--z-nav);
 }
 
 @media (max-width: 768px) {

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import hero from "@/assets/hero.jpeg";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Newsletter } from "@/components/Newsletter";
@@ -61,13 +61,14 @@ function Home() {
               NOW YOURS.
             </p>
           </div>
-          <a
-            href="/shop"
+          <Link
+            to="/shop"
+            search={{ tag: "all", size: "all", condition: "all", priceRange: "all", availability: "all", sort: "newest", q: "", page: 1 }}
             className="relative inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors mt-10 md:mt-14"
             style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif", fontSize: "14px" }}
           >
             Shop All
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -77,12 +78,13 @@ function Home() {
           <h2 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a]">
             New Picks
           </h2>
-          <a
-            href="/shop"
-            className="text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] border-b border-[#1a1a1a] hover:text-[#6b7280] hover:border-[#6b7280] transition-colors pb-0.5"
+          <Link
+            to="/shop"
+            search={{ tag: "all", size: "all", condition: "all", priceRange: "all", availability: "all", sort: "newest", q: "", page: 1 }}
+            className="text-[12px] font-semibold uppercase tracking-widest text-ink border-b border-ink hover:text-concrete hover:border-concrete transition-colors pb-0.5"
           >
             View all
-          </a>
+          </Link>
         </div>
         <ProductGrid products={newPicks} />
       </section>

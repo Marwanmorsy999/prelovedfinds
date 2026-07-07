@@ -72,6 +72,14 @@
   --border: #e5e7eb;
   --input: #e5e7eb;
   --ring: rgba(0,0,0,0.15);
+
+  --z-base: 0;
+  --z-dropdown: 50;
+  --z-drawer: 60;
+  --z-modal-backdrop: 70;
+  --z-modal: 80;
+  --z-toast: 90;
+  --z-nav: 100;
 }
 
 @layer base {
@@ -127,6 +135,30 @@
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-concrete); }
 
+/* Zoom lightbox fade-in */
+@keyframes zoomFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Cart add micro-bounce */
+@keyframes cart-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* Grid entrance (for staggered reveal) */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Staggered entrance for grid items */
+.stagger-item {
+  opacity: 0;
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
 /* Marquee animation */
 @keyframes marquee {
   0%   { transform: translateX(0); }
@@ -135,4 +167,12 @@
 
 .marquee-track {
   animation: marquee 28s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

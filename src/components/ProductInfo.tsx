@@ -42,43 +42,43 @@ export function ProductInfo({ product }: { product: Product }) {
   return (
     <div className="space-y-6 md:sticky md:top-28 md:self-start">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7280] mb-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-concrete mb-1">
           {product.tag}
         </p>
-        <h1 className="text-[22px] font-bold text-[#1a1a1a] leading-tight">
+        <h1 className="text-[22px] font-bold text-ink leading-tight">
           {product.title}
         </h1>
-        <p className="mt-2 text-[18px] font-semibold text-[#1a1a1a]">
+        <p className="mt-2 text-[18px] font-semibold text-ink">
           {product.priceLabel ? product.priceLabel : `LE ${product.price.toLocaleString()}`}
         </p>
       </div>
 
       <div>
         {sold && (
-          <span className="inline-block bg-[#f4f4f4] text-[#6b7280] text-[11px] font-semibold uppercase tracking-widest px-3 py-1 border border-[#e5e7eb]">
+          <span className="inline-block bg-surface text-concrete text-[11px] font-semibold uppercase tracking-widest px-3 py-1 border border-hairline">
             Sold out
           </span>
         )}
         {oneLeft && (
-          <span className="inline-block bg-[#1a1a1a] text-white text-[11px] font-semibold uppercase tracking-widest px-3 py-1">
+          <span className="inline-block bg-ink text-paper text-[11px] font-semibold uppercase tracking-widest px-3 py-1">
             Only 1 left
           </span>
         )}
         {!sold && !oneLeft && (
-          <span className="inline-block bg-[#f0fdf4] text-[#16a34a] text-[11px] font-semibold uppercase tracking-widest px-3 py-1 border border-[#bbf7d0]">
+          <span className="inline-block bg-[#f0fdf4] text-instock text-[11px] font-semibold uppercase tracking-widest px-3 py-1 border border-[#bbf7d0]">
             In stock
           </span>
         )}
       </div>
 
-      <div className="border border-[#e5e7eb] px-4 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7280] mb-1">Condition</p>
-        <p className="text-[14px] font-medium text-[#1a1a1a]">{product.condition}</p>
+      <div className="border border-hairline px-4 py-3">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-concrete mb-1">Condition</p>
+        <p className="text-[14px] font-medium text-ink">{product.condition}</p>
       </div>
 
-      <div className="border border-[#e5e7eb] px-4 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7280] mb-1">Size</p>
-        <p className="text-[14px] font-medium text-[#1a1a1a]">{product.size}</p>
+      <div className="border border-hairline px-4 py-3">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-concrete mb-1">Size</p>
+        <p className="text-[14px] font-medium text-ink">{product.size}</p>
         <p className="text-[11px] text-[#9ca3af] mt-0.5">One of one — no restocks</p>
       </div>
 
@@ -86,7 +86,7 @@ export function ProductInfo({ product }: { product: Product }) {
         <button
           disabled={sold || alreadyInCart}
           onClick={handleAdd}
-          className="w-full h-12 bg-[#1a1a1a] text-white text-[13px] font-semibold uppercase tracking-widest hover:bg-black transition-colors disabled:bg-[#d1d5db] disabled:cursor-not-allowed disabled:text-[#9ca3af]"
+          className="w-full h-12 bg-ink text-paper text-[13px] font-semibold uppercase tracking-widest hover:bg-black transition-colors disabled:bg-[#d1d5db] disabled:cursor-not-allowed disabled:text-[#9ca3af]"
         >
           {sold
             ? "Sold Out"
@@ -102,7 +102,7 @@ export function ProductInfo({ product }: { product: Product }) {
         {!sold && (
           <button
             onClick={handleAdd}
-            className="w-full h-12 border border-[#1a1a1a] bg-white text-[#1a1a1a] text-[13px] font-semibold uppercase tracking-widest hover:bg-[#f4f4f4] transition-colors"
+            className="w-full h-12 border border-ink bg-paper text-ink text-[13px] font-semibold uppercase tracking-widest hover:bg-surface transition-colors"
           >
             Buy it now
           </button>
@@ -111,15 +111,15 @@ export function ProductInfo({ product }: { product: Product }) {
 
       <button
         onClick={() => setSaved(toggleWishlist(product.id))}
-        className="flex items-center gap-2 text-[12px] text-[#6b7280] hover:text-[#1a1a1a] transition-colors"
+        className="flex items-center gap-2 text-[12px] text-concrete hover:text-ink transition-colors"
       >
-        <Heart className={`h-4 w-4 ${saved ? "fill-[#1a1a1a] text-[#1a1a1a]" : ""}`} />
+        <Heart className={`h-4 w-4 ${saved ? "fill-ink text-ink" : ""}`} />
         {saved ? "Saved" : "Save for later"}
       </button>
 
       {product.description.length > 0 && (
-        <div className="border-t border-[#e5e7eb] pt-5">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#1a1a1a] mb-3">
+        <div className="border-t border-hairline pt-5">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-ink mb-3">
             Product Details
           </p>
           <ul className="space-y-1.5">
@@ -127,7 +127,7 @@ export function ProductInfo({ product }: { product: Product }) {
               .split("\n")
               .filter(Boolean)
               .map((line, i) => (
-                <li key={i} className="text-[13px] text-[#6b7280] flex items-start gap-2">
+                <li key={i} className="text-[13px] text-concrete flex items-start gap-2">
                   <span className="mt-1.5 h-1 w-1 rounded-full bg-[#9ca3af] flex-shrink-0" />
                   {line}
                 </li>
@@ -136,11 +136,11 @@ export function ProductInfo({ product }: { product: Product }) {
         </div>
       )}
 
-      <div className="border-t border-[#e5e7eb] pt-5">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#1a1a1a] mb-2">
+      <div className="border-t border-hairline pt-5">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-ink mb-2">
           Shipping & Returns
         </p>
-        <p className="text-[13px] text-[#6b7280]">Ships from Cairo. 3–7 business days.</p>
+        <p className="text-[13px] text-concrete">Ships from Cairo. 3–7 business days.</p>
       </div>
     </div>
   );

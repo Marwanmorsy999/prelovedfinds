@@ -13,9 +13,10 @@ export function CategoryTiles() {
     <section className="mx-auto max-w-7xl px-4 py-20 md:px-8">
       <div className="grid grid-cols-3 gap-3 md:grid-cols-5">
         {CATEGORIES.map((cat) => (
-          <a
+          <Link
             key={cat.label}
-            href={`/shop?tag=${encodeURIComponent(cat.label)}`}
+            to="/shop"
+            search={{ tag: cat.label.toLowerCase(), size: "all", condition: "all", priceRange: "all", availability: "all", sort: "newest", q: "", page: 1 }}
             className="group relative flex aspect-[3/2] flex-col items-start justify-end overflow-hidden bg-surface"
           >
             <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
@@ -27,7 +28,7 @@ export function CategoryTiles() {
                 {cat.label}
               </h3>
             </div>
-          </a>
+          </Link>
         ))}
       </div>
     </section>
