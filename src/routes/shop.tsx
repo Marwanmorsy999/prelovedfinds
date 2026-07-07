@@ -5,7 +5,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { listProductsFn } from "@/lib/functions/products";
 
 // These match the admin categories exactly
-const CATEGORIES = ["TEE", "SHIRT", "HOODIE", "SWEATSHIRT", "JACKET", "JEANS", "PANTS", "SHORTS", "OTHER"];
+const CATEGORIES = ["TEE", "SHIRT", "JEANS", "PANTS", "SHORTS", "OTHER"];
 
 export const Route = createFileRoute("/shop")({
   head: () => ({

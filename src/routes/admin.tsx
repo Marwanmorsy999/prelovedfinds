@@ -50,7 +50,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminDashboard,
 });
 
-const CATEGORIES = ["TEE", "SHIRT", "HOODIE", "SWEATSHIRT", "JACKET", "JEANS", "PANTS", "SHORTS", "OTHER"];
+const CATEGORIES = ["TEE", "SHIRT", "JEANS", "PANTS", "SHORTS", "OTHER"];
 const CONDITIONS = ["Excellent", "Good", "Fair"];
 
 function slugify(s: string) {

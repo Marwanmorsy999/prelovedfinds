@@ -70,34 +70,6 @@ function About() {
           <p className="font-semibold text-[#1a1a1a]">— Founder, Preloved Finds</p>
         </div>
 
-        {/* Stats */}
-        <div className="mt-16 grid grid-cols-3 gap-8 border-y border-[#e5e7eb] py-12 text-center">
-          <div>
-            <p className="text-[36px] md:text-[48px] font-extrabold text-[#1a1a1a] leading-none">
-              500+
-            </p>
-            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#9ca3af]">
-              Pieces Curated
-            </p>
-          </div>
-          <div>
-            <p className="text-[36px] md:text-[48px] font-extrabold text-[#1a1a1a] leading-none">
-              Global
-            </p>
-            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#9ca3af]">
-              Shipping
-            </p>
-          </div>
-          <div>
-            <p className="text-[36px] md:text-[48px] font-extrabold text-[#1a1a1a] leading-none">
-              100%
-            </p>
-            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#9ca3af]">
-              Authentic
-            </p>
-          </div>
-        </div>
-
         {/* CTA */}
         <div className="mt-14 text-center">
           <a

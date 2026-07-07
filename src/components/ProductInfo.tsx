@@ -74,7 +74,7 @@ export function ProductInfo({ product }: { product: Product }) {
       <div className="border border-[#e5e7eb] px-4 py-3">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7280] mb-1">Size</p>
         <p className="text-[14px] font-medium text-[#1a1a1a]">{product.size}</p>
-        <p className="text-[11px] text-[#9ca3af] mt-0.5">One-of-one — no restocks</p>
+        <p className="text-[11px] text-[#9ca3af] mt-0.5">One of one — no restocks</p>
       </div>
 
       {/* Add to cart */}
