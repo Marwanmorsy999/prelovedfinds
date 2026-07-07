@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, useRef, type ReactNode } from "react";
+import type { Product } from "@/lib/products";
 
 export interface CartItem {
   id: string;
-  title: string;
+  name: string;
   price: number;
-  currency: string;
+  priceLabel?: string;
 }
 
 interface CartCtx {

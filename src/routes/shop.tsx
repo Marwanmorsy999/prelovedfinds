@@ -4,10 +4,11 @@ import { Search, ChevronDown, X } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import {
   listProductsFn,
-  getDistinctBrandsFn,
+  getDistinctTagsFn,
   getDistinctSizesFn,
-  getDistinctErasFn,
+  getDistinctConditionsFn,
 } from "@/lib/functions/products";
+import { CATEGORIES, CONDITIONS } from "@/lib/products";
 
 export const Route = createFileRoute("/shop")({
   head: () => ({
@@ -20,9 +21,9 @@ export const Route = createFileRoute("/shop")({
     ],
   }),
   validateSearch: (search: Record<string, unknown>) => ({
-    brand: typeof search.brand === "string" ? search.brand : "all",
+    tag: typeof search.tag === "string" ? search.tag : "all",
     size: typeof search.size === "string" ? search.size : "all",
-    era: typeof search.era === "string" ? search.era : "all",
+    condition: typeof search.condition === "string" ? search.condition : "all",
     priceRange: typeof search.priceRange === "string" ? search.priceRange : "all",
     availability: typeof search.availability === "string" ? search.availability : "all",
     sort: typeof search.sort === "string" ? search.sort : "newest",
@@ -31,34 +32,39 @@ export const Route = createFileRoute("/shop")({
   }),
   loader: async ({ location }) => {
     const search = location.search as {
-      brand?: string;
+      tag?: string;
       size?: string;
-      era?: string;
+      condition?: string;
       priceRange?: string;
       availability?: string;
       sort?: string;
       q?: string;
       page?: number;
     };
-    const [products, categories, sizes, conditions] = await Promise.all([
+    const [products, tagsRow, sizesRow, conditionsRow] = await Promise.all([
       listProductsFn({
         data: {
-          brand: search.brand === "all" ? undefined : search.brand,
+          tag: search.tag === "all" ? undefined : (search.tag as never),
           size: search.size === "all" ? undefined : search.size,
-          era: search.era === "all" ? undefined : search.era,
+          condition: search.condition === "all" ? undefined : (search.condition as never),
           priceRange: search.priceRange === "all" ? undefined : (search.priceRange as never),
-          availability: search.availability as never,
+          availability: search.availability === "all" ? undefined : (search.availability as never),
           sort: search.sort as never,
           page: search.page,
           perPage: 16,
           q: search.q,
         },
       }),
-      getDistinctBrandsFn(),
+      getDistinctTagsFn(),
       getDistinctSizesFn(),
-      getDistinctErasFn(),
+      getDistinctConditionsFn(),
     ]);
-    return { products, categories, sizes, conditions };
+    return {
+      products,
+      tags: tagsRow,
+      sizes: sizesRow,
+      conditions: conditionsRow,
+    };
   },
   component: Shop,
 });
@@ -66,12 +72,12 @@ export const Route = createFileRoute("/shop")({
 function Shop() {
   const navigate = useNavigate();
   const search = Route.useSearch();
-const loader = Route.useLoaderData();
+  const loader = Route.useLoaderData();
   const { items, total, totalPages, page } = loader.products;
-  const initialCategories = Array.isArray(loader.categories) ? loader.categories : [];
+  const initialTags = Array.isArray(loader.tags) ? loader.tags : [];
   const initialSizes = Array.isArray(loader.sizes) ? loader.sizes : [];
   const initialConditions = Array.isArray(loader.conditions) ? loader.conditions : [];
-  const [categories] = useState<string[]>(initialCategories);
+  const [tags] = useState<string[]>(initialTags);
   const [sizes] = useState<string[]>(initialSizes);
   const [conditions, setConditions] = useState<string[]>(initialConditions);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -89,9 +95,9 @@ const loader = Route.useLoaderData();
 
   const hasMore = currentPage < totalPages;
   const hasActiveFilters =
-    search.brand !== "all" ||
+    search.tag !== "all" ||
     search.size !== "all" ||
-    search.era !== "all" ||
+    search.condition !== "all" ||
     search.priceRange !== "all" ||
     search.availability !== "all";
 
@@ -104,7 +110,7 @@ const loader = Route.useLoaderData();
               Collections
             </p>
             <h1 className="text-[26px] font-bold uppercase tracking-widest text-[#1a1a1a]">
-              {search.brand !== "all" ? search.brand : "Shop All"}
+              {search.tag !== "all" ? search.tag : "Shop All"}
             </h1>
           </div>
           <p className="text-[12px] text-[#9ca3af] mb-1">{total} items</p>
@@ -121,7 +127,7 @@ const loader = Route.useLoaderData();
               onKeyDown={(e) => {
                 if (e.key === "Enter") updateSearch({ q: query, page: 1 });
               }}
-              placeholder="Search title, brand, size..."
+              placeholder="Search title, tag, size..."
               className="h-10 w-full border border-[#e5e7eb] bg-white pl-9 pr-8 text-[13px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors placeholder:text-[#9ca3af]"
               aria-label="Search products"
             />
@@ -179,21 +185,34 @@ const loader = Route.useLoaderData();
         </div>
 
         <div className={`${filterOpen ? "block" : "hidden"} md:block mb-6`}>
-          <div className={`grid grid-cols-1 md:grid-cols-4 gap-4`}>
+          <div className={`grid grid-cols-1 md:grid-cols-5 gap-4`}>
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-widest text-[#6b7280] mb-1.5">
                 Category
               </label>
               <select
-                value={search.brand}
-                onChange={(e) => updateSearch({ brand: e.target.value, page: 1 })}
+                value={search.tag}
+                onChange={(e) => updateSearch({ tag: e.target.value, page: 1 })}
                 className="w-full h-10 appearance-none border border-[#e5e7eb] bg-white pl-3 pr-8 text-[12px] font-medium text-[#1a1a1a] outline-none hover:border-[#1a1a1a] transition-colors cursor-pointer"
               >
                 <option value="all">All</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
+                {tags.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-widest text-[#6b7280] mb-1.5">
+                Condition
+              </label>
+              <select
+                value={search.condition}
+                onChange={(e) => updateSearch({ condition: e.target.value, page: 1 })}
+                className="w-full h-10 appearance-none border border-[#e5e7eb] bg-white pl-3 pr-8 text-[12px] font-medium text-[#1a1a1a] outline-none hover:border-[#1a1a1a] transition-colors cursor-pointer"
+              >
+                <option value="all">All</option>
+                {conditions.map((c) => (
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>
@@ -210,23 +229,6 @@ const loader = Route.useLoaderData();
                 {sizes.map((s) => (
                   <option key={s} value={s}>
                     {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-[#6b7280] mb-1.5">
-                Condition
-              </label>
-              <select
-                value={search.era}
-                onChange={(e) => updateSearch({ era: e.target.value, page: 1 })}
-                className="w-full h-10 appearance-none border border-[#e5e7eb] bg-white pl-3 pr-8 text-[12px] font-medium text-[#1a1a1a] outline-none hover:border-[#1a1a1a] transition-colors cursor-pointer"
-              >
-                <option value="all">All</option>
-                {conditions.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
                   </option>
                 ))}
               </select>
@@ -268,9 +270,9 @@ const loader = Route.useLoaderData();
             <button
               onClick={() =>
                 updateSearch({
-                  brand: "all",
+                  tag: "all",
                   size: "all",
-                  era: "all",
+                  condition: "all",
                   priceRange: "all",
                   availability: "all",
                   page: 1,
@@ -336,9 +338,9 @@ const loader = Route.useLoaderData();
               onClick={() => {
                 setQuery("");
                 updateSearch({
-                  brand: "all",
+                  tag: "all",
                   size: "all",
-                  era: "all",
+                  condition: "all",
                   priceRange: "all",
                   availability: "all",
                   sort: "newest",

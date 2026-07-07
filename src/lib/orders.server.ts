@@ -1,64 +1,123 @@
-import { getDB } from "@/lib/db";
+import { getDB, rowToOrder, type OrderRow } from "./db";
+import type { Order } from "./products";
 
-export interface OrderItem {
-  id: string;
-  title: string;
-  price: number;
-  quantity: number;
+export async function listOrders(): Promise<OrderRow[]> {
+  const db = getDB();
+  const rows = await db
+    .prepare("SELECT * FROM orders ORDER BY createdAt DESC")
+    .all<OrderRow>();
+  return rows.results ?? [];
 }
 
-export interface Order {
-  id: string;
-  items: OrderItem[];
-  customerName: string;
-  customerPhone: string;
-  governorate: string;
-  address: string;
-  subtotal: number;
-  status: string;
-  createdAt: number;
+export async function getOrderById(id: string): Promise<Order | null> {
+  const db = getDB();
+  const row = await db.prepare("SELECT * FROM orders WHERE id = ?").bind(id).first<OrderRow>();
+  return row ? rowToOrder(row) : null;
 }
 
 export async function createOrder(input: {
   id: string;
-  items: OrderItem[];
   customerName: string;
   customerPhone: string;
-  governorate: string;
+  customerInstagram?: string;
+  notes?: string;
+  pickup: 0 | 1;
   address: string;
-  subtotal: number;
+  items: { name: string; size?: string; price?: number; priceLabel?: string }[];
+  total: number;
 }): Promise<Order> {
   const db = getDB();
   const now = Date.now();
   const order: Order = {
     id: input.id,
-    items: input.items,
+    createdAt: now,
+    status: "pending",
     customerName: input.customerName,
     customerPhone: input.customerPhone,
-    governorate: input.governorate,
+    customerInstagram: input.customerInstagram || "",
+    notes: input.notes || "",
+    pickup: input.pickup,
     address: input.address,
-    subtotal: input.subtotal,
-    status: "pending",
-    createdAt: now,
+    items: input.items,
+    total: input.total,
   };
-
   await db
     .prepare(
-      `INSERT INTO orders (id, items, customerName, customerPhone, governorate, address, subtotal, status, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO orders (id, createdAt, status, customerName, customerPhone, customerInstagram, notes, pickup, address, items, total)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       order.id,
-      JSON.stringify(order.items),
+      order.createdAt,
+      order.status,
       order.customerName,
       order.customerPhone,
-      order.governorate,
+      order.customerInstagram,
+      order.notes,
+      order.pickup,
       order.address,
-      order.subtotal,
-      order.status,
-      order.createdAt,
+      JSON.stringify(order.items),
+      order.total,
     )
     .run();
-
   return order;
+}
+
+export async function updateOrderStatus(id: string, status: Order["status"]): Promise<Order | null> {
+  const db = getDB();
+  await db.prepare("UPDATE orders SET status = ? WHERE id = ?").bind(status, id).run();
+  return getOrderById(id);
+}
+
+export async function deleteOrder(id: string): Promise<boolean> {
+  const db = getDB();
+  const res = await db.prepare("DELETE FROM orders WHERE id = ?").bind(id).run();
+  return res.success;
+}
+
+export async function getOrderStats(): Promise<{
+  pending: number;
+  confirmed: number;
+  completed: number;
+  cancelled: number;
+  revenue: number;
+  ordersCount: number;
+}> {
+  const db = getDB();
+  const rows = await db
+    .prepare(
+      `SELECT status, COUNT(*) as count, COALESCE(SUM(total), 0) as revenue FROM orders GROUP BY status`,
+    )
+    .all<{ status: string; count: number; revenue: number }>();
+
+  const stats = {
+    pending: 0,
+    confirmed: 0,
+    completed: 0,
+    cancelled: 0,
+    revenue: 0,
+    ordersCount: 0,
+  };
+
+  for (const r of rows.results ?? []) {
+    const c = r.count ?? 0;
+    stats.ordersCount += c;
+    switch (r.status) {
+      case "pending":
+        stats.pending = c;
+        break;
+      case "confirmed":
+        stats.confirmed = c;
+        break;
+      case "completed":
+        stats.completed = c;
+        stats.revenue += r.revenue ?? 0;
+        break;
+      case "cancelled":
+        stats.cancelled = c;
+        break;
+    }
+  }
+
+  return stats;
 }

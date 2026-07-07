@@ -20,12 +20,20 @@ import {
   deleteProductFn,
   toggleSoldFn,
   searchProductsFn,
-  getDistinctBrandsFn,
+  getDistinctTagsFn,
   getDistinctSizesFn,
-  getDistinctErasFn,
+  getDistinctConditionsFn,
 } from "@/lib/functions/products";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Product, Availability } from "@/lib/products";
+import {
+  listOrdersFn,
+  getOrderFn,
+  updateOrderStatusFn,
+  deleteOrderFn,
+  getOrderStatsFn,
+} from "@/lib/functions/orders";
+import { getSettingFn, setSettingFn } from "@/lib/functions/settings";
 
 const PER_PAGE = 24;
 
@@ -40,46 +48,58 @@ export const Route = createFileRoute("/admin")({
     }
     return { authed };
   },
-  loader: async ({ location }) => {
-    if (location.pathname === "/admin/login") {
-      return {
-        products: { items: [], total: 0, page: 1, perPage: PER_PAGE, totalPages: 1 },
-        stats: {
-          total: 0,
-          available: 0,
-          sold: 0,
-          oneLeft: 0,
-          revenue: 0,
-          topBrands: [],
-          recentRevenue: 0,
-          averagePrice: 0,
-        },
-      };
-    }
-    const s = location.search as {
-      brand?: string;
-      size?: string;
-      era?: string;
-      availability?: string;
-    };
-    const [products, stats, cats, sizes, conds] = await Promise.all([
-      listProductsFn({
-        data: {
-          brand: s.brand === "all" ? undefined : s.brand,
-          size: s.size === "all" ? undefined : s.size,
-          era: s.era === "all" ? undefined : s.era,
-          availability: s.availability === "all" ? undefined : (s.availability as never),
-          page: 1,
-          perPage: PER_PAGE,
-        },
-      }),
-      dashboardStatsFn(),
-      getDistinctBrandsFn(),
-      getDistinctSizesFn(),
-      getDistinctErasFn(),
-    ]);
-    return { products, stats, categories: cats, sizes, conditions: conds };
-  },
+   loader: async ({ location }) => {
+     if (location.pathname === "/admin/login") {
+       return {
+         products: { items: [], total: 0, page: 1, perPage: PER_PAGE, totalPages: 1 },
+         stats: {
+           total: 0,
+           available: 0,
+           sold: 0,
+           oneLeft: 0,
+           revenue: 0,
+           avgOrderValue: 0,
+           avgOrderCount: 0,
+           topTags: [],
+         },
+         orderStats: {
+           pending: 0,
+           confirmed: 0,
+           completed: 0,
+           cancelled: 0,
+           revenue: 0,
+           ordersCount: 0,
+         },
+         tags: [],
+         sizes: [],
+         conditions: [],
+       };
+     }
+     const s = location.search as {
+       tag?: string;
+       size?: string;
+       condition?: string;
+       availability?: string;
+     };
+     const [products, stats, orderStats, tags, sizes, conditions] = await Promise.all([
+       listProductsFn({
+         data: {
+           tag: s.tag === "all" ? undefined : (s.tag as never),
+           size: s.size === "all" ? undefined : s.size,
+           condition: s.condition === "all" ? undefined : (s.condition as never),
+           availability: s.availability === "all" ? undefined : (s.availability as never),
+           page: 1,
+           perPage: PER_PAGE,
+         },
+       }),
+       dashboardStatsFn(),
+       getOrderStatsFn(),
+       getDistinctTagsFn(),
+       getDistinctSizesFn(),
+       getDistinctConditionsFn(),
+     ]);
+     return { products, stats, orderStats, categories: tags, sizes, conditions };
+   },
   component: AdminDashboard,
 });
 
@@ -163,38 +183,53 @@ function AdminDashboard() {
   const [searching, setSearching] = useState(false);
   const [editTarget, setEditTarget] = useState<Product | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
-  const [adminFilterBrand, setAdminFilterBrand] = useState(
-    typeof search === "string" && search.includes("brand=") ? "" : "all",
-  );
+  const [orderStats, setOrderStats] = useState(initial.orderStats);
+  const [reorderMode, setReorderMode] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
+
+  // orders state
+  const [orders, setOrders] = useState<Product[]>([]);
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderFilter, setOrderFilter] = useState<string>("all");
+  const [orderSort, setOrderSort] = useState<string>("newest");
+  const [loadingOrders, setLoadingOrders] = useState(false);
+
+  // settings state
+  const [announcement, setAnnouncement] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
 
   if (pathname === "/admin/login") return <Outlet />;
 
   const reload = async () => {
     const s = typeof search === "string" ? new URLSearchParams(search) : new URLSearchParams();
-    const [products, stats, cats, sz, conds] = await Promise.all([
+    const [products, stats, orderStats, tags, sizes, conditions] = await Promise.all([
       listProductsFn({
         data: {
-          brand: (s.get("brand") || "all") === "all" ? undefined : s.get("brand"),
-          size: (s.get("size") || "all") === "all" ? undefined : s.get("size"),
-          era: (s.get("era") || "all") === "all" ? undefined : s.get("era"),
-          availability:
-            s.get("availability") === "all" ? undefined : (s.get("availability") as never),
+          tag: (s.get("tag") || "all") === "all" ? undefined : (s.get("tag") as never),
+          size: (s.get("size") || "all") === "all" ? undefined : s.get("size") ?? undefined,
+          condition: (s.get("condition") || "all") === "all" ? undefined : (s.get("condition") as never),
+          availability: (s.get("availability") || "all") === "all" ? undefined : (s.get("availability") as never),
           page: 1,
           perPage: PER_PAGE,
         },
       }),
       dashboardStatsFn(),
-      getDistinctBrandsFn(),
+      getOrderStatsFn(),
+      getDistinctTagsFn(),
       getDistinctSizesFn(),
-      getDistinctErasFn(),
+      getDistinctConditionsFn(),
     ]);
     setData(products);
     setStats(stats);
+    setOrderStats(orderStats);
     setSearchActive(false);
     setSearchQuery("");
-    setCategories(cats);
-    setSizes(sz);
-    setConditions(conds);
+    setCategories(tags);
+    setSizes(sizes);
+    setConditions(conditions);
+    setBulkSelected(new Set());
   };
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -241,20 +276,19 @@ function AdminDashboard() {
     setSaving(true);
     try {
       const id = slugify(single.title) || `product-${Date.now()}`;
-      await createProductFn({
-        data: {
-          id,
-          title: single.title,
-          brand: single.category,
-          era: single.condition,
-          price: parseInt(single.price, 10),
-          size: single.size || "One Size",
-          availability: "available",
-          images: single.images,
-          productId: single.description ? [single.description] : [],
-          measurements: [],
-        },
-      });
+       await createProductFn({
+         data: {
+           id,
+           title: single.title,
+           tag: single.category,
+           condition: single.condition,
+           description: single.description,
+           price: parseInt(single.price, 10),
+           size: single.size || "One Size",
+           availability: "available",
+           images: single.images,
+         },
+       });
       toast.success("Product added");
       setSingle(emptySingle);
       await reload();
@@ -278,14 +312,13 @@ function AdminDashboard() {
           items: ready.map((r) => ({
             id: slugify(r.title) + "-" + Math.random().toString(36).slice(2, 6),
             title: r.title,
-            brand: r.category,
-            era: r.condition,
+            tag: r.category,
+            condition: r.condition,
+            description: r.description,
             price: parseInt(r.price, 10),
             size: r.size || "One Size",
             availability: "available" as Availability,
             images: r.images,
-            productId: r.description ? [r.description] : [],
-            measurements: [],
           })),
         },
       });
@@ -359,7 +392,7 @@ function AdminDashboard() {
           { label: "TOTAL REVENUE", value: `${stats.revenue.toLocaleString()} EGP` },
           {
             label: "AVG ORDER",
-            value: `${stats.averagePrice.toLocaleString()} EGP (${stats.sold})`,
+            value: `${stats.avgOrderValue.toLocaleString()} EGP (${stats.avgOrderCount})`,
           },
           { label: "AVAILABLE", value: stats.available },
           { label: "SOLD", value: stats.sold },
@@ -738,25 +771,24 @@ function AdminDashboard() {
                 <label className="block text-[11px] font-bold uppercase tracking-widest text-[#555] mb-1">
                   Category
                 </label>
-                <select
-                  value={adminFilterBrand}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setAdminFilterBrand(v);
-                    const s =
-                      typeof search === "string"
-                        ? new URLSearchParams(search)
-                        : new URLSearchParams();
-                    if (v === "all") s.delete("brand");
-                    else s.set("brand", v);
-                    s.delete("page");
-                    navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
-                  }}
+                  <select
+                    value={(() => { const raw = typeof search === "string" ? search : ""; return raw.includes("tag=") ? "" : "all"; })()}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const s =
+                        typeof search === "string"
+                          ? new URLSearchParams(search)
+                          : new URLSearchParams();
+                      if (v === "all") s.delete("tag");
+                      else s.set("tag", v);
+                      s.delete("page");
+                      navigate({ to: "/admin", search: Object.fromEntries(s) });
+                      reload();
+                    }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
                   <option value="all">All</option>
-                  {categories.map((c) => (
+                  {(categories ?? []).map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -783,7 +815,7 @@ function AdminDashboard() {
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
                   <option value="all">All</option>
-                  {sizes.map((s) => (
+                  {(sizes ?? []).map((s) => (
                     <option key={s} value={s}>
                       {s}
                     </option>
@@ -794,23 +826,23 @@ function AdminDashboard() {
                 <label className="block text-[11px] font-bold uppercase tracking-widest text-[#555] mb-1">
                   Condition
                 </label>
-                <select
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    const s =
-                      typeof search === "string"
-                        ? new URLSearchParams(search)
-                        : new URLSearchParams();
-                    if (v === "all") s.delete("era");
-                    else s.set("era", v);
-                    s.delete("page");
-                    navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
-                  }}
+                  <select
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const s =
+                        typeof search === "string"
+                          ? new URLSearchParams(search)
+                          : new URLSearchParams();
+                      if (v === "all") s.delete("condition");
+                      else s.set("condition", v);
+                      s.delete("page");
+                      navigate({ to: "/admin", search: Object.fromEntries(s) });
+                      reload();
+                    }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
                   <option value="all">All</option>
-                  {conditions.map((c) => (
+                  {(conditions ?? []).map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -884,7 +916,7 @@ function AdminDashboard() {
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-medium text-white truncate">{p.title}</p>
                     <p className="text-[11px] text-[#555]">
-                      {p.era} {p.brand} · LE {p.price.toLocaleString()} · {p.size}
+                      {p.tag} · LE {p.price.toLocaleString()} · {p.size}
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -1039,17 +1071,13 @@ function EditModal({
           id: product.id,
           patch: {
             title: form.title,
-            brand: form.category,
-            era: form.condition,
+            tag: form.category,
+            condition: form.condition,
+            description: form.description,
             price: parseInt(form.price, 10),
             size: form.size || "One Size",
             availability: product.availability,
             images: form.images,
-            productId: form.description
-              .split("\n")
-              .map((s) => s.trim())
-              .filter(Boolean),
-            measurements: product.measurements,
           },
         },
       });

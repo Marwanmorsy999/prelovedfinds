@@ -162,13 +162,13 @@ export function Navigation() {
               <div key={item.id} className="flex items-start gap-3 group">
                 <div className="h-20 w-16 bg-[#f4f4f4] flex-shrink-0 overflow-hidden" />
                 <div className="flex-1 min-w-0 pt-0.5">
-                  <p className="text-[13px] font-medium text-[#1a1a1a] leading-snug line-clamp-2">{item.title}</p>
+                   <p className="text-[13px] font-medium text-[#1a1a1a] leading-snug line-clamp-2">{item.name}</p>
                   <p className="text-[12px] text-[#9ca3af] mt-1">LE {item.price.toLocaleString()}</p>
                 </div>
                 <button
                   onClick={() => remove(item.id)}
                    className="mt-0.5 p-1 text-[#d1d5db] hover:text-[#1a1a1a] transition-colors rounded hover:bg-[#f4f4f4] flex-shrink-0"
-                  aria-label={`Remove ${item.title}`}
+                   aria-label={`Remove ${item.name}`}
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>

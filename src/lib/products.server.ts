@@ -1,31 +1,36 @@
 import type { Product, Availability } from "./products";
 import { getDB, rowToProduct, type ProductRow } from "./db";
 
-export type SortKey = "featured" | "price-asc" | "price-desc" | "newest";
+export type SortKey = "newest" | "featured" | "price-asc" | "price-desc";
 
 export interface ListParams {
-  brand?: string;
+  tag?: string;
   size?: string;
-  era?: string;
+  condition?: string;
   availability?: Availability | "all";
   priceRange?: "all" | "under-700" | "700-900" | "over-900";
   sort?: SortKey;
   page?: number;
   perPage?: number;
-  /** Full-text search across title, brand, era, size */
   q?: string;
 }
 
 export interface ProductInput {
   id: string;
   title: string;
-  brand: string;
-  era: string;
   price: number;
-  currency?: "EGP";
+  priceLabel?: string;
   availability: Availability;
+  tag: string;
+  condition: string;
+  description: string;
   size: string;
+  imageUrl?: string | null;
   images?: string[];
+  sortOrder?: number;
+  brand?: string;
+  era?: string;
+  currency?: string;
   productId?: string[];
   measurements?: string[];
 }
@@ -58,9 +63,9 @@ function buildWhere(params: ListParams): { clause: string; args: unknown[] } {
     args.push(900);
   }
 
-  if (params.brand) {
-    where.push("brand = ?");
-    args.push(params.brand);
+  if (params.tag) {
+    where.push("tag = ?");
+    args.push(params.tag);
   }
 
   if (params.size) {
@@ -68,15 +73,17 @@ function buildWhere(params: ListParams): { clause: string; args: unknown[] } {
     args.push(params.size);
   }
 
-  if (params.era) {
-    where.push("era = ?");
-    args.push(params.era);
+  if (params.condition) {
+    where.push("condition = ?");
+    args.push(params.condition);
   }
 
   if (params.q?.trim()) {
     const term = `%${params.q.trim()}%`;
-    where.push("(title LIKE ? OR brand LIKE ? OR era LIKE ? OR size LIKE ?)");
-    args.push(term, term, term, term);
+    where.push(
+      "(title LIKE ? OR brand LIKE ? OR era LIKE ? OR tag LIKE ? OR size LIKE ? OR condition LIKE ? OR description LIKE ?)",
+    );
+    args.push(term, term, term, term, term, term, term);
   }
 
   const clause = where.length ? `WHERE ${where.join(" AND ")}` : "";
@@ -89,11 +96,11 @@ function sortSql(sort: SortKey | undefined): string {
       return "ORDER BY price ASC";
     case "price-desc":
       return "ORDER BY price DESC";
-    case "newest":
-      return "ORDER BY createdAt DESC";
     case "featured":
+      return "ORDER BY sortOrder ASC, createdAt DESC";
+    case "newest":
     default:
-      return "ORDER BY createdAt DESC";
+      return "ORDER BY sortOrder ASC, createdAt DESC";
   }
 }
 
@@ -135,7 +142,7 @@ export async function getProductById(id: string): Promise<Product | null> {
 export async function getRelated(id: string, n = 4): Promise<Product[]> {
   const db = getDB();
   const rows = await db
-    .prepare("SELECT * FROM products WHERE id != ? ORDER BY createdAt DESC LIMIT ?")
+    .prepare("SELECT * FROM products WHERE id != ? ORDER BY sortOrder ASC, createdAt DESC LIMIT ?")
     .bind(id, n)
     .all<ProductRow>();
   return (rows.results ?? []).map(rowToProduct);
@@ -147,8 +154,8 @@ export async function createProduct(input: ProductInput): Promise<Product> {
   const product: Product = {
     id: input.id,
     title: input.title,
-    brand: input.brand,
-    era: input.era,
+    brand: input.brand ?? "",
+    era: input.era ?? "",
     price: input.price,
     currency: input.currency ?? "EGP",
     availability: input.availability,
@@ -156,13 +163,19 @@ export async function createProduct(input: ProductInput): Promise<Product> {
     images: input.images ?? [],
     productId: input.productId ?? [],
     measurements: input.measurements ?? [],
+    priceLabel: input.priceLabel ?? "",
+    sortOrder: input.sortOrder ?? 0,
+    description: input.description,
+    tag: input.tag,
+    condition: input.condition,
+    imageUrl: input.imageUrl ?? null,
     createdAt: now,
   };
 
   await db
     .prepare(
-      `INSERT INTO products (id, title, brand, era, price, currency, availability, size, images, productId, measurements, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (id, title, brand, era, price, currency, availability, size, images, productId, measurements, createdAt, priceLabel, sortOrder, description, tag, condition, imageUrl)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       product.id,
@@ -173,10 +186,16 @@ export async function createProduct(input: ProductInput): Promise<Product> {
       product.currency,
       product.availability,
       product.size,
-      JSON.stringify(product.images),
-      JSON.stringify(product.productId),
-      JSON.stringify(product.measurements),
+      JSON.stringify(product.images ?? []),
+      JSON.stringify(product.productId ?? []),
+      JSON.stringify(product.measurements ?? []),
       product.createdAt,
+      product.priceLabel,
+      product.sortOrder,
+      product.description,
+      product.tag,
+      product.condition,
+      product.imageUrl,
     )
     .run();
 
@@ -189,8 +208,8 @@ export async function createProducts(inputs: ProductInput[]): Promise<Product[]>
   const products: Product[] = inputs.map((input, i) => ({
     id: input.id,
     title: input.title,
-    brand: input.brand,
-    era: input.era,
+    brand: input.brand ?? "",
+    era: input.era ?? "",
     price: input.price,
     currency: input.currency ?? "EGP",
     availability: input.availability,
@@ -198,12 +217,18 @@ export async function createProducts(inputs: ProductInput[]): Promise<Product[]>
     images: input.images ?? [],
     productId: input.productId ?? [],
     measurements: input.measurements ?? [],
+    priceLabel: input.priceLabel,
+    sortOrder: input.sortOrder ?? 0,
+    description: input.description,
+    tag: input.tag,
+    condition: input.condition,
+    imageUrl: input.imageUrl ?? null,
     createdAt: now + i,
   }));
 
   const stmt = db.prepare(
-    `INSERT INTO products (id, title, brand, era, price, currency, availability, size, images, productId, measurements, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO products (id, title, brand, era, price, currency, availability, size, images, productId, measurements, createdAt, priceLabel, sortOrder, description, tag, condition, imageUrl)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   );
 
   await db.batch(
@@ -217,10 +242,16 @@ export async function createProducts(inputs: ProductInput[]): Promise<Product[]>
         p.currency,
         p.availability,
         p.size,
-        JSON.stringify(p.images),
-        JSON.stringify(p.productId),
-        JSON.stringify(p.measurements),
+        JSON.stringify(p.images ?? []),
+        JSON.stringify(p.productId ?? []),
+        JSON.stringify(p.measurements ?? []),
         p.createdAt,
+        p.priceLabel,
+        p.sortOrder,
+        p.description,
+        p.tag,
+        p.condition,
+        p.imageUrl,
       ),
     ),
   );
@@ -231,7 +262,7 @@ export async function createProducts(inputs: ProductInput[]): Promise<Product[]>
 export async function deleteSoldProducts(): Promise<number> {
   const db = getDB();
   const res = await db.prepare("DELETE FROM products WHERE availability = 'sold'").run();
-  return (res.meta as { changes?: number } | undefined)?.changes ?? 0;
+  return (res.meta as { changes?: number | undefined } | undefined)?.changes ?? 0;
 }
 
 export async function updateProduct(
@@ -245,16 +276,28 @@ export async function updateProduct(
     ...existing,
     ...patch,
     id: existing.id,
+    title: patch.title ?? existing.title,
+    brand: patch.brand ?? existing.brand,
+    era: patch.era ?? existing.era,
+    price: patch.price ?? existing.price,
     currency: patch.currency ?? existing.currency,
+    availability: patch.availability ?? existing.availability,
+    size: patch.size ?? existing.size,
     images: patch.images ?? existing.images,
     productId: patch.productId ?? existing.productId,
     measurements: patch.measurements ?? existing.measurements,
+    priceLabel: patch.priceLabel ?? existing.priceLabel,
+    sortOrder: patch.sortOrder ?? existing.sortOrder,
+    description: patch.description ?? existing.description,
+    tag: patch.tag ?? existing.tag,
+    condition: patch.condition ?? existing.condition,
+    imageUrl: patch.imageUrl ?? existing.imageUrl,
   };
 
   await getDB()
     .prepare(
       `UPDATE products
-       SET title = ?, brand = ?, era = ?, price = ?, currency = ?, availability = ?, size = ?, images = ?, productId = ?, measurements = ?
+       SET title = ?, brand = ?, era = ?, price = ?, currency = ?, availability = ?, size = ?, images = ?, productId = ?, measurements = ?, priceLabel = ?, sortOrder = ?, description = ?, tag = ?, condition = ?, imageUrl = ?
        WHERE id = ?`,
     )
     .bind(
@@ -265,9 +308,15 @@ export async function updateProduct(
       merged.currency,
       merged.availability,
       merged.size,
-      JSON.stringify(merged.images),
-      JSON.stringify(merged.productId),
-      JSON.stringify(merged.measurements),
+      JSON.stringify(merged.images ?? []),
+      JSON.stringify(merged.productId ?? []),
+      JSON.stringify(merged.measurements ?? []),
+      merged.priceLabel,
+      merged.sortOrder ?? 0,
+      merged.description,
+      merged.tag,
+      merged.condition,
+      merged.imageUrl,
       merged.id,
     )
     .run();
@@ -275,47 +324,54 @@ export async function updateProduct(
   return merged;
 }
 
+export async function reorderProducts(orderedIds: string[]): Promise<void> {
+  const db = getDB();
+  const stmt = db.prepare("UPDATE products SET sortOrder = ? WHERE id = ?");
+  const batch = orderedIds.map((id, idx) => stmt.bind(idx, id));
+  await db.batch(batch);
+}
+
 export async function deleteProduct(id: string): Promise<boolean> {
   const res = await getDB().prepare("DELETE FROM products WHERE id = ?").bind(id).run();
   return res.success;
 }
 
-export async function toggleSold(id: string): Promise<Product | null> {
-  const existing = await getProductById(id);
-  if (!existing) return null;
-  const next: Availability = existing.availability === "sold" ? "available" : "sold";
-  return updateProduct(id, { availability: next });
-}
-
-export interface DashboardStats {
+export async function getDashboardStats(): Promise<{
   total: number;
   available: number;
   sold: number;
   oneLeft: number;
   revenue: number;
-  topBrands: { brand: string; count: number }[];
-  recentRevenue: number;
-  averagePrice: number;
-}
-
-export async function getDashboardStats(): Promise<DashboardStats> {
+  avgOrderValue: number;
+  avgOrderCount: number;
+  topTags: { tag: string; count: number }[];
+}> {
   const db = getDB();
   const rows = await db
     .prepare(
       `SELECT availability, COUNT(*) as count, SUM(CASE WHEN availability = 'sold' THEN price ELSE 0 END) as revenue
        FROM products GROUP BY availability`,
     )
-    .all<{ availability: Availability; count: number; revenue: number | null }>();
+    .all<{ availability: string; count: number; revenue: number | null }>();
 
-  const stats: DashboardStats = {
+  const stats: {
+    total: number;
+    available: number;
+    sold: number;
+    oneLeft: number;
+    revenue: number;
+    avgOrderValue: number;
+    avgOrderCount: number;
+    topTags: { tag: string; count: number }[];
+  } = {
     total: 0,
     available: 0,
     sold: 0,
     oneLeft: 0,
     revenue: 0,
-    topBrands: [],
-    recentRevenue: 0,
-    averagePrice: 0,
+    avgOrderValue: 0,
+    avgOrderCount: 0,
+    topTags: [],
   };
 
   for (const r of rows.results ?? []) {
@@ -329,38 +385,34 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     if (r.availability === "one-left") stats.oneLeft = count;
   }
 
-  const brandRows = await db
+  const orderStatsRows = await db
     .prepare(
-      `SELECT brand, COUNT(*) as count FROM products WHERE brand != '' GROUP BY brand ORDER BY count DESC LIMIT 5`,
+      `SELECT COUNT(*) as count, COALESCE(AVG(total), 0) as avg, COALESCE(SUM(total), 0) as revenue
+       FROM orders WHERE status = 'completed'`,
     )
-    .all<{ brand: string; count: number }>();
-  stats.topBrands = (brandRows.results ?? []).map((r) => ({ brand: r.brand, count: r.count }));
+    .all<{ count: number; avg: number; revenue: number }>();
+  const orderStats = orderStatsRows.results?.[0];
+  if (orderStats) {
+    stats.avgOrderValue = orderStats.avg ?? 0;
+    stats.avgOrderCount = orderStats.count ?? 0;
+  }
 
-  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-  const recentRow = await db
+  const tagRows = await db
     .prepare(
-      `SELECT COALESCE(SUM(price), 0) as revenue FROM products WHERE availability = 'sold' AND createdAt >= ?`,
+      `SELECT tag, COUNT(*) as count FROM products WHERE tag != '' GROUP BY tag ORDER BY count DESC LIMIT 5`,
     )
-    .bind(thirtyDaysAgo)
-    .first<{ revenue: number }>();
-  stats.recentRevenue = recentRow?.revenue ?? 0;
-
-  const avgRow = await db
-    .prepare(
-      `SELECT COALESCE(ROUND(AVG(price)), 0) as avg FROM products WHERE availability IN ('available', 'one-left')`,
-    )
-    .first<{ avg: number }>();
-  stats.averagePrice = avgRow?.avg ?? 0;
+    .all<{ tag: string; count: number }>();
+  stats.topTags = (tagRows.results ?? []).map((r) => ({ tag: r.tag, count: r.count }));
 
   return stats;
 }
 
-export async function getDistinctBrands(): Promise<string[]> {
+export async function getDistinctTags(): Promise<string[]> {
   const db = getDB();
   const rows = await db
-    .prepare(`SELECT DISTINCT brand FROM products WHERE brand != '' ORDER BY brand ASC`)
-    .all<{ brand: string }>();
-  return (rows.results ?? []).map((r) => r.brand);
+    .prepare(`SELECT DISTINCT tag FROM products WHERE tag != '' ORDER BY tag ASC`)
+    .all<{ tag: string }>();
+  return (rows.results ?? []).map((r) => r.tag);
 }
 
 export async function getDistinctSizes(): Promise<string[]> {
@@ -371,12 +423,12 @@ export async function getDistinctSizes(): Promise<string[]> {
   return (rows.results ?? []).map((r) => r.size);
 }
 
-export async function getDistinctEras(): Promise<string[]> {
+export async function getDistinctConditions(): Promise<string[]> {
   const db = getDB();
   const rows = await db
-    .prepare(`SELECT DISTINCT era FROM products WHERE era != '' ORDER BY era ASC`)
-    .all<{ era: string }>();
-  return (rows.results ?? []).map((r) => r.era);
+    .prepare(`SELECT DISTINCT condition FROM products WHERE condition != '' ORDER BY condition ASC`)
+    .all<{ condition: string }>();
+  return (rows.results ?? []).map((r) => r.condition);
 }
 
 export async function searchProducts(query: string): Promise<Product[]> {
@@ -385,11 +437,11 @@ export async function searchProducts(query: string): Promise<Product[]> {
   const rows = await db
     .prepare(
       `SELECT * FROM products
-       WHERE title LIKE ? OR brand LIKE ? OR era LIKE ? OR size LIKE ? OR id LIKE ?
-       ORDER BY createdAt DESC
+       WHERE title LIKE ? OR brand LIKE ? OR era LIKE ? OR tag LIKE ? OR size LIKE ? OR condition LIKE ? OR id LIKE ?
+       ORDER BY sortOrder ASC, createdAt DESC
        LIMIT 50`,
     )
-    .bind(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm)
+    .bind(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm)
     .all<ProductRow>();
   return (rows.results ?? []).map(rowToProduct);
 }

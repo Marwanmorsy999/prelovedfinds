@@ -175,14 +175,13 @@ export function BulkDropDialog({
       const payload = items.map((it) => ({
         id: it.id,
         title: it.title,
-        brand: it.brand || "Unbranded",
-        era: it.era || "Unknown",
+        tag: it.category || "TEE",
+        condition: it.condition || "Good",
+        description: it.description || "",
         price: parseInt(it.price, 10),
         size: it.size || "One Size",
         availability: it.availability,
         images: it.images,
-        productId: [] as string[],
-        measurements: [] as string[],
       }));
       await createProductsBulkFn({ data: { items: payload } });
       toast.success(`Dropped ${payload.length} item${payload.length > 1 ? "s" : ""}`);

@@ -19,7 +19,7 @@ export const Route = createFileRoute("/product/$id")({
     }
     const { product } = loaderData;
     const title = `${product.title} - Preloved Finds`;
-    const desc = `${product.brand} · ${product.era} · ${product.size}. One-of-one at Preloved Finds.`;
+    const desc = `${product.tag} · ${product.condition} · ${product.size}. One-of-one at Preloved Finds.`;
     return {
       meta: [
         { title },
@@ -58,7 +58,6 @@ function ProductPage() {
 
   return (
     <div className="page-enter">
-      {/* Breadcrumb */}
       <div className="border-b border-[#e5e7eb] px-4 py-3 md:px-8">
         <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
           <a href="/" className="hover:text-[#1a1a1a] transition-colors">Home</a>
@@ -69,14 +68,12 @@ function ProductPage() {
         </p>
       </div>
 
-      {/* Product layout */}
       <div className="mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-14">
         <div className="grid gap-10 md:grid-cols-[3fr_2fr] md:gap-14">
           <ProductGallery images={product.images} title={product.title} />
           <ProductInfo product={product} />
         </div>
 
-        {/* Related products */}
         {related.length > 0 && (
           <section className="mt-20 border-t border-[#e5e7eb] pt-12">
             <h2 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a] mb-8">

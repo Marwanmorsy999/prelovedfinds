@@ -32,7 +32,7 @@ export function ProductInfo({ product }: { product: Product }) {
     if (sold || adding || alreadyInCart) return;
     setAdding(true);
     setTimeout(() => {
-      add({ id: product.id, title: product.title, price: product.price, currency: product.currency });
+      add({ id: product.id, name: product.title, price: product.price, priceLabel: product.priceLabel });
       setAdding(false);
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
@@ -41,17 +41,18 @@ export function ProductInfo({ product }: { product: Product }) {
 
   return (
     <div className="space-y-6 md:sticky md:top-28 md:self-start">
-      {/* Title & price */}
       <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7280] mb-1">
+          {product.tag}
+        </p>
         <h1 className="text-[22px] font-bold text-[#1a1a1a] leading-tight">
           {product.title}
         </h1>
         <p className="mt-2 text-[18px] font-semibold text-[#1a1a1a]">
-          LE {product.price.toLocaleString()}
+          {product.priceLabel ? product.priceLabel : `LE ${product.price.toLocaleString()}`}
         </p>
       </div>
 
-      {/* Availability badge */}
       <div>
         {sold && (
           <span className="inline-block bg-[#f4f4f4] text-[#6b7280] text-[11px] font-semibold uppercase tracking-widest px-3 py-1 border border-[#e5e7eb]">
@@ -70,14 +71,17 @@ export function ProductInfo({ product }: { product: Product }) {
         )}
       </div>
 
-      {/* Size */}
+      <div className="border border-[#e5e7eb] px-4 py-3">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7280] mb-1">Condition</p>
+        <p className="text-[14px] font-medium text-[#1a1a1a]">{product.condition}</p>
+      </div>
+
       <div className="border border-[#e5e7eb] px-4 py-3">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7280] mb-1">Size</p>
         <p className="text-[14px] font-medium text-[#1a1a1a]">{product.size}</p>
         <p className="text-[11px] text-[#9ca3af] mt-0.5">One of one — no restocks</p>
       </div>
 
-      {/* Add to cart */}
       <div className="space-y-2.5">
         <button
           disabled={sold || alreadyInCart}
@@ -105,7 +109,6 @@ export function ProductInfo({ product }: { product: Product }) {
         )}
       </div>
 
-      {/* Save */}
       <button
         onClick={() => setSaved(toggleWishlist(product.id))}
         className="flex items-center gap-2 text-[12px] text-[#6b7280] hover:text-[#1a1a1a] transition-colors"
@@ -114,46 +117,25 @@ export function ProductInfo({ product }: { product: Product }) {
         {saved ? "Saved" : "Save for later"}
       </button>
 
-      {/* Product details */}
-      {product.productId.length > 0 && (
+      {product.description.length > 0 && (
         <div className="border-t border-[#e5e7eb] pt-5">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-[#1a1a1a] mb-3">
             Product Details
           </p>
           <ul className="space-y-1.5">
-            {product.productId.map((line, i) => (
-              <li key={i} className="text-[13px] text-[#6b7280] flex items-start gap-2">
-                <span className="mt-1.5 h-1 w-1 rounded-full bg-[#9ca3af] flex-shrink-0" />
-                {line}
-              </li>
-            ))}
+            {product.description
+              .split("\n")
+              .filter(Boolean)
+              .map((line, i) => (
+                <li key={i} className="text-[13px] text-[#6b7280] flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 rounded-full bg-[#9ca3af] flex-shrink-0" />
+                  {line}
+                </li>
+              ))}
           </ul>
         </div>
       )}
 
-      {/* Measurements */}
-      {product.measurements.length > 0 && (
-        <div className="border-t border-[#e5e7eb] pt-5">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#1a1a1a] mb-3">
-            Measurements
-          </p>
-          <div className="space-y-2">
-            {product.measurements.map((line, i) => {
-              const parts = line.split(": ");
-              const label = parts[0];
-              const value = parts.slice(1).join(": ");
-              return (
-                <div key={i} className="flex justify-between text-[13px] border-b border-[#f4f4f4] pb-2 last:border-0">
-                  <span className="text-[#6b7280]">{label}</span>
-                  <span className="font-medium text-[#1a1a1a]">{value || line}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Shipping */}
       <div className="border-t border-[#e5e7eb] pt-5">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-[#1a1a1a] mb-2">
           Shipping & Returns

@@ -5,36 +5,6 @@ import { ArrowLeft, Phone, MapPin } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { createOrderFn } from "@/lib/functions/orders";
 
-const GOVERNORATES = [
-  "Cairo",
-  "Giza",
-  "Alexandria",
-  "Dakahlia",
-  "Red Sea",
-  "Beheira",
-  "Fayoum",
-  "Gharbia",
-  "Ismailia",
-  "Menofia",
-  "Minya",
-  "Qaliubiya",
-  "New Valley",
-  "Suez",
-  "Aswan",
-  "Asyut",
-  "Beni Suef",
-  "Port Said",
-  "Damietta",
-  "Sharkia",
-  "South Sinai",
-  "Kafr El Sheikh",
-  "Matrouh",
-  "Luxor",
-  "Qena",
-  "North Sinai",
-  "Sohag",
-];
-
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
@@ -51,14 +21,14 @@ function Checkout() {
   const [placing, setPlacing] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [governorate, setGovernorate] = useState(GOVERNORATES[0]);
+  const [pickup, setPickup] = useState(0);
   const [address, setAddress] = useState("");
 
-  const subtotal = items.reduce((sum, i) => sum + i.price, 0);
+  const total = items.reduce((sum, i) => sum + i.price, 0);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || !address.trim() || !governorate.trim()) {
+    if (!name.trim() || !phone.trim() || !address.trim()) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -76,17 +46,17 @@ function Checkout() {
       await createOrderFn({
         data: {
           id: orderId,
-          items: items.map((i) => ({ id: i.id, title: i.title, price: i.price, quantity: 1 })),
+           items: items.map((i) => ({ name: i.name, size: (i as any).size, price: i.price, priceLabel: i.priceLabel })),
           customerName: name.trim(),
           customerPhone: phone.trim(),
-          governorate,
+          pickup,
           address: address.trim(),
-          subtotal,
+          total,
         },
       });
       clear();
       toast.success("Order placed successfully");
-      navigate({ to: "/" });
+      navigate({ to: "/", search: {} });
     } catch {
       toast.error("Failed to place order. Try again.");
     } finally {
@@ -104,7 +74,7 @@ function Checkout() {
           No items yet
         </h1>
         <button
-          onClick={() => navigate({ to: "/shop" })}
+                onClick={() => navigate({ to: "/shop", search: {} })}
           className="h-11 bg-[#1a1a1a] text-white px-8 text-[12px] font-bold uppercase tracking-widest hover:bg-[#6b7280] transition-colors"
         >
           Shop All
@@ -118,7 +88,7 @@ function Checkout() {
       <div className="border-b border-[#e5e7eb] px-4 py-6 md:px-8">
         <div className="mx-auto max-w-7xl flex items-center gap-3">
           <button
-            onClick={() => navigate({ to: "/shop" })}
+                  onClick={() => navigate({ to: "/shop", search: {} })}
             className="p-1 text-[#6b7280] hover:text-[#1a1a1a] transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -184,18 +154,15 @@ function Checkout() {
                 </div>
                 <div>
                   <label className="block text-[12px] font-semibold text-[#1a1a1a] mb-1.5">
-                    Governorate
+                    Pickup
                   </label>
                   <select
-                    value={governorate}
-                    onChange={(e) => setGovernorate(e.target.value)}
+                    value={String(pickup)}
+                    onChange={(e) => setPickup(Number(e.target.value))}
                     className="w-full h-10 appearance-none border border-[#e5e7eb] bg-white pl-3 pr-8 text-[12px] font-medium text-[#1a1a1a] outline-none hover:border-[#1a1a1a] transition-colors cursor-pointer"
                   >
-                    {GOVERNORATES.map((g) => (
-                      <option key={g} value={g}>
-                        {g}
-                      </option>
-                    ))}
+                    <option value="0">Delivery</option>
+                    <option value="1">Zamalek pickup</option>
                   </select>
                 </div>
               </div>
@@ -212,7 +179,7 @@ function Checkout() {
                   <div key={item.id} className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-medium text-[#1a1a1a] truncate">
-                        {item.title}
+                        {item.name}
                       </p>
                       <p className="text-[11px] text-[#9ca3af]">Qty 1</p>
                     </div>
@@ -224,10 +191,10 @@ function Checkout() {
               </div>
               <div className="border-t border-[#e5e7eb] mt-4 pt-4 flex items-center justify-between">
                 <span className="text-[12px] font-semibold uppercase tracking-widest text-[#6b7280]">
-                  Subtotal
+                  Total
                 </span>
                 <span className="text-[16px] font-bold text-[#1a1a1a]">
-                  LE {subtotal.toLocaleString()}
+                  LE {total.toLocaleString()}
                 </span>
               </div>
             </div>
