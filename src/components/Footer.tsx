@@ -47,7 +47,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="https://instagram.com/prelovedfinds"
+                   href="https://www.instagram.com/preloved.finds._"
                   target="_blank"
                   rel="noreferrer"
                   className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"

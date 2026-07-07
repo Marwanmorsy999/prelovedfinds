@@ -118,13 +118,13 @@ function Contact() {
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:gap-8">
             <a
-              href="https://instagram.com/prelovedfinds"
+              href="https://www.instagram.com/preloved.finds._"
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2.5 text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
             >
               <Instagram className="h-4 w-4" />
-              @prelovedfinds
+               @preloved.finds._
             </a>
           </div>
         </div>
