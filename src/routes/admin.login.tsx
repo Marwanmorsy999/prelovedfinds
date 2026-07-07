@@ -9,6 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/admin/login")({
+  head: () => ({
+    meta: [
+      { title: "" },
+    ],
+  }),
   beforeLoad: async () => {
     const authed = await getIsAuthed();
     if (authed) throw redirect({ to: "/admin" });

@@ -40,15 +40,29 @@ function Home() {
           <div className="absolute inset-0 bg-black/30" />
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <h1 className="text-white font-bold text-[40px] md:text-[64px] uppercase tracking-[0.06em] leading-none mb-4">
-            Preloved Finds
+          <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+          <h1
+            className="relative text-white font-bold text-[40px] md:text-[64px] uppercase tracking-[0.06em]"
+            style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif", lineHeight: 1.2 }}
+          >
+            <span className="block">Preloved</span>
+            <span className="block">Finds</span>
           </h1>
-          <p className="text-white/70 text-[12px] md:text-[14px] font-medium uppercase tracking-[0.15em] mb-8">
-            worn once worn well now yours
+          <p
+            className="relative text-white/70 text-[12px] md:text-[14px] uppercase tracking-[0.15em]"
+            style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif", lineHeight: 1.5 }}
+          >
+            <span className="block">worn</span>
+            <span className="block">once</span>
+            <span className="block">worn</span>
+            <span className="block">well</span>
+            <span className="block">now</span>
+            <span className="block">yours</span>
           </p>
           <a
             href="/shop"
-            className="inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors"
+            className="relative inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors mt-6"
+            style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif" }}
           >
             Shop All
           </a>

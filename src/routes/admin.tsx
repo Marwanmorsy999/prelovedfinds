@@ -27,6 +27,11 @@ import type { Product, Availability } from "@/lib/products";
 const PER_PAGE = 24;
 
 export const Route = createFileRoute("/admin")({
+  head: () => ({
+    meta: [
+      { title: "" },
+    ],
+  }),
   beforeLoad: async ({ location }) => {
     const authed = await getIsAuthed();
     if (!authed && location.pathname !== "/admin/login") {
