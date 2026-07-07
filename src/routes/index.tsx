@@ -68,36 +68,6 @@ function Home() {
         <ProductGrid products={newPicks} />
       </section>
 
-      {/* Category quick links */}
-      <section className="border-t border-[#e5e7eb]">
-        <div className="mx-auto max-w-7xl px-4 py-14 md:px-8">
-          <h2 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a] mb-8 text-center">
-            Shop by Category
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: "Tops", sub: "Tees & shirts" },
-              { label: "Bottoms", sub: "Jeans & trousers" },
-              { label: "Jackets", sub: "Outerwear" },
-              { label: "Sweatshirts", sub: "Pullovers & hoodies" },
-            ].map((cat) => (
-              <a
-                key={cat.label}
-                href="/shop"
-                className="group flex flex-col items-center justify-center aspect-square bg-[#f4f4f4] hover:bg-[#ebebeb] transition-colors"
-              >
-                <span className="text-[18px] font-bold uppercase tracking-widest text-[#1a1a1a] group-hover:text-[#6b7280] transition-colors">
-                  {cat.label}
-                </span>
-                <span className="text-[11px] text-[#9ca3af] uppercase tracking-widest mt-1">
-                  {cat.sub}
-                </span>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Newsletter */}
       <Newsletter />
     </div>

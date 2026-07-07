@@ -52,7 +52,7 @@ export function Navigation() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e5e7eb]/80 transition-all duration-300">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#e5e7eb] transition-all duration-300">
         <div className="mx-auto max-w-7xl flex h-20 items-center justify-between px-4 md:px-8">
 
           {/* Left: hamburger mobile / nav links desktop */}
