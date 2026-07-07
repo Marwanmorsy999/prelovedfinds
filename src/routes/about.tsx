@@ -63,7 +63,7 @@ function About() {
             existed before you, and will exist after. That's the feeling we're after.
           </p>
 
-          <div className="border-l-4 border-[#E8441A] pl-5 italic text-[#1a1a1a]">
+          <div className="border-l-4 border-[#1a1a1a] pl-5 italic text-[#1a1a1a]">
             "Every piece has a story. We're just the ones who find it."
           </div>
 
@@ -74,7 +74,7 @@ function About() {
         <div className="mt-14 text-center">
           <a
             href="/shop"
-            className="inline-flex h-12 items-center justify-center bg-[#1a1a1a] text-white px-10 text-[12px] font-semibold uppercase tracking-widest hover:bg-[#E8441A] transition-colors"
+            className="inline-flex h-12 items-center justify-center bg-[#1a1a1a] text-white px-10 text-[12px] font-semibold uppercase tracking-widest hover:bg-[#6b7280] transition-colors"
           >
             Shop the Collection
           </a>

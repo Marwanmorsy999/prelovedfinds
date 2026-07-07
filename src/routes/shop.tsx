@@ -98,8 +98,8 @@ function Shop() {
               onClick={() => updateSearch({ category: cat, page: 1 })}
               className={`h-9 px-4 text-[11px] font-bold uppercase tracking-widest border transition-colors duration-150 ${
                 search.category === cat
-                  ? "bg-[#E8441A] text-white border-[#E8441A]"
-                  : "bg-white text-[#6b7280] border-[#e5e7eb] hover:border-[#E8441A] hover:text-[#E8441A]"
+                  ? "bg-[#1a1a1a] text-white border-[#1a1a1a]"
+                  : "bg-white text-[#6b7280] border-[#e5e7eb] hover:border-[#1a1a1a] hover:text-[#1a1a1a]"
               }`}
             >
               {cat}
@@ -160,7 +160,7 @@ function Shop() {
           {hasActiveFilters && (
             <button
               onClick={() => updateSearch({ category: "all", availability: "all", page: 1 })}
-              className="flex items-center gap-1.5 h-10 px-3 text-[11px] font-semibold uppercase tracking-widest text-[#E8441A] border border-[#E8441A]/30 hover:border-[#E8441A] transition-colors"
+              className="flex items-center gap-1.5 h-10 px-3 text-[11px] font-semibold uppercase tracking-widest text-[#1a1a1a] border border-[#e5e7eb] hover:border-[#1a1a1a] transition-colors"
             >
               <X className="h-3 w-3" /> Clear
             </button>
@@ -200,7 +200,7 @@ function Shop() {
             <p className="text-[13px] text-[#9ca3af] mb-6">Try a different category or clear your filters</p>
             <button
               onClick={() => { setSearchQuery(""); updateSearch({ category: "all", availability: "all", sort: "newest", page: 1 }); }}
-              className="h-11 bg-[#1a1a1a] text-white px-8 text-[12px] font-bold uppercase tracking-widest hover:bg-[#E8441A] transition-colors"
+               className="h-11 bg-[#1a1a1a] text-white px-8 text-[12px] font-bold uppercase tracking-widest hover:bg-[#6b7280] transition-colors"
             >
               Clear filters
             </button>

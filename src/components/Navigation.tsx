@@ -58,7 +58,7 @@ export function Navigation() {
           {/* Left: hamburger mobile / nav links desktop */}
           <div className="flex items-center gap-8 w-1/3">
             <button
-              className="md:hidden p-1 text-[#1a1a1a] hover:text-[#E8441A] transition-colors"
+              className="md:hidden p-1 text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
               onClick={() => setMobileOpen(true)}
               aria-label="Open menu"
             >
@@ -72,11 +72,11 @@ export function Navigation() {
                     key={item.href}
                     to={item.href}
                     className={`relative text-[12px] font-semibold uppercase tracking-widest transition-colors duration-200 group ${
-                      active ? "text-[#E8441A]" : "text-[#6b7280] hover:text-[#1a1a1a]"
+                      active ? "text-[#1a1a1a]" : "text-[#6b7280] hover:text-[#1a1a1a]"
                     }`}
                   >
                     {item.label}
-                    <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-[#E8441A] transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"}`} />
+                    <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-[#1a1a1a] transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"}`} />
                   </Link>
                 );
               })}
@@ -105,12 +105,12 @@ export function Navigation() {
             <button
               ref={cartTriggerRef}
               onClick={() => setCartOpen(!cartOpen)}
-              className="relative flex items-center gap-2 text-[#1a1a1a] hover:text-[#E8441A] transition-colors duration-200 group"
+               className="relative flex items-center gap-2 text-[#1a1a1a] hover:text-[#6b7280] transition-colors duration-200 group"
               aria-label={`Cart (${count})`}
             >
               <ShoppingBag className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
               {count > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#E8441A] text-[10px] font-bold text-white">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1a1a1a] text-[10px] font-bold text-white">
                   {count}
                 </span>
               )}
@@ -130,7 +130,7 @@ export function Navigation() {
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#f0f0f0]">
           <p className="text-[13px] font-bold uppercase tracking-widest text-[#1a1a1a]">
-            Bag {count > 0 && <span className="text-[#E8441A]">({count})</span>}
+            Bag {count > 0 && <span className="text-[#1a1a1a]">({count})</span>}
           </p>
           <button
             onClick={() => { setCartOpen(false); cartTriggerRef.current?.focus(); }}
@@ -151,7 +151,7 @@ export function Navigation() {
               <p className="text-[12px] text-[#9ca3af]">Add some pieces to get started</p>
               <button
                 onClick={() => setCartOpen(false)}
-                className="mt-2 h-10 bg-[#1a1a1a] text-white px-6 text-[11px] font-bold uppercase tracking-widest hover:bg-[#E8441A] transition-colors"
+                 className="mt-2 h-10 bg-[#1a1a1a] text-white px-6 text-[11px] font-bold uppercase tracking-widest hover:bg-[#6b7280] transition-colors"
               >
                 Shop All
               </button>
@@ -166,7 +166,7 @@ export function Navigation() {
                 </div>
                 <button
                   onClick={() => remove(item.id)}
-                  className="mt-0.5 p-1 text-[#d1d5db] hover:text-[#E8441A] transition-colors rounded hover:bg-[#fff5f3] flex-shrink-0"
+                   className="mt-0.5 p-1 text-[#d1d5db] hover:text-[#1a1a1a] transition-colors rounded hover:bg-[#f4f4f4] flex-shrink-0"
                   aria-label={`Remove ${item.title}`}
                 >
                   <X className="h-3.5 w-3.5" />
@@ -182,7 +182,7 @@ export function Navigation() {
               <span className="text-[12px] text-[#6b7280] uppercase tracking-widest">Subtotal</span>
               <span className="text-[16px] font-bold text-[#1a1a1a]">LE {cartTotal.toLocaleString()}</span>
             </div>
-            <button className="w-full h-12 bg-[#1a1a1a] text-white text-[12px] font-bold uppercase tracking-widest hover:bg-[#E8441A] transition-colors duration-200">
+            <button className="w-full h-12 bg-[#1a1a1a] text-white text-[12px] font-bold uppercase tracking-widest hover:bg-[#6b7280] transition-colors duration-200">
               Checkout
             </button>
             <button onClick={() => setCartOpen(false)} className="w-full h-10 text-[11px] font-semibold uppercase tracking-widest text-[#9ca3af] hover:text-[#1a1a1a] transition-colors">
@@ -214,7 +214,7 @@ export function Navigation() {
               <Link
                 key={item.href}
                 to={item.href}
-                className={`py-3 text-[24px] font-bold uppercase tracking-widest border-b border-[#f4f4f4] transition-colors duration-150 ${active ? "text-[#E8441A]" : "text-[#1a1a1a]"}`}
+                className={`py-3 text-[24px] font-bold uppercase tracking-widest border-b border-[#f4f4f4] transition-colors duration-150 ${active ? "text-[#1a1a1a]" : "text-[#1a1a1a]"}`}
               >
                 {item.label}
               </Link>

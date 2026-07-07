@@ -40,12 +40,15 @@ function Home() {
           <div className="absolute inset-0 bg-black/30" />
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <h1 className="text-white font-bold text-[40px] md:text-[64px] uppercase tracking-[0.06em] leading-none mb-8">
+          <h1 className="text-white font-bold text-[40px] md:text-[64px] uppercase tracking-[0.06em] leading-none mb-4">
             Preloved Finds
           </h1>
+          <p className="text-white/70 text-[12px] md:text-[14px] font-medium uppercase tracking-[0.15em] mb-8">
+            worn once worn well now yours
+          </p>
           <a
             href="/shop"
-            className="inline-flex h-12 items-center justify-center bg-[#E8441A] text-white px-10 text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-[#c73a15] transition-colors"
+            className="inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors"
           >
             Shop All
           </a>

@@ -30,7 +30,7 @@ export function Footer() {
                 <li key={item.label}>
                   <a
                     href={item.href}
-                    className="text-[13px] text-[#1a1a1a] hover:text-[#E8441A] transition-colors"
+                    className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
                   >
                     {item.label}
                   </a>
@@ -50,7 +50,7 @@ export function Footer() {
                   href="https://instagram.com/prelovedfinds"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[13px] text-[#1a1a1a] hover:text-[#E8441A] transition-colors"
+                  className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
                 >
                   Instagram
                 </a>
@@ -58,7 +58,7 @@ export function Footer() {
               <li>
                 <a
                   href="mailto:hello@prelovedfinds.com"
-                  className="text-[13px] text-[#1a1a1a] hover:text-[#E8441A] transition-colors"
+                  className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
                 >
                   hello@prelovedfinds.com
                 </a>
