@@ -157,7 +157,7 @@ function RootComponent() {
       <CartProvider>
         <div className="flex min-h-screen flex-col bg-white">
           <Navigation />
-          <main className="flex-1 pt-[104px]" id="main-content">
+          <main className="flex-1 pt-[80px]" id="main-content">
             <Outlet />
           </main>
           <Footer />
