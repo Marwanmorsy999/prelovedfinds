@@ -40,21 +40,30 @@ function Home() {
           <div className="absolute inset-0 bg-black/30" />
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-          <p
-            className="relative text-white uppercase tracking-[0.15em]"
-            style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif", lineHeight: 1.5, fontSize: "14px" }}
-          >
-            <span className="block">worn</span>
-            <span className="block">once</span>
-            <span className="block">worn</span>
-            <span className="block">well</span>
-            <span className="block">now</span>
-            <span className="block">yours</span>
-          </p>
+          <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+          <div className="relative space-y-3 md:space-y-4">
+            <p
+              className="text-white uppercase tracking-[0.15em]"
+              style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif", fontSize: "clamp(20px, 3.5vw, 32px)", lineHeight: 1.2 }}
+            >
+              WORN ONCE.
+            </p>
+            <p
+              className="text-white uppercase tracking-[0.15em]"
+              style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif", fontSize: "clamp(20px, 3.5vw, 32px)", lineHeight: 1.2 }}
+            >
+              WORN WELL.
+            </p>
+            <p
+              className="text-white uppercase tracking-[0.15em]"
+              style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif", fontSize: "clamp(20px, 3.5vw, 32px)", lineHeight: 1.2 }}
+            >
+              NOW YOURS.
+            </p>
+          </div>
           <a
             href="/shop"
-            className="relative inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors mt-8"
+            className="relative inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors mt-10 md:mt-14"
             style={{ fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif", fontSize: "14px" }}
           >
             Shop All
