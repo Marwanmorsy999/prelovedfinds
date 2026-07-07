@@ -45,6 +45,38 @@ const EGYPTIAN_GOVERNORATES = [
   "Suez",
 ];
 
+const SHIPPING_ZONES: Record<string, number> = {
+  // 100 EGP zone — Greater Cairo, Delta, Canal cities, Alexandria
+  Cairo: 100,
+  Giza: 100,
+  Qalyubia: 100,
+  Alexandria: 100,
+  Beheira: 100,
+  Monufia: 100,
+  Gharbia: 100,
+  "Kafr El Sheikh": 100,
+  Dakahlia: 100,
+  Sharqia: 100,
+  Damietta: 100,
+  "Port Said": 100,
+  Ismailia: 100,
+  Suez: 100,
+  // 150 EGP zone — Upper Egypt, desert governorates, Sinai
+  "Beni Suef": 150,
+  "Faiyum": 150,
+  Minya: 150,
+  Asyut: 150,
+  Sohag: 150,
+  Qena: 150,
+  Luxor: 150,
+  Aswan: 150,
+  "Red Sea": 150,
+  "New Valley": 150,
+  Matrouh: 150,
+  "North Sinai": 150,
+  "South Sinai": 150,
+};
+
 function Checkout() {
   const { items, clear, count } = useCart();
   const navigate = useNavigate();
@@ -54,7 +86,9 @@ function Checkout() {
   const [governorate, setGovernorate] = useState("");
   const [address, setAddress] = useState("");
 
-  const total = items.reduce((sum, i) => sum + i.price, 0);
+  const subtotal = items.reduce((sum, i) => sum + i.price, 0);
+  const shippingCost = governorate ? SHIPPING_ZONES[governorate] ?? 100 : 0;
+  const total = subtotal + shippingCost;
 
   const validateForm = () => {
     if (!name.trim()) {
@@ -65,7 +99,7 @@ function Checkout() {
       toast.error("Please enter your phone number");
       return false;
     }
-    if (!/^01[0-2,5]{1}[0-9]{7}$/.test(phone)) {
+    if (!/^01[0125]\d{8}$/.test(phone)) {
       toast.error("Enter a valid Egyptian phone number (01xxxxxxxxx)");
       return false;
     }
@@ -226,6 +260,12 @@ function Checkout() {
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
                   </div>
+                  {governorate && (
+                    <p className="mt-1.5 text-[12px] text-[#6b7280] flex items-center gap-1">
+                      <Truck className="h-3 w-3" />
+                      Shipping to <strong>{governorate}</strong>: LE {shippingCost.toLocaleString()}
+                    </p>
+                  )}
                 </div>
 
                 {/* Full Address */}
@@ -299,11 +339,13 @@ function Checkout() {
               <div className="px-6 py-5 border-t border-[#e5e7eb] space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-[#6b7280]">Subtotal</span>
-                  <span className="text-[13px] text-[#1a1a1a]">LE {total.toLocaleString()}</span>
+                  <span className="text-[13px] text-[#1a1a1a]">LE {subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-[#6b7280]">Shipping</span>
-                  <span className="text-[13px] text-[#22c55e] font-medium">Free</span>
+                  <span className="text-[13px] text-[#1a1a1a] font-medium">
+                    {governorate ? `LE ${shippingCost.toLocaleString()}` : "—"}
+                  </span>
                 </div>
                 <div className="border-t border-[#e5e7eb] pt-3 flex items-center justify-between">
                   <span className="text-[14px] font-bold text-[#1a1a1a]">Total</span>
@@ -317,7 +359,7 @@ function Checkout() {
               <div className="px-6 pb-6">
                 <button
                   type="submit"
-                  disabled={placing}
+                  disabled={placing || !governorate}
                   className="w-full h-13 bg-[#1a1a1a] text-white text-[13px] font-bold uppercase tracking-widest rounded-lg hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   style={{ height: "52px" }}
                 >

@@ -2,6 +2,7 @@ import type { Product } from "@/lib/products";
 import { useCart } from "@/lib/cart";
 import { Heart } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 
 function getWishlist(): string[] {
   try { return JSON.parse(localStorage.getItem("wishlist") || "[]"); }
@@ -16,7 +17,8 @@ function toggleWishlist(id: string): boolean {
 }
 
 export function ProductInfo({ product }: { product: Product }) {
-  const { add, isInCart } = useCart();
+  const { add, isInCart, buyNow } = useCart();
+  const navigate = useNavigate();
   const sold = product.availability === "sold";
   const oneLeft = product.availability === "one-left";
   const [adding, setAdding] = useState(false);
@@ -101,7 +103,10 @@ export function ProductInfo({ product }: { product: Product }) {
 
         {!sold && (
           <button
-            onClick={handleAdd}
+            onClick={() => {
+              buyNow({ id: product.id, name: product.title, price: product.price, priceLabel: product.priceLabel });
+              navigate({ to: "/checkout" });
+            }}
             className="w-full h-12 border border-ink bg-paper text-ink text-[13px] font-semibold uppercase tracking-widest hover:bg-surface transition-colors"
           >
             Buy it now
