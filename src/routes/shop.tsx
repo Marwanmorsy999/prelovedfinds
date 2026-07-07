@@ -40,8 +40,8 @@ export const Route = createFileRoute("/shop")({
       q?: string;
       page?: number;
     };
-    return {
-      products: listProductsFn({
+    const [products, categories, sizes, conditions] = await Promise.all([
+      listProductsFn({
         data: {
           brand: search.brand === "all" ? undefined : search.brand,
           size: search.size === "all" ? undefined : search.size,
@@ -54,10 +54,11 @@ export const Route = createFileRoute("/shop")({
           q: search.q,
         },
       }),
-      categories: getDistinctBrandsFn(),
-      sizes: getDistinctSizesFn(),
-      conditions: getDistinctErasFn(),
-    };
+      getDistinctBrandsFn(),
+      getDistinctSizesFn(),
+      getDistinctErasFn(),
+    ]);
+    return { products, categories, sizes, conditions };
   },
   component: Shop,
 });
