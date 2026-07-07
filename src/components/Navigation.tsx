@@ -1,4 +1,4 @@
-import { useRouterState, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ShoppingBag, X, Menu } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
@@ -6,6 +6,7 @@ import { Logo } from "@/components/Logo";
 
 export function Navigation() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const admin = useRouterState({
     select: (s) => s.matches[0]?.context?.admin as boolean | undefined,
   });
@@ -182,7 +183,7 @@ export function Navigation() {
               <span className="text-[12px] text-[#6b7280] uppercase tracking-widest">Subtotal</span>
               <span className="text-[16px] font-bold text-[#1a1a1a]">LE {cartTotal.toLocaleString()}</span>
             </div>
-            <button className="w-full h-12 bg-[#1a1a1a] text-white text-[12px] font-bold uppercase tracking-widest hover:bg-[#6b7280] transition-colors duration-200">
+            <button onClick={() => navigate({ to: "/checkout" })} className="w-full h-12 bg-[#1a1a1a] text-white text-[12px] font-bold uppercase tracking-widest hover:bg-[#6b7280] transition-colors duration-200">
               Checkout
             </button>
             <button onClick={() => setCartOpen(false)} className="w-full h-10 text-[11px] font-semibold uppercase tracking-widest text-[#9ca3af] hover:text-[#1a1a1a] transition-colors">

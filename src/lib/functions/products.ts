@@ -12,6 +12,9 @@ import {
   toggleSold,
   getDashboardStats,
   searchProducts,
+  getDistinctBrands,
+  getDistinctSizes,
+  getDistinctEras,
   type ProductInput,
   type ListParams,
 } from "@/lib/products.server";
@@ -104,3 +107,15 @@ export const searchProductsFn = createServerFn({ method: "GET" })
     await requireAdmin();
     return searchProducts(data.query);
   });
+
+export const getDistinctBrandsFn = createServerFn({ method: "GET" }).handler(async () => {
+  return getDistinctBrands();
+});
+
+export const getDistinctSizesFn = createServerFn({ method: "GET" }).handler(async () => {
+  return getDistinctSizes();
+});
+
+export const getDistinctErasFn = createServerFn({ method: "GET" }).handler(async () => {
+  return getDistinctEras();
+});

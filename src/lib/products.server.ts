@@ -4,6 +4,9 @@ import { getDB, rowToProduct, type ProductRow } from "./db";
 export type SortKey = "featured" | "price-asc" | "price-desc" | "newest";
 
 export interface ListParams {
+  brand?: string;
+  size?: string;
+  era?: string;
   availability?: Availability | "all";
   priceRange?: "all" | "under-700" | "700-900" | "over-900";
   sort?: SortKey;
@@ -55,7 +58,21 @@ function buildWhere(params: ListParams): { clause: string; args: unknown[] } {
     args.push(900);
   }
 
-  // Server-side full-text search across key columns
+  if (params.brand) {
+    where.push("brand = ?");
+    args.push(params.brand);
+  }
+
+  if (params.size) {
+    where.push("size = ?");
+    args.push(params.size);
+  }
+
+  if (params.era) {
+    where.push("era = ?");
+    args.push(params.era);
+  }
+
   if (params.q?.trim()) {
     const term = `%${params.q.trim()}%`;
     where.push("(title LIKE ? OR brand LIKE ? OR era LIKE ? OR size LIKE ?)");
@@ -111,10 +128,7 @@ export async function listProducts(params: ListParams = {}): Promise<ListResult>
 
 export async function getProductById(id: string): Promise<Product | null> {
   const db = getDB();
-  const row = await db
-    .prepare("SELECT * FROM products WHERE id = ?")
-    .bind(id)
-    .first<ProductRow>();
+  const row = await db.prepare("SELECT * FROM products WHERE id = ?").bind(id).first<ProductRow>();
   return row ? rowToProduct(row) : null;
 }
 
@@ -339,6 +353,30 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   stats.averagePrice = avgRow?.avg ?? 0;
 
   return stats;
+}
+
+export async function getDistinctBrands(): Promise<string[]> {
+  const db = getDB();
+  const rows = await db
+    .prepare(`SELECT DISTINCT brand FROM products WHERE brand != '' ORDER BY brand ASC`)
+    .all<{ brand: string }>();
+  return (rows.results ?? []).map((r) => r.brand);
+}
+
+export async function getDistinctSizes(): Promise<string[]> {
+  const db = getDB();
+  const rows = await db
+    .prepare(`SELECT DISTINCT size FROM products WHERE size != '' ORDER BY size ASC`)
+    .all<{ size: string }>();
+  return (rows.results ?? []).map((r) => r.size);
+}
+
+export async function getDistinctEras(): Promise<string[]> {
+  const db = getDB();
+  const rows = await db
+    .prepare(`SELECT DISTINCT era FROM products WHERE era != '' ORDER BY era ASC`)
+    .all<{ era: string }>();
+  return (rows.results ?? []).map((r) => r.era);
 }
 
 export async function searchProducts(query: string): Promise<Product[]> {
