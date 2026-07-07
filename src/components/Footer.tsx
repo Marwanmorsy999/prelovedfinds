@@ -57,10 +57,10 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:hello@prelovedfinds.com"
+                  href="/contact"
                   className="text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
                 >
-                  hello@prelovedfinds.com
+                  Contact
                 </a>
               </li>
             </ul>

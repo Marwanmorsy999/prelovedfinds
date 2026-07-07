@@ -38,39 +38,41 @@ function About() {
         </div>
       </section>
 
-      {/* Story */}
-      <section className="mx-auto max-w-3xl px-4 py-16 md:px-8 md:py-20">
-        <div className="space-y-6 text-[15px] leading-relaxed text-[#374151]">
-          <p className="text-[26px] md:text-[28px] font-bold uppercase tracking-tight text-[#1a1a1a]">
-            Welcome to Preloved Finds.
-          </p>
+       {/* Story */}
+       <section className="mx-auto max-w-3xl px-4 py-16 md:px-8 md:py-20">
+         <div className="space-y-6 text-[15px] leading-relaxed text-[#374151]">
+           <p className="text-[26px] md:text-[28px] font-bold uppercase tracking-tight text-[#1a1a1a]">
+             From zero to Hero.
+           </p>
 
-          <p>
-            I started Preloved Finds because I couldn't find the pieces I wanted — vintage with
-            soul, not just vintage for the sake of it. Every Friday morning, I'm at the markets
-            outside Cairo, digging through piles of denim, band tees, and workwear. Looking for the
-            one piece that tells a story.
-          </p>
+           <p>
+             A boy who started with nothing. That journey is the inspiration behind Vintage Page
+             and the passion to build something meaningful.
+           </p>
 
-          <p>
-            Each item here has been inspected, measured, and photographed by hand. We don't buy
-            bulk. We don't source from wholesale lots. Every piece is individually selected for its
-            character, condition, and place in fashion history.
-          </p>
+           <p>
+             We curate unique vintage pieces with a focus on timeless style, quality, and
+             authenticity. Our goal is to make it easier for vintage lovers to discover standout
+             items from different eras, all in one place.
+           </p>
 
-          <p>
-            Vintage isn't a trend — it's an alternative to fast fashion. It's wearing something that
-            existed before you, and will exist after. That's the feeling we're after.
-          </p>
+           <p>
+             Every piece is selected with care to offer something distinctive and full of
+             character.
+           </p>
 
-          <div className="border-l-4 border-[#1a1a1a] pl-5 italic text-[#1a1a1a]">
-            "Every piece has a story. We're just the ones who find it."
-          </div>
+           <p>
+             Thank you for visiting preloved finds.
+           </p>
 
-          <p className="font-semibold text-[#1a1a1a]">— Founder, Preloved Finds</p>
-        </div>
+           <div className="border-l-4 border-[#1a1a1a] pl-5 italic text-[#1a1a1a]">
+             "Every piece has a story. We're just the ones who find it."
+           </div>
 
-        {/* CTA */}
+           <p className="font-semibold text-[#1a1a1a]">— Founder, Preloved Finds</p>
+         </div>
+
+         {/* CTA */}
         <div className="mt-14 text-center">
           <a
             href="/shop"

@@ -30,7 +30,7 @@ function Home() {
   return (
     <div className="page-enter">
       {/* Hero — full viewport */}
-      <section className="relative h-screen min-h-[600px]">
+      <section className="relative h-[70vh] min-h-[400px] md:h-screen md:min-h-[600px]">
         <div className="absolute inset-0 overflow-hidden bg-[#f4f4f4]">
           <img
             src={hero}

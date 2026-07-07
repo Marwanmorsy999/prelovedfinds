@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, Instagram } from "lucide-react";
+import { Instagram } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/contact")({
@@ -117,13 +117,6 @@ function Contact() {
             Or reach us directly
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:gap-8">
-            <a
-              href="mailto:hello@prelovedfinds.com"
-              className="flex items-center gap-2.5 text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
-            >
-              <Mail className="h-4 w-4" />
-              hello@prelovedfinds.com
-            </a>
             <a
               href="https://instagram.com/prelovedfinds"
               target="_blank"
