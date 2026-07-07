@@ -35,6 +35,12 @@ import {
 } from "@/lib/functions/orders";
 import { getSettingFn, setSettingFn } from "@/lib/functions/settings";
 import {
+  listCategoriesFn,
+  createCategoryFn,
+  deleteCategoryFn,
+} from "@/lib/functions/categories";
+import type { Category } from "@/lib/categories.server";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -52,6 +58,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const PER_PAGE = 24;
+const CONDITIONS = ["Excellent", "Good", "Fair"];
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -89,6 +96,7 @@ export const Route = createFileRoute("/admin")({
          tags: [],
          sizes: [],
          conditions: [],
+         dbCategories: [],
        };
      }
      const s = location.search as {
@@ -97,7 +105,7 @@ export const Route = createFileRoute("/admin")({
        condition?: string;
        availability?: string;
      };
-     const [products, stats, orderStats, tags, sizes, conditions] = await Promise.all([
+     const [products, stats, orderStats, tags, sizes, conditions, dbCategories] = await Promise.all([
        listProductsFn({
          data: {
            tag: s.tag === "all" ? undefined : (s.tag as never),
@@ -113,14 +121,12 @@ export const Route = createFileRoute("/admin")({
        getDistinctTagsFn(),
        getDistinctSizesFn(),
        getDistinctConditionsFn(),
+       listCategoriesFn(),
      ]);
-     return { products, stats, orderStats, categories: tags, sizes, conditions };
+     return { products, stats, orderStats, categories: tags, sizes, conditions, dbCategories };
    },
   component: AdminDashboard,
 });
-
-const CATEGORIES = ["TEE", "SHIRT", "JEANS", "PANTS", "SHORTS", "OTHER"];
-const CONDITIONS = ["Excellent", "Good", "Fair"];
 
 function slugify(s: string) {
   return s
@@ -139,17 +145,19 @@ interface SingleForm {
   description: string;
   images: string[];
   uploading: boolean;
+  newCategoryName: string;
 }
 
 const emptySingle: SingleForm = {
   title: "",
   size: "",
   price: "",
-  category: "TEE",
+  category: "",
   condition: "Good",
   description: "",
   images: [],
   uploading: false,
+  newCategoryName: "",
 };
 
 interface BulkRow {
@@ -162,6 +170,7 @@ interface BulkRow {
   description: string;
   images: string[];
   uploading: boolean;
+  newCategoryName: string;
 }
 
 function newRow(): BulkRow {
@@ -170,11 +179,12 @@ function newRow(): BulkRow {
     title: "",
     size: "",
     price: "",
-    category: "TEE",
+    category: "",
     condition: "Good",
     description: "",
     images: [],
     uploading: false,
+    newCategoryName: "",
   };
 }
 
@@ -186,6 +196,7 @@ function AdminDashboard() {
   const [data, setData] = useState(initial.products);
   const [stats, setStats] = useState(initial.stats);
   const [categories, setCategories] = useState(initial.categories);
+  const [dbCategories, setDbCategories] = useState<Category[]>(initial.dbCategories);
   const [sizes, setSizes] = useState(initial.sizes);
   const [conditions, setConditions] = useState(initial.conditions);
   const [activeTab, setActiveTab] = useState<"products" | "orders" | "settings">("products");
@@ -215,12 +226,14 @@ function AdminDashboard() {
   const [announcement, setAnnouncement] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryLabel, setNewCategoryLabel] = useState("");
 
   if (pathname === "/admin/login") return <Outlet />;
 
   const reload = async () => {
     const s = typeof search === "string" ? new URLSearchParams(search) : new URLSearchParams();
-    const [products, stats, orderStats, tags, sizes, conditions] = await Promise.all([
+    const [products, stats, orderStats, tags, sizes, conditions, dbCategories] = await Promise.all([
       listProductsFn({
         data: {
           tag: (s.get("tag") || "all") === "all" ? undefined : (s.get("tag") as never),
@@ -236,6 +249,7 @@ function AdminDashboard() {
       getDistinctTagsFn(),
       getDistinctSizesFn(),
       getDistinctConditionsFn(),
+      listCategoriesFn(),
     ]);
     setData(products);
     setStats(stats);
@@ -243,6 +257,7 @@ function AdminDashboard() {
     setSearchActive(false);
     setSearchQuery("");
     setCategories(tags);
+    setDbCategories(dbCategories);
     setSizes(sizes);
     setConditions(conditions);
     setBulkSelected(new Set());
@@ -284,9 +299,40 @@ function AdminDashboard() {
     return Promise.all(Array.from(files).map((f) => uploadToCloudinary(f)));
   };
 
+  const getCategoryOptions = () => {
+    // Merge DB categories with tags from products
+    const dbNames = new Set(dbCategories.map((c) => c.name));
+    const tags = categories ?? [];
+    const allNames = new Set([...dbNames, ...tags]);
+    return Array.from(allNames).sort();
+  };
+
+  const ensureCategory = async (name: string): Promise<string> => {
+    if (!name) return "";
+    const exists = dbCategories.find((c) => c.name === name);
+    if (exists) return name;
+    // Create the category in DB
+    try {
+      await createCategoryFn({ data: { name, label: name } });
+      await reload();
+      return name;
+    } catch {
+      return name; // still use it even if creation fails
+    }
+  };
+
   const submitSingle = async () => {
     if (!single.title || !single.price) {
       toast.error("Name and price are required");
+      return;
+    }
+    let category = single.category;
+    if (!category && single.newCategoryName.trim()) {
+      category = slugify(single.newCategoryName.trim());
+      await ensureCategory(category);
+    }
+    if (!category) {
+      toast.error("Please select or create a category");
       return;
     }
     setSaving(true);
@@ -296,7 +342,7 @@ function AdminDashboard() {
          data: {
            id,
            title: single.title,
-           tag: single.category,
+           tag: category,
            condition: single.condition,
            description: single.description,
            price: parseInt(single.price, 10),
@@ -321,21 +367,35 @@ function AdminDashboard() {
       toast.error("Add at least one item with name and price");
       return;
     }
+    // Ensure all categories exist
+    for (const row of ready) {
+      let category = row.category;
+      if (!category && row.newCategoryName.trim()) {
+        category = slugify(row.newCategoryName.trim());
+        await ensureCategory(category);
+      }
+    }
     setSaving(true);
     try {
       await createProductsBulkFn({
         data: {
-          items: ready.map((r) => ({
-            id: slugify(r.title) + "-" + Math.random().toString(36).slice(2, 6),
-            title: r.title,
-            tag: r.category,
-            condition: r.condition,
-            description: r.description,
-            price: parseInt(r.price, 10),
-            size: r.size || "One Size",
-            availability: "available" as Availability,
-            images: r.images,
-          })),
+          items: ready.map((r) => {
+            let cat = r.category;
+            if (!cat && r.newCategoryName.trim()) {
+              cat = slugify(r.newCategoryName.trim());
+            }
+            return {
+              id: slugify(r.title) + "-" + Math.random().toString(36).slice(2, 6),
+              title: r.title,
+              tag: cat || "OTHER",
+              condition: r.condition,
+              description: r.description,
+              price: parseInt(r.price, 10),
+              size: r.size || "One Size",
+              availability: "available" as Availability,
+              images: r.images,
+            };
+          }),
         },
       });
       toast.success(`Published ${ready.length} item${ready.length > 1 ? "s" : ""}`);
@@ -382,9 +442,38 @@ function AdminDashboard() {
     await reload();
   };
 
+  const handleCreateCategory = async () => {
+    const name = slugify(newCategoryName.trim());
+    const label = newCategoryLabel.trim() || newCategoryName.trim();
+    if (!name) {
+      toast.error("Category name is required");
+      return;
+    }
+    try {
+      await createCategoryFn({ data: { name, label } });
+      toast.success(`Category "${label}" created`);
+      setNewCategoryName("");
+      setNewCategoryLabel("");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    }
+  };
+
+  const handleDeleteCategory = async (name: string) => {
+    try {
+      await deleteCategoryFn({ data: { name } });
+      toast.success("Category deleted");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    }
+  };
+
   const displayedProducts = searchActive ? searchResults : data.items;
   const availableCount = data.items.filter((p) => p.availability !== "sold").length;
   const readyCount = bulkRows.filter((r) => r.title && r.price).length;
+  const categoryOptions = getCategoryOptions();
 
   return (
     <div className="min-h-screen bg-[#111] text-white">
@@ -490,17 +579,38 @@ function AdminDashboard() {
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <select
-                      value={single.category}
-                      onChange={(e) => setSingle({ ...single, category: e.target.value })}
-                      className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]"
-                    >
-                      {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
+                    <div>
+                      <select
+                        value={single.category}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "__new__") {
+                            // User wants to create a new category
+                            setSingle({ ...single, category: "" });
+                          } else {
+                            setSingle({ ...single, category: val, newCategoryName: "" });
+                          }
+                        }}
+                        className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]"
+                      >
+                        <option value="">Select category…</option>
+                        {categoryOptions.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                        <option value="__new__">+ Create new category</option>
+                      </select>
+                      {/* Show new category input when no category selected */}
+                      {!single.category && (
+                        <input
+                          placeholder="New category name"
+                          value={single.newCategoryName}
+                          onChange={(e) => setSingle({ ...single, newCategoryName: e.target.value })}
+                          className="w-full mt-2 bg-[#111] border border-[#333] text-white text-[12px] px-3 py-2 outline-none focus:border-[#555] placeholder:text-[#444]"
+                        />
+                      )}
+                    </div>
                     <select
                       value={single.condition}
                       onChange={(e) => setSingle({ ...single, condition: e.target.value })}
@@ -675,23 +785,50 @@ function AdminDashboard() {
                         }
                         className="w-24 bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555] placeholder:text-[#444]"
                       />
-                      <select
-                        value={row.category}
-                        onChange={(e) =>
-                          setBulkRows((prev) =>
-                            prev.map((r) =>
-                              r.key === row.key ? { ...r, category: e.target.value } : r,
-                            ),
-                          )
-                        }
-                        className="bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555]"
-                      >
-                        {CATEGORIES.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
+                      <div>
+                        <select
+                          value={row.category}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "__new__") {
+                              setBulkRows((prev) =>
+                                prev.map((r) =>
+                                  r.key === row.key ? { ...r, category: "" } : r,
+                                ),
+                              );
+                            } else {
+                              setBulkRows((prev) =>
+                                prev.map((r) =>
+                                  r.key === row.key ? { ...r, category: val, newCategoryName: "" } : r,
+                                ),
+                              );
+                            }
+                          }}
+                          className="bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555]"
+                        >
+                          <option value="">Category…</option>
+                          {categoryOptions.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                          <option value="__new__">+ New</option>
+                        </select>
+                        {!row.category && (
+                          <input
+                            placeholder="New category"
+                            value={row.newCategoryName}
+                            onChange={(e) =>
+                              setBulkRows((prev) =>
+                                prev.map((r) =>
+                                  r.key === row.key ? { ...r, newCategoryName: e.target.value } : r,
+                                ),
+                              )
+                            }
+                            className="w-full mt-1 bg-[#1a1a1a] border border-[#333] text-white text-[11px] px-2 py-1 outline-none focus:border-[#555] placeholder:text-[#444]"
+                          />
+                        )}
+                      </div>
                       <select
                         value={row.condition}
                         onChange={(e) =>
@@ -978,6 +1115,64 @@ function AdminDashboard() {
         {activeTab === "settings" && (
           <div className="space-y-6 max-w-md">
             <p className="text-[12px] font-bold uppercase tracking-widest text-[#888]">Settings</p>
+
+            {/* Category Management */}
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-4 space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[#555]">
+                Categories
+              </p>
+              <p className="text-[12px] text-[#666]">
+                Create and manage product categories. New categories appear automatically on the shop page.
+              </p>
+
+              {/* Existing categories */}
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {dbCategories.map((cat) => (
+                  <div
+                    key={cat.name}
+                    className="flex items-center justify-between bg-[#111] border border-[#2a2a2a] px-3 py-2"
+                  >
+                    <span className="text-[13px] text-white">{cat.label}</span>
+                    <button
+                      onClick={() => handleDeleteCategory(cat.name)}
+                      className="text-[#555] hover:text-red-400 transition-colors p-1"
+                      aria-label={`Delete category ${cat.label}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+                {dbCategories.length === 0 && (
+                  <p className="text-[12px] text-[#555] py-2">No categories yet</p>
+                )}
+              </div>
+
+              {/* Add new category */}
+              <div className="flex gap-2 items-end">
+                <div className="flex-1 space-y-1">
+                  <input
+                    placeholder="Category name (e.g. TEE)"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    className="w-full bg-[#111] border border-[#333] text-white text-[12px] px-3 py-2 outline-none focus:border-[#555] placeholder:text-[#444]"
+                  />
+                  <input
+                    placeholder="Display label (e.g. T-Shirts)"
+                    value={newCategoryLabel}
+                    onChange={(e) => setNewCategoryLabel(e.target.value)}
+                    className="w-full bg-[#111] border border-[#333] text-white text-[12px] px-3 py-2 outline-none focus:border-[#555] placeholder:text-[#444]"
+                  />
+                </div>
+                <button
+                  onClick={handleCreateCategory}
+                  className="flex items-center gap-1 bg-white text-[#111] px-3 py-2 text-[11px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors whitespace-nowrap"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Add
+                </button>
+              </div>
+            </div>
+
+            {/* Danger Zone */}
             <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-4 space-y-3">
               <p className="text-[11px] font-bold uppercase tracking-widest text-[#555]">
                 Danger Zone
@@ -1017,6 +1212,7 @@ function AdminDashboard() {
           {editTarget && (
             <EditModal
               product={editTarget}
+              categories={categoryOptions}
               onClose={() => setEditTarget(null)}
               onSaved={async () => {
                 setEditTarget(null);
@@ -1050,10 +1246,12 @@ function AdminDashboard() {
 
 function EditModal({
   product,
+  categories,
   onClose,
   onSaved,
 }: {
   product: Product;
+  categories: string[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -1061,9 +1259,9 @@ function EditModal({
     title: product.title,
     size: product.size,
     price: String(product.price),
-    category: product.brand,
-    condition: product.era,
-    description: product.productId.join("\n"),
+    category: product.tag,
+    condition: product.condition,
+    description: product.description,
     images: product.images,
     uploading: false,
   });
@@ -1134,7 +1332,7 @@ function EditModal({
           onChange={(e) => setForm({ ...form, category: e.target.value })}
           className="bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]"
         >
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <option key={c} value={c}>
               {c}
             </option>

@@ -8,7 +8,6 @@ import {
   getDistinctSizesFn,
   getDistinctConditionsFn,
 } from "@/lib/functions/products";
-import { CATEGORIES, CONDITIONS } from "@/lib/products";
 
 export const Route = createFileRoute("/shop")({
   head: () => ({

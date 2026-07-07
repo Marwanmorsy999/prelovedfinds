@@ -40,22 +40,6 @@ export function ProductCard({ product }: { product: Product }) {
             alt={product.title}
             className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${sold ? "opacity-70" : ""}`}
           />
-
-          {sold && (
-            <div className="absolute top-3 left-3 z-10">
-              <span className="bg-paper text-ink text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 border border-hairline">
-                Sold out
-              </span>
-            </div>
-          )}
-
-          {!sold && product.availability === "one-left" && (
-            <div className="absolute top-3 left-3 z-10">
-              <span className="bg-ink text-paper text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1">
-                1 left
-              </span>
-            </div>
-          )}
         </div>
       </Link>
 
