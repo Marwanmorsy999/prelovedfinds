@@ -10,9 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
-    meta: [
-      { title: "" },
-    ],
+    meta: [{ title: "" }],
   }),
   beforeLoad: async () => {
     const authed = await getIsAuthed();
@@ -34,7 +32,7 @@ function AdminLogin() {
       const res = await loginFn({ data: { password } });
       if (res.ok) {
         toast.success("Welcome back");
-        window.location.href = "/admin";
+        navigate({ to: "/admin" });
       } else {
         toast.error(res.error ?? "Login failed");
       }

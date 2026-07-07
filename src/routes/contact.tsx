@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Instagram } from "lucide-react";
 import { useState } from "react";
 
@@ -8,7 +8,8 @@ export const Route = createFileRoute("/contact")({
       { title: "Contact - Preloved Finds" },
       {
         name: "description",
-        content: "Get in touch with Preloved Finds — questions about an order, a piece, or a custom request.",
+        content:
+          "Get in touch with Preloved Finds — questions about an order, a piece, or a custom request.",
       },
     ],
   }),
@@ -34,12 +35,12 @@ function Contact() {
           </p>
         </div>
         <p className="text-[14px] text-[#6b7280]">We'll get back to you within 24 hours.</p>
-        <a
-          href="/"
+        <Link
+          to="/"
           className="mt-8 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors"
         >
           Back to Home
-        </a>
+        </Link>
       </div>
     );
   }
@@ -54,7 +55,8 @@ function Contact() {
             Contact Us
           </h1>
           <p className="mt-2 text-[14px] text-[#6b7280]">
-            Questions about an order, sizing, or a specific piece? We'll get back to you within 24 hours.
+            Questions about an order, sizing, or a specific piece? We'll get back to you within 24
+            hours.
           </p>
         </div>
       </div>
@@ -124,7 +126,7 @@ function Contact() {
               className="flex items-center gap-2.5 text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
             >
               <Instagram className="h-4 w-4" />
-               @preloved.finds._
+              @preloved.finds._
             </a>
           </div>
         </div>

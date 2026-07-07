@@ -291,7 +291,7 @@ function AdminDashboard() {
     } catch {
       /* ignore */
     }
-    window.location.href = "/admin/login";
+    navigate({ to: "/admin/login" });
   };
 
   const uploadFiles = async (files: FileList | null): Promise<string[]> => {

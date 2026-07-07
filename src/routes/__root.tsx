@@ -63,77 +63,75 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           >
             Try again
           </button>
-          <a
-            href="/"
+          <Link
+            to="/"
             className="border border-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink hover:bg-ink hover:text-background"
           >
             Go home
-          </a>
+          </Link>
         </div>
       </div>
     </div>
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient; admin: boolean }>()(
-  {
-    beforeLoad: async () => {
-      const admin = await getIsAuthed();
-      return { admin };
-    },
-    head: () => ({
-      meta: [
-        { charSet: "utf-8" },
-        { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "Preloved Finds" },
-        {
-          name: "description",
-          content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
-        },
-        { name: "author", content: "Preloved Finds" },
-        // Open Graph
-        { property: "og:site_name", content: "Preloved Finds" },
-        { property: "og:title", content: "Preloved Finds" },
-        {
-          property: "og:description",
-          content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
-        },
-        { property: "og:type", content: "website" },
-        { property: "og:url", content: SITE_URL },
-        { property: "og:image", content: OG_IMAGE },
-        { property: "og:image:width", content: "1200" },
-        { property: "og:image:height", content: "630" },
-        // Twitter
-        { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: "Preloved Finds" },
-        {
-          name: "twitter:description",
-          content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
-        },
-        { name: "twitter:image", content: OG_IMAGE },
-      ],
-      links: [
-        { rel: "stylesheet", href: appCss },
-        { rel: "canonical", href: SITE_URL },
-        { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-        { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        {
-          rel: "preconnect",
-          href: "https://fonts.gstatic.com",
-          crossOrigin: "anonymous",
-        },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
-        },
-      ],
-    }),
-    shellComponent: RootShell,
-    component: RootComponent,
-    notFoundComponent: NotFoundComponent,
-    errorComponent: ErrorComponent,
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient; admin: boolean }>()({
+  beforeLoad: async () => {
+    const admin = await getIsAuthed();
+    return { admin };
   },
-);
+  head: () => ({
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: "Preloved Finds" },
+      {
+        name: "description",
+        content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
+      },
+      { name: "author", content: "Preloved Finds" },
+      // Open Graph
+      { property: "og:site_name", content: "Preloved Finds" },
+      { property: "og:title", content: "Preloved Finds" },
+      {
+        property: "og:description",
+        content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: OG_IMAGE },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      // Twitter
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Preloved Finds" },
+      {
+        name: "twitter:description",
+        content: "Curated vintage and pre-owned streetwear. One-of-one pieces.",
+      },
+      { name: "twitter:image", content: OG_IMAGE },
+    ],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "canonical", href: SITE_URL },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+      },
+    ],
+  }),
+  shellComponent: RootShell,
+  component: RootComponent,
+  notFoundComponent: NotFoundComponent,
+  errorComponent: ErrorComponent,
+});
 
 function RootShell({ children }: { children: ReactNode }) {
   return (

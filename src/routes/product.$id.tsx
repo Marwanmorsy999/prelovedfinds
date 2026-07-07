@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductInfo } from "@/components/ProductInfo";
 import { ProductCard } from "@/components/ProductCard";
@@ -42,12 +42,21 @@ export const Route = createFileRoute("/product/$id")({
         Piece not found
       </h1>
       <p className="mt-2 text-[13px] text-[#6b7280]">It may have already been snapped up.</p>
-      <a
-        href="/shop"
+      <Link
+        to="/shop"
+        search={{
+          tag: "all",
+          size: "all",
+          condition: "all",
+          priceRange: "all",
+          sort: "newest",
+          q: "",
+          page: 1,
+        }}
         className="mt-6 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors"
       >
         Back to Shop
-      </a>
+      </Link>
     </div>
   ),
   component: ProductPage,
@@ -60,9 +69,25 @@ function ProductPage() {
     <div className="page-enter">
       <div className="border-b border-[#e5e7eb] px-4 py-3 md:px-8">
         <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
-          <a href="/" className="hover:text-[#1a1a1a] transition-colors">Home</a>
+          <Link to="/" className="hover:text-[#1a1a1a] transition-colors">
+            Home
+          </Link>
           <span className="mx-2">/</span>
-          <a href="/shop" className="hover:text-[#1a1a1a] transition-colors">Shop All</a>
+          <Link
+            to="/shop"
+            search={{
+              tag: "all",
+              size: "all",
+              condition: "all",
+              priceRange: "all",
+              sort: "newest",
+              q: "",
+              page: 1,
+            }}
+            className="hover:text-[#1a1a1a] transition-colors"
+          >
+            Shop All
+          </Link>
           <span className="mx-2">/</span>
           <span className="text-[#1a1a1a]">{product.title}</span>
         </p>

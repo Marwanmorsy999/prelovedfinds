@@ -63,7 +63,7 @@ const SHIPPING_ZONES: Record<string, number> = {
   Suez: 100,
   // 150 EGP zone — Upper Egypt, desert governorates, Sinai
   "Beni Suef": 150,
-  "Faiyum": 150,
+  Faiyum: 150,
   Minya: 150,
   Asyut: 150,
   Sohag: 150,
@@ -87,7 +87,7 @@ function Checkout() {
   const [address, setAddress] = useState("");
 
   const subtotal = items.reduce((sum, i) => sum + i.price, 0);
-  const shippingCost = governorate ? SHIPPING_ZONES[governorate] ?? 100 : 0;
+  const shippingCost = governorate ? (SHIPPING_ZONES[governorate] ?? 100) : 0;
   const total = subtotal + shippingCost;
 
   const validateForm = () => {
@@ -128,7 +128,12 @@ function Checkout() {
       await createOrderFn({
         data: {
           id: orderId,
-          items: items.map((i) => ({ name: i.name, size: (i as any).size, price: i.price, priceLabel: i.priceLabel })),
+          items: items.map((i) => ({
+            name: i.name,
+            size: (i as any).size,
+            price: i.price,
+            priceLabel: i.priceLabel,
+          })),
           customerName: name.trim(),
           customerPhone: phone.trim(),
           governorate,
@@ -138,7 +143,10 @@ function Checkout() {
       });
       clear();
       toast.success("Order placed successfully! We'll contact you soon.");
-      navigate({ to: "/", search: {} });
+      navigate({
+        to: "/order-confirmation",
+        search: { orderId },
+      });
     } catch {
       toast.error("Failed to place order. Try again.");
     } finally {
@@ -151,18 +159,38 @@ function Checkout() {
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f5f5]">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#9ca3af"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
               <line x1="3" y1="6" x2="21" y2="6" />
               <path d="M16 10a4 4 0 01-8 0" />
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-[#1a1a1a] mb-2">Your cart is empty</h1>
-          <p className="text-[14px] text-[#6b7280] mb-8">
-            Add some vintage pieces to get started.
-          </p>
+          <p className="text-[14px] text-[#6b7280] mb-8">Add some vintage pieces to get started.</p>
           <button
-            onClick={() => navigate({ to: "/shop", search: { tag: "all", size: "all", condition: "all", priceRange: "all", sort: "newest", q: "", page: 1 } })}
+            onClick={() =>
+              navigate({
+                to: "/shop",
+                search: {
+                  tag: "all",
+                  size: "all",
+                  condition: "all",
+                  priceRange: "all",
+                  sort: "newest",
+                  q: "",
+                  page: 1,
+                },
+              })
+            }
             className="inline-flex h-12 items-center justify-center bg-[#1a1a1a] text-white px-10 text-[12px] font-bold uppercase tracking-widest hover:bg-[#6b7280] transition-colors"
           >
             Shop All
@@ -179,7 +207,20 @@ function Checkout() {
         <div className="mx-auto max-w-5xl px-4 py-4 md:px-8">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate({ to: "/shop", search: { tag: "all", size: "all", condition: "all", priceRange: "all", sort: "newest", q: "", page: 1 } })}
+              onClick={() =>
+                navigate({
+                  to: "/shop",
+                  search: {
+                    tag: "all",
+                    size: "all",
+                    condition: "all",
+                    priceRange: "all",
+                    sort: "newest",
+                    q: "",
+                    page: 1,
+                  },
+                })
+              }
               className="p-1.5 text-[#6b7280] hover:text-[#1a1a1a] transition-colors rounded-lg hover:bg-[#f5f5f5]"
               aria-label="Back to shop"
             >
@@ -208,7 +249,10 @@ function Checkout() {
               <div className="px-6 py-6 space-y-5">
                 {/* Full Name */}
                 <div>
-                  <label htmlFor="name" className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5">
+                  <label
+                    htmlFor="name"
+                    className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5"
+                  >
                     Full Name
                   </label>
                   <div className="relative">
@@ -225,7 +269,10 @@ function Checkout() {
 
                 {/* Phone Number */}
                 <div>
-                  <label htmlFor="phone" className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5">
+                  <label
+                    htmlFor="phone"
+                    className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5"
+                  >
                     Phone Number
                   </label>
                   <div className="relative">
@@ -242,7 +289,10 @@ function Checkout() {
 
                 {/* Governorate */}
                 <div>
-                  <label htmlFor="governorate" className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5">
+                  <label
+                    htmlFor="governorate"
+                    className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5"
+                  >
                     Governorate
                   </label>
                   <div className="relative">
@@ -255,7 +305,9 @@ function Checkout() {
                     >
                       <option value="">Select governorate</option>
                       {EGYPTIAN_GOVERNORATES.map((g) => (
-                        <option key={g} value={g}>{g}</option>
+                        <option key={g} value={g}>
+                          {g}
+                        </option>
                       ))}
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
@@ -270,7 +322,10 @@ function Checkout() {
 
                 {/* Full Address */}
                 <div>
-                  <label htmlFor="address" className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5">
+                  <label
+                    htmlFor="address"
+                    className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5"
+                  >
                     Full Delivery Address
                   </label>
                   <div className="relative">

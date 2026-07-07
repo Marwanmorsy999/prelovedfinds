@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import aboutFounder from "@/assets/about-founder.jpeg";
 
 export const Route = createFileRoute("/about")({
@@ -38,40 +38,48 @@ function About() {
         </div>
       </section>
 
-       {/* Story */}
-       <section className="mx-auto max-w-3xl px-4 py-16 md:px-8 md:py-20">
-         <div className="space-y-6 text-[15px] leading-relaxed text-[#374151]">
-           <p className="text-[26px] md:text-[28px] font-bold uppercase tracking-tight text-[#1a1a1a]">
-             Welcome to preloved finds
-           </p>
+      {/* Story */}
+      <section className="mx-auto max-w-3xl px-4 py-16 md:px-8 md:py-20">
+        <div className="space-y-6 text-[15px] leading-relaxed text-[#374151]">
+          <p className="text-[26px] md:text-[28px] font-bold uppercase tracking-tight text-[#1a1a1a]">
+            Welcome to preloved finds
+          </p>
 
-           <p>
-             From zero to Hero a boy who started with nothing That journey is the inspiration
-             behind Vintage Page and the passion to build something meaningful
-           </p>
+          <p>
+            From zero to Hero a boy who started with nothing That journey is the inspiration behind
+            Vintage Page and the passion to build something meaningful
+          </p>
 
-           <p>
-             We curate unique vintage pieces with a focus on timeless style, quality, and
-             authenticity Our goal is to make it easier for vintage lovers to discover standout
-             items from different eras, all in one place
-           </p>
+          <p>
+            We curate unique vintage pieces with a focus on timeless style, quality, and
+            authenticity Our goal is to make it easier for vintage lovers to discover standout items
+            from different eras, all in one place
+          </p>
 
-           <p>
-             Every piece is selected with care to offer something distinctive and full of
-             character
-           </p>
+          <p>
+            Every piece is selected with care to offer something distinctive and full of character
+          </p>
 
-           <p>Thank you for visiting preloved finds</p>
-         </div>
+          <p>Thank you for visiting preloved finds</p>
+        </div>
 
-         {/* CTA */}
+        {/* CTA */}
         <div className="mt-14 text-center">
-          <a
-            href="/shop"
+          <Link
+            to="/shop"
+            search={{
+              tag: "all",
+              size: "all",
+              condition: "all",
+              priceRange: "all",
+              sort: "newest",
+              q: "",
+              page: 1,
+            }}
             className="inline-flex h-12 items-center justify-center bg-[#1a1a1a] text-white px-10 text-[12px] font-semibold uppercase tracking-widest hover:bg-[#6b7280] transition-colors"
           >
             Shop the Collection
-          </a>
+          </Link>
         </div>
       </section>
     </div>
