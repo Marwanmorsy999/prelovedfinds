@@ -42,34 +42,26 @@ function About() {
        <section className="mx-auto max-w-3xl px-4 py-16 md:px-8 md:py-20">
          <div className="space-y-6 text-[15px] leading-relaxed text-[#374151]">
            <p className="text-[26px] md:text-[28px] font-bold uppercase tracking-tight text-[#1a1a1a]">
-             From zero to Hero.
+             Welcome to preloved finds
            </p>
 
            <p>
-             A boy who started with nothing. That journey is the inspiration behind Vintage Page
-             and the passion to build something meaningful.
+             From zero to Hero a boy who started with nothing That journey is the inspiration
+             behind Vintage Page and the passion to build something meaningful
            </p>
 
            <p>
              We curate unique vintage pieces with a focus on timeless style, quality, and
-             authenticity. Our goal is to make it easier for vintage lovers to discover standout
-             items from different eras, all in one place.
+             authenticity Our goal is to make it easier for vintage lovers to discover standout
+             items from different eras, all in one place
            </p>
 
            <p>
              Every piece is selected with care to offer something distinctive and full of
-             character.
+             character
            </p>
 
-           <p>
-             Thank you for visiting preloved finds.
-           </p>
-
-           <div className="border-l-4 border-[#1a1a1a] pl-5 italic text-[#1a1a1a]">
-             "Every piece has a story. We're just the ones who find it."
-           </div>
-
-           <p className="font-semibold text-[#1a1a1a]">— Founder, Preloved Finds</p>
+           <p>Thank you for visiting preloved finds</p>
          </div>
 
          {/* CTA */}
