@@ -41,7 +41,6 @@ function OrderConfirmation() {
             to="/shop"
             search={{
               tag: "all",
-              size: "all",
               condition: "all",
               priceRange: "all",
               sort: "newest",

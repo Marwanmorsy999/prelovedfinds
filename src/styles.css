@@ -225,3 +225,23 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Performance & layout utilities */
+.overscroll-behavior-x-contain {
+  overscroll-behavior-x: contain;
+}
+.touch-pan-y {
+  touch-action: pan-y;
+}
+.touch-manipulation {
+  touch-action: manipulation;
+}
+.product-card {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 420px;
+}
+.gpu-accelerated {
+  will-change: transform;
+  transform: translateZ(0);
+}

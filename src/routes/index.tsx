@@ -73,14 +73,13 @@ function Home() {
             to="/shop"
             search={{
               tag: "all",
-              size: "all",
               condition: "all",
               priceRange: "all",
               sort: "newest",
               q: "",
               page: 1,
             }}
-            className="relative inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors mt-10 md:mt-14"
+             className="relative inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors mt-10 md:mt-14"
             style={{
               fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif",
               fontSize: "14px",
@@ -101,7 +100,6 @@ function Home() {
             to="/shop"
             search={{
               tag: "all",
-              size: "all",
               condition: "all",
               priceRange: "all",
               sort: "newest",

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { ImageSlot } from "./ImageSlot";
 import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -12,6 +12,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
   const dragStartX = useRef(0);
   const dragOffset = useRef(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const rafId = useRef<number | null>(null);
 
   const slots = images.filter(Boolean).length ? images.filter(Boolean) : [undefined];
 
@@ -58,8 +59,20 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging.current) return;
-    dragOffset.current = e.clientX - dragStartX.current;
+    if (rafId.current !== null) return;
+    rafId.current = requestAnimationFrame(() => {
+      dragOffset.current = e.clientX - dragStartX.current;
+      rafId.current = null;
+    });
   };
+
+  useEffect(() => {
+    return () => {
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current);
+      }
+    };
+  }, []);
 
   const handleMouseUp = () => {
     if (!isDragging.current) return;
@@ -80,14 +93,17 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 overscroll-behavior-x-contain">
       {/* Main image with swipe support */}
-      <div className="relative overflow-hidden bg-surface aspect-[4/5] select-none">
+      <div className="relative overflow-hidden bg-surface aspect-[4/5] select-none touch-pan-y">
         <div
           ref={containerRef}
-          className="relative w-full h-full cursor-grab active:cursor-grabbing"
+          className="relative w-full h-full cursor-grab active:cursor-grabbing touch-manipulation"
           onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
+          onTouchMove={(e) => {
+            e.preventDefault();
+            handleTouchMove(e);
+          }}
           onTouchEnd={handleTouchEnd}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -99,6 +115,8 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
             src={slots[active]}
             alt={title}
             className="w-full h-full object-cover pointer-events-none"
+            fetchPriority="high"
+            decoding="async"
           />
         </div>
 

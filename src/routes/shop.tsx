@@ -1,11 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, ChevronDown, X } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import {
   listProductsFn,
   getDistinctTagsFn,
-  getDistinctSizesFn,
   getDistinctConditionsFn,
 } from "@/lib/functions/products";
 
@@ -21,7 +20,6 @@ export const Route = createFileRoute("/shop")({
   }),
   validateSearch: (search: Record<string, unknown>) => ({
     tag: typeof search.tag === "string" ? search.tag : "all",
-    size: typeof search.size === "string" ? search.size : "all",
     condition: typeof search.condition === "string" ? search.condition : "all",
     priceRange: typeof search.priceRange === "string" ? search.priceRange : "all",
     sort: typeof search.sort === "string" ? search.sort : "newest",
@@ -30,7 +28,6 @@ export const Route = createFileRoute("/shop")({
   }),
   loaderDeps: ({ search }) => ({
     tag: search.tag,
-    size: search.size,
     condition: search.condition,
     priceRange: search.priceRange,
     sort: search.sort,
@@ -40,18 +37,16 @@ export const Route = createFileRoute("/shop")({
   loader: async ({ location }) => {
     const search = location.search as {
       tag?: string;
-      size?: string;
       condition?: string;
       priceRange?: string;
       sort?: string;
       q?: string;
       page?: number;
     };
-    const [products, tagsRow, sizesRow, conditionsRow] = await Promise.all([
+    const [products, tagsRow, conditionsRow] = await Promise.all([
       listProductsFn({
         data: {
           tag: search.tag === "all" ? undefined : (search.tag as never),
-          size: search.size === "all" ? undefined : search.size,
           condition: search.condition === "all" ? undefined : (search.condition as never),
           priceRange: search.priceRange === "all" ? undefined : (search.priceRange as never),
           sort: search.sort as never,
@@ -61,13 +56,11 @@ export const Route = createFileRoute("/shop")({
         },
       }),
       getDistinctTagsFn(),
-      getDistinctSizesFn(),
       getDistinctConditionsFn(),
     ]);
     return {
       products,
       tags: tagsRow,
-      sizes: sizesRow,
       conditions: conditionsRow,
     };
   },
@@ -80,9 +73,7 @@ function Shop() {
   const loader = Route.useLoaderData();
   const { items, total, totalPages, page } = loader.products;
   const initialTags = Array.isArray(loader.tags) ? loader.tags : [];
-  const initialSizes = Array.isArray(loader.sizes) ? loader.sizes : [];
   const [tags] = useState<string[]>(initialTags);
-  const [sizes] = useState<string[]>(initialSizes);
   const [conditions, setConditions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -97,15 +88,37 @@ function Shop() {
   const currentPage = Math.min(page, totalPages || 1);
   const [gridCols, setGridCols] = useState<2 | 4>(4);
 
+  // Scroll restoration for Load More
+  const prevItemsLengthRef = useRef(items.length);
+  const scrollYRef = useRef(0);
+  const isFirstRender = useRef(true);
+
   const updateSearch = (patch: Record<string, unknown>) =>
     navigate({ to: "/shop", search: { ...search, ...patch } as typeof search });
 
   const hasMore = currentPage < totalPages;
   const hasActiveFilters =
     search.tag !== "all" ||
-    search.size !== "all" ||
     search.condition !== "all" ||
     search.priceRange !== "all";
+
+  // Restore scroll position after new items load
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      prevItemsLengthRef.current = items.length;
+      return;
+    }
+    if (items.length > prevItemsLengthRef.current) {
+      window.scrollTo({ top: scrollYRef.current, behavior: "instant" });
+    }
+    prevItemsLengthRef.current = items.length;
+  }, [items.length]);
+
+  const loadMore = () => {
+    scrollYRef.current = window.scrollY;
+    updateSearch({ page: currentPage + 1 });
+  };
 
   return (
     <div className="page-enter">
@@ -191,7 +204,7 @@ function Shop() {
         </div>
 
         <div className={`${filterOpen ? "block" : "hidden"} md:block mb-6`}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-widest text-concrete mb-1.5">
                 Category
@@ -228,23 +241,6 @@ function Shop() {
             </div>
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-widest text-concrete mb-1.5">
-                Size
-              </label>
-              <select
-                value={search.size}
-                onChange={(e) => updateSearch({ size: e.target.value, page: 1 })}
-                className="w-full h-10 appearance-none border border-hairline bg-paper pl-3 pr-8 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
-              >
-                <option value="all">All</option>
-                {sizes.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-concrete mb-1.5">
                 Price
               </label>
               <select
@@ -267,7 +263,6 @@ function Shop() {
               onClick={() =>
                 updateSearch({
                   tag: "all",
-                  size: "all",
                   condition: "all",
                   priceRange: "all",
                   page: 1,
@@ -319,7 +314,9 @@ function Shop() {
           className={`grid gap-4 md:gap-5 ${gridCols === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4"}`}
         >
           {items.map((p) => (
-            <ProductCard key={p.id} product={p} />
+            <div key={p.id} className="min-w-0">
+              <ProductCard product={p} />
+            </div>
           ))}
         </div>
 
@@ -334,7 +331,6 @@ function Shop() {
                 setQuery("");
                 updateSearch({
                   tag: "all",
-                  size: "all",
                   condition: "all",
                   priceRange: "all",
                   sort: "newest",
@@ -351,7 +347,7 @@ function Shop() {
         {hasMore && !query.trim() && (
           <div className="mt-14 text-center">
             <button
-              onClick={() => updateSearch({ page: currentPage + 1 })}
+              onClick={loadMore}
               className="h-11 border border-ink px-10 text-[12px] font-bold uppercase tracking-widest text-ink hover:bg-ink hover:text-paper transition-colors"
             >
               Load more

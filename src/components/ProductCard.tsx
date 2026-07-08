@@ -29,14 +29,14 @@ export function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="group">
+    <div className="group product-card">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
         className="block"
         aria-label={`View ${product.title}`}
       >
-        <div className="relative overflow-hidden bg-surface aspect-[3/4]">
+        <div className="relative overflow-hidden bg-surface aspect-[3/4] gpu-accelerated">
           <ImageSlot
             src={imageSrc}
             alt={product.title}

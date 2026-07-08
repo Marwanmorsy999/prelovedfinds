@@ -20,6 +20,20 @@ export const Route = createFileRoute("/product/$id")({
     const { product } = loaderData;
     const title = `${product.title} - Preloved Finds`;
     const desc = `${product.tag} · ${product.condition} · ${product.size}. One-of-one at Preloved Finds.`;
+    const firstImage = product.images[0] ?? product.imageUrl;
+    const imagePreload = firstImage
+      ? [
+          {
+            rel: "preload" as const,
+            as: "image" as const,
+            href: firstImage,
+            imageSrcSet: [400, 800, 1200]
+              .map((w) => `${firstImage}?w=${w}&f_auto&q_auto:good ${w}w`)
+              .join(", "),
+            imageSizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
+          },
+        ]
+      : [];
     return {
       meta: [
         { title },
@@ -27,6 +41,7 @@ export const Route = createFileRoute("/product/$id")({
         { property: "og:title", content: title },
         { property: "og:description", content: desc },
       ],
+      links: imagePreload,
     };
   },
   errorComponent: ({ error }) => (
@@ -46,7 +61,6 @@ export const Route = createFileRoute("/product/$id")({
         to="/shop"
         search={{
           tag: "all",
-          size: "all",
           condition: "all",
           priceRange: "all",
           sort: "newest",
@@ -77,7 +91,6 @@ function ProductPage() {
             to="/shop"
             search={{
               tag: "all",
-              size: "all",
               condition: "all",
               priceRange: "all",
               sort: "newest",
