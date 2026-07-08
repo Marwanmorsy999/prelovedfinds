@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { loginFn } from "@/lib/functions/auth";
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/admin/login")({
 
 function AdminLogin() {
   const navigate = useNavigate();
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -30,13 +31,16 @@ function AdminLogin() {
     setLoading(true);
     try {
       const res = await loginFn({ data: { password } });
+      console.log("[login] response:", res);
       if (res.ok) {
         toast.success("Welcome back");
+        await router.invalidate();
         navigate({ to: "/admin" });
       } else {
         toast.error(res.error ?? "Login failed");
       }
-    } catch {
+    } catch (err) {
+      console.log("[login] error:", err);
       toast.error("Login failed");
     } finally {
       setLoading(false);

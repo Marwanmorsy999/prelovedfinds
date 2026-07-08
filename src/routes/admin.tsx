@@ -289,8 +289,6 @@ function AdminDashboard() {
     })();
   }, [activeTab]);
 
-  if (pathname === "/admin/login") return <Outlet />;
-
   const reload = async () => {
     const s = typeof search === "string" ? new URLSearchParams(search) : new URLSearchParams();
     const [products, stats, orderStats, tags, sizes, conditions, dbCategories, ordersRes] =
@@ -362,6 +360,8 @@ function AdminDashboard() {
     }, 300);
     return () => clearTimeout(t);
   }, [searchQuery]);
+
+  if (pathname === "/admin/login") return <Outlet />;
 
   const logout = async () => {
     try {
