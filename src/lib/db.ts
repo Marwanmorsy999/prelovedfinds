@@ -73,29 +73,6 @@ export function rowToProduct(row: ProductRow): Product {
   };
 }
 
-export function productToRow(p: Product): Omit<ProductRow, "createdAt"> & { createdAt?: number } {
-  return {
-    id: p.id,
-    title: p.title,
-    brand: p.brand,
-    era: p.era,
-    price: p.price,
-    currency: p.currency,
-    availability: p.availability,
-    size: p.size,
-    images: JSON.stringify(p.images ?? []),
-    productId: JSON.stringify(p.productId ?? []),
-    measurements: JSON.stringify(p.measurements ?? []),
-    priceLabel: p.priceLabel,
-    sortOrder: p.sortOrder ?? 0,
-    description: p.description,
-    tag: p.tag,
-    condition: p.condition,
-    imageUrl: p.imageUrl || null,
-    createdAt: p.createdAt,
-  };
-}
-
 export interface OrderRow {
   id: string;
   createdAt: number;
@@ -130,24 +107,6 @@ export function rowToOrder(row: OrderRow): Order {
   };
 }
 
-export function orderToRow(o: Order): Omit<OrderRow, "createdAt"> & { createdAt?: number } {
-  return {
-    id: o.id,
-    createdAt: o.createdAt,
-    status: o.status,
-    customerName: o.customerName,
-    customerPhone: o.customerPhone,
-    customerInstagram: o.customerInstagram,
-    notes: o.notes,
-    pickup: o.pickup,
-    address: o.address,
-    governorate: o.governorate ?? "",
-    subtotal: o.subtotal ?? 0,
-    items: JSON.stringify(o.items ?? []),
-    total: o.total,
-  };
-}
-
 function safeJsonParse<T>(value: string | null | undefined, fallback: T): T {
   if (!value) return fallback;
   try {
@@ -155,12 +114,4 @@ function safeJsonParse<T>(value: string | null | undefined, fallback: T): T {
   } catch {
     return fallback;
   }
-}
-
-export function cloudinaryConfig() {
-  const env = getEnv();
-  return {
-    cloudName: env.CLOUDINARY_CLOUD_NAME ?? "",
-    preset: env.CLOUDINARY_UNSIGNED_PRESET ?? "",
-  };
 }

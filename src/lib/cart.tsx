@@ -101,6 +101,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCart(): CartCtx {
   return useContext(Ctx) ?? FALLBACK;
 }
