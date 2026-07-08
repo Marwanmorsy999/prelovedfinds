@@ -14,7 +14,6 @@ export function Navigation() {
   const { items, remove, count } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const cartRef = useRef<HTMLDivElement>(null);
   const cartTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -28,14 +27,6 @@ export function Navigation() {
       document.body.style.overflow = "";
     };
   }, [cartOpen, mobileOpen]);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (cartRef.current && !cartRef.current.contains(e.target as Node)) setCartOpen(false);
-    };
-    if (cartOpen) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [cartOpen]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -104,7 +95,7 @@ export function Navigation() {
           </Link>
 
           {/* Right: admin link + cart */}
-          <div className="flex items-center justify-end gap-5 w-1/3" ref={cartRef}>
+          <div className="flex items-center justify-end gap-5 w-1/3">
             {admin && (
               <Link
                 to="/admin"
@@ -191,7 +182,10 @@ export function Navigation() {
                   </p>
                 </div>
                 <button
-                  onClick={() => remove(item.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    remove(item.id);
+                  }}
                   className="mt-0.5 p-1.5 text-[#9ca3af] hover:text-red-500 active:text-red-700 hover:bg-red-50 active:bg-red-100 transition-colors rounded flex-shrink-0"
                   aria-label={`Remove ${item.name}`}
                 >

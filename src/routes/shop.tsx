@@ -28,6 +28,15 @@ export const Route = createFileRoute("/shop")({
     q: typeof search.q === "string" ? search.q : "",
     page: typeof search.page === "number" ? search.page : 1,
   }),
+  loaderDeps: ({ search }) => ({
+    tag: search.tag,
+    size: search.size,
+    condition: search.condition,
+    priceRange: search.priceRange,
+    sort: search.sort,
+    q: search.q,
+    page: search.page,
+  }),
   loader: async ({ location }) => {
     const search = location.search as {
       tag?: string;
