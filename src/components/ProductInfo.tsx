@@ -5,15 +5,24 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
 function getWishlist(): string[] {
-  try { return JSON.parse(localStorage.getItem("wishlist") || "[]"); }
-  catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem("wishlist") || "[]");
+  } catch {
+    return [];
+  }
 }
 
 function toggleWishlist(id: string): boolean {
   const list = getWishlist();
   const idx = list.indexOf(id);
-  if (idx > -1) { list.splice(idx, 1); localStorage.setItem("wishlist", JSON.stringify(list)); return false; }
-  list.push(id); localStorage.setItem("wishlist", JSON.stringify(list)); return true;
+  if (idx > -1) {
+    list.splice(idx, 1);
+    localStorage.setItem("wishlist", JSON.stringify(list));
+    return false;
+  }
+  list.push(id);
+  localStorage.setItem("wishlist", JSON.stringify(list));
+  return true;
 }
 
 export function ProductInfo({ product }: { product: Product }) {
@@ -34,7 +43,14 @@ export function ProductInfo({ product }: { product: Product }) {
     if (sold || adding || alreadyInCart) return;
     setAdding(true);
     setTimeout(() => {
-      add({ id: product.id, name: product.title, price: product.price, priceLabel: product.priceLabel, imageUrl: product.imageUrl ?? product.images[0] });
+      add({
+        id: product.id,
+        name: product.title,
+        price: product.price,
+        priceLabel: product.priceLabel,
+        imageUrl: product.imageUrl ?? product.images[0],
+        size: product.size,
+      });
       setAdding(false);
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
@@ -47,9 +63,7 @@ export function ProductInfo({ product }: { product: Product }) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-concrete mb-1">
           {product.tag}
         </p>
-        <h1 className="text-[22px] font-bold text-ink leading-tight">
-          {product.title}
-        </h1>
+        <h1 className="text-[22px] font-bold text-ink leading-tight">{product.title}</h1>
         <p className="mt-2 text-[18px] font-semibold text-ink">
           {product.priceLabel ? product.priceLabel : `LE ${product.price.toLocaleString()}`}
         </p>
@@ -74,12 +88,16 @@ export function ProductInfo({ product }: { product: Product }) {
       </div>
 
       <div className="border border-hairline px-4 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-concrete mb-1">Condition</p>
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-concrete mb-1">
+          Condition
+        </p>
         <p className="text-[14px] font-medium text-ink">{product.condition}</p>
       </div>
 
       <div className="border border-hairline px-4 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-concrete mb-1">Size</p>
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-concrete mb-1">
+          Size
+        </p>
         <p className="text-[14px] font-medium text-ink">{product.size}</p>
         <p className="text-[11px] text-[#9ca3af] mt-0.5">One of one — no restocks</p>
       </div>
@@ -104,7 +122,14 @@ export function ProductInfo({ product }: { product: Product }) {
         {!sold && (
           <button
             onClick={() => {
-              buyNow({ id: product.id, name: product.title, price: product.price, priceLabel: product.priceLabel, imageUrl: product.imageUrl ?? product.images[0] });
+              buyNow({
+                id: product.id,
+                name: product.title,
+                price: product.price,
+                priceLabel: product.priceLabel,
+                imageUrl: product.imageUrl ?? product.images[0],
+                size: product.size,
+              });
               navigate({ to: "/checkout" });
             }}
             className="w-full h-12 border border-ink bg-paper text-ink text-[13px] font-semibold uppercase tracking-widest hover:bg-surface transition-colors"

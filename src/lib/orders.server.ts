@@ -3,9 +3,7 @@ import type { Order } from "./products";
 
 export async function listOrders(): Promise<OrderRow[]> {
   const db = getDB();
-  const rows = await db
-    .prepare("SELECT * FROM orders ORDER BY createdAt DESC")
-    .all<OrderRow>();
+  const rows = await db.prepare("SELECT * FROM orders ORDER BY createdAt DESC").all<OrderRow>();
   return rows.results ?? [];
 }
 
@@ -69,7 +67,10 @@ export async function createOrder(input: {
   return order;
 }
 
-export async function updateOrderStatus(id: string, status: Order["status"]): Promise<Order | null> {
+export async function updateOrderStatus(
+  id: string,
+  status: Order["status"],
+): Promise<Order | null> {
   const db = getDB();
   await db.prepare("UPDATE orders SET status = ? WHERE id = ?").bind(status, id).run();
   return getOrderById(id);

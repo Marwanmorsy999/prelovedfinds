@@ -77,6 +77,9 @@ export function BulkDropDialog({
     era: "",
     price: "",
     size: "",
+    category: "TEE",
+    condition: "Good",
+    description: "",
     availability: "available" as Availability,
   });
   const [items, setItems] = useState<DropItem[]>([newItem()]);
@@ -84,7 +87,16 @@ export function BulkDropDialog({
 
   const reset = () => {
     setItems([newItem()]);
-    setDefaults({ brand: "", era: "", price: "", size: "", availability: "available" });
+    setDefaults({
+      brand: "",
+      era: "",
+      price: "",
+      size: "",
+      category: "TEE",
+      condition: "Good",
+      description: "",
+      availability: "available",
+    });
   };
 
   const patch = (key: string, p: Partial<DropItem>) =>
@@ -175,9 +187,9 @@ export function BulkDropDialog({
       const payload = items.map((it) => ({
         id: it.id,
         title: it.title,
-        tag: it.category || "TEE",
-        condition: it.condition || "Good",
-        description: it.description || "",
+        tag: defaults.category || "TEE",
+        condition: defaults.condition || "Good",
+        description: defaults.description || "",
         price: parseInt(it.price, 10),
         size: it.size || "One Size",
         availability: it.availability,
@@ -253,6 +265,22 @@ export function BulkDropDialog({
                 <SelectItem value="sold">Sold</SelectItem>
               </SelectContent>
             </Select>
+            <Input
+              placeholder="Category (e.g. TEE)"
+              value={defaults.category}
+              onChange={(e) => setDefaults({ ...defaults, category: e.target.value })}
+            />
+            <Input
+              placeholder="Condition (e.g. Good)"
+              value={defaults.condition}
+              onChange={(e) => setDefaults({ ...defaults, condition: e.target.value })}
+            />
+            <Input
+              placeholder="Description (applies to every item in this drop)"
+              className="col-span-2 md:col-span-3"
+              value={defaults.description}
+              onChange={(e) => setDefaults({ ...defaults, description: e.target.value })}
+            />
           </div>
           <Button
             variant="outline"

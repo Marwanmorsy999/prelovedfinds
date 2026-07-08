@@ -17,11 +17,16 @@ export function Navigation() {
   const cartRef = useRef<HTMLDivElement>(null);
   const cartTriggerRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => { setMobileOpen(false); setCartOpen(false); }, [pathname]);
+  useEffect(() => {
+    setMobileOpen(false);
+    setCartOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = cartOpen || mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [cartOpen, mobileOpen]);
 
   useEffect(() => {
@@ -35,7 +40,10 @@ export function Navigation() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (cartOpen) { setCartOpen(false); cartTriggerRef.current?.focus(); }
+        if (cartOpen) {
+          setCartOpen(false);
+          cartTriggerRef.current?.focus();
+        }
         if (mobileOpen) setMobileOpen(false);
       }
     };
@@ -56,7 +64,6 @@ export function Navigation() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-paper border-b border-hairline transition-all duration-300">
         <div className="mx-auto max-w-7xl flex h-20 items-center justify-between px-4 md:px-8">
-
           {/* Left: hamburger mobile / nav links desktop */}
           <div className="flex items-center gap-8 w-1/3">
             <button
@@ -78,7 +85,9 @@ export function Navigation() {
                     }`}
                   >
                     {item.label}
-                    <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-ink transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"}`} />
+                    <span
+                      className={`absolute -bottom-0.5 left-0 h-[2px] bg-ink transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"}`}
+                    />
                   </Link>
                 );
               })}
@@ -107,7 +116,7 @@ export function Navigation() {
             <button
               ref={cartTriggerRef}
               onClick={() => setCartOpen(!cartOpen)}
-               className="relative flex items-center gap-2 text-ink hover:text-concrete transition-colors duration-200 group"
+              className="relative flex items-center gap-2 text-ink hover:text-concrete transition-colors duration-200 group"
               aria-label={`Cart (${count})`}
             >
               <ShoppingBag className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
@@ -128,14 +137,19 @@ export function Navigation() {
       />
       <div
         className={`fixed top-0 right-0 bottom-0 z-[var(--z-drawer)] w-full max-w-[380px] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${cartOpen ? "translate-x-0" : "translate-x-full"}`}
-        role="dialog" aria-modal="true" aria-label="Shopping cart"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Shopping cart"
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-hairline">
           <p className="text-[13px] font-bold uppercase tracking-widest text-ink">
             Bag {count > 0 && <span className="text-ink">({count})</span>}
           </p>
           <button
-            onClick={() => { setCartOpen(false); cartTriggerRef.current?.focus(); }}
+            onClick={() => {
+              setCartOpen(false);
+              cartTriggerRef.current?.focus();
+            }}
             className="p-1 text-[#9ca3af] hover:text-ink transition-colors rounded-full hover:bg-surface"
             aria-label="Close cart"
           >
@@ -153,7 +167,7 @@ export function Navigation() {
               <p className="text-[12px] text-[#9ca3af]">Add some pieces to get started</p>
               <button
                 onClick={() => setCartOpen(false)}
-                 className="mt-2 h-10 bg-ink text-paper px-6 text-[11px] font-bold uppercase tracking-widest hover:bg-concrete transition-colors"
+                className="mt-2 h-10 bg-ink text-paper px-6 text-[11px] font-bold uppercase tracking-widest hover:bg-concrete transition-colors"
               >
                 Shop All
               </button>
@@ -162,16 +176,24 @@ export function Navigation() {
             items.map((item) => (
               <div key={item.id} className="flex items-start gap-3 group">
                 <div className="h-20 w-16 bg-surface flex-shrink-0 overflow-hidden">
-                  <ImageSlot src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                  <ImageSlot
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <div className="flex-1 min-w-0 pt-0.5">
-                   <p className="text-[13px] font-medium text-ink leading-snug line-clamp-2">{item.name}</p>
-                  <p className="text-[12px] text-[#9ca3af] mt-1">LE {item.price.toLocaleString()}</p>
+                  <p className="text-[13px] font-medium text-ink leading-snug line-clamp-2">
+                    {item.name}
+                  </p>
+                  <p className="text-[12px] text-[#9ca3af] mt-1">
+                    LE {item.price.toLocaleString()}
+                  </p>
                 </div>
                 <button
                   onClick={() => remove(item.id)}
-                   className="mt-0.5 p-1.5 text-[#9ca3af] hover:text-red-500 active:text-red-700 hover:bg-red-50 active:bg-red-100 transition-colors rounded flex-shrink-0"
-                   aria-label={`Remove ${item.name}`}
+                  className="mt-0.5 p-1.5 text-[#9ca3af] hover:text-red-500 active:text-red-700 hover:bg-red-50 active:bg-red-100 transition-colors rounded flex-shrink-0"
+                  aria-label={`Remove ${item.name}`}
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -184,12 +206,20 @@ export function Navigation() {
           <div className="px-5 py-5 border-t border-hairline space-y-3 bg-bg-light">
             <div className="flex items-center justify-between">
               <span className="text-[12px] text-concrete uppercase tracking-widest">Subtotal</span>
-              <span className="text-[16px] font-bold text-ink">LE {cartTotal.toLocaleString()}</span>
+              <span className="text-[16px] font-bold text-ink">
+                LE {cartTotal.toLocaleString()}
+              </span>
             </div>
-            <button onClick={() => navigate({ to: "/checkout" })} className="w-full h-12 bg-ink text-paper text-[12px] font-bold uppercase tracking-widest hover:bg-concrete transition-colors duration-200">
+            <button
+              onClick={() => navigate({ to: "/checkout" })}
+              className="w-full h-12 bg-ink text-paper text-[12px] font-bold uppercase tracking-widest hover:bg-concrete transition-colors duration-200"
+            >
               Checkout
             </button>
-            <button onClick={() => setCartOpen(false)} className="w-full h-10 text-[11px] font-semibold uppercase tracking-widest text-[#9ca3af] hover:text-ink transition-colors">
+            <button
+              onClick={() => setCartOpen(false)}
+              className="w-full h-10 text-[11px] font-semibold uppercase tracking-widest text-[#9ca3af] hover:text-ink transition-colors"
+            >
               Continue Shopping
             </button>
           </div>
@@ -199,7 +229,9 @@ export function Navigation() {
       {/* Mobile menu */}
       <div
         className={`fixed inset-0 z-50 bg-paper flex flex-col md:hidden transition-transform duration-300 ease-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
-        role="dialog" aria-modal="true" aria-label="Navigation"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation"
       >
         <div className="flex items-center justify-between px-4 h-16 border-b border-hairline">
           <Logo className="h-11 w-auto" />
@@ -226,7 +258,9 @@ export function Navigation() {
           })}
         </nav>
         <div className="mt-auto px-6 pb-8 pt-6">
-          <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">Preloved Finds · Cairo</p>
+          <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
+            Preloved Finds · Cairo
+          </p>
         </div>
       </div>
     </>

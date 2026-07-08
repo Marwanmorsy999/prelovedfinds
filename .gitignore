@@ -20,6 +20,18 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Ad-hoc debug scripts / scratch files — never commit these
+tmp_*.cjs
+tmp_*.mjs
+check-*.mjs
+check-*.js
+find-error.mjs
+narrow.mjs
+.playwright-mcp/
+
+# Screenshots dropped in the repo root by manual QA / browser tools
+/*.png
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

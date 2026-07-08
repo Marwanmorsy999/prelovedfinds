@@ -8,17 +8,19 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   form.append("file", file);
   form.append("upload_preset", UPLOAD_PRESET);
 
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-    { method: "POST", body: form },
-  );
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    method: "POST",
+    body: form,
+  });
 
   if (!res.ok) {
     let msg = `Cloudinary upload failed (${res.status})`;
     try {
       const err = (await res.json()) as { error?: { message?: string } };
       if (err.error?.message) msg = err.error.message;
-    } catch { /* ignore parse error */ }
+    } catch {
+      /* ignore parse error */
+    }
     throw new Error(msg);
   }
 

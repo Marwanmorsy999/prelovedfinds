@@ -217,7 +217,7 @@ export async function createProducts(inputs: ProductInput[]): Promise<Product[]>
     images: input.images ?? [],
     productId: input.productId ?? [],
     measurements: input.measurements ?? [],
-    priceLabel: input.priceLabel,
+    priceLabel: input.priceLabel ?? "",
     sortOrder: input.sortOrder ?? 0,
     description: input.description,
     tag: input.tag,

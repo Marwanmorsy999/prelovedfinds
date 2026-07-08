@@ -1,5 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getCookie, setCookie, deleteCookie } from "@tanstack/start-server-core";
+import {
+  getCookie,
+  setCookie,
+  deleteCookie,
+  getRequestHeader,
+  getRequestIP,
+} from "@tanstack/start-server-core";
 import { z } from "zod";
 import { verifyPassword, signSessionToken } from "@/lib/auth.ts";
 
@@ -27,8 +33,8 @@ function checkRateLimit(ip: string): boolean {
 async function issueSession() {
   const token = await signSessionToken();
   setCookie(SESSION_COOKIE, token, {
-    httpOnly: true,   // prevents JS access — security hardening
-    secure: true,     // HTTPS only
+    httpOnly: true, // prevents JS access — security hardening
+    secure: true, // HTTPS only
     sameSite: "strict",
     path: "/",
     maxAge: SESSION_MAX_AGE,
@@ -41,11 +47,13 @@ function clearSession() {
 
 export const loginFn = createServerFn({ method: "POST" })
   .validator(z.object({ password: z.string().min(1) }))
-  .handler(async ({ data, request }) => {
-    // Rate limit by IP
+  .handler(async ({ data }) => {
+    // Rate limit by IP. `cf-connecting-ip` is the header Cloudflare's edge
+    // sets to the real client IP and can't be spoofed by the client (Cloudflare
+    // overwrites it), which is why it's checked first.
     const ip =
-      request?.headers?.get("cf-connecting-ip") ||
-      request?.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      getRequestHeader("cf-connecting-ip" as never) ||
+      getRequestIP({ xForwardedFor: true }) ||
       "unknown";
 
     if (!checkRateLimit(ip)) {

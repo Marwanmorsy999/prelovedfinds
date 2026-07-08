@@ -9,6 +9,7 @@ export interface CartItem {
   price: number;
   priceLabel?: string;
   imageUrl?: string;
+  size?: string;
 }
 
 interface CartCtx {
@@ -55,14 +56,29 @@ function saveCart(items: CartItem[]) {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => loadCart());
+  // Always start empty. Reading localStorage inside the useState initializer
+  // ran during the client's first (hydrating) render, which produced a
+  // different tree than the server-rendered HTML (which has no access to
+  // localStorage) — a classic React hydration mismatch. Hydrating the real
+  // cart in an effect below means the first client render matches the
+  // server exactly, then updates once mounted.
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const itemsRef = useRef(items);
   itemsRef.current = items;
 
-  // Persist to localStorage whenever items change
   useEffect(() => {
+    setItems(loadCart());
+    setHydrated(true);
+  }, []);
+
+  // Persist to localStorage whenever items change, but only after the
+  // initial hydration above — otherwise this would immediately overwrite
+  // a real saved cart with the empty initial state.
+  useEffect(() => {
+    if (!hydrated) return;
     saveCart(items);
-  }, [items]);
+  }, [items, hydrated]);
 
   const add = (item: CartItem) => {
     if (itemsRef.current.some((x) => x.id === item.id)) return false;

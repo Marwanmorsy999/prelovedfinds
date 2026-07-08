@@ -128,18 +128,14 @@ function Checkout() {
       await createOrderFn({
         data: {
           id: orderId,
-          items: items.map((i) => ({
-            name: i.name,
-            size: (i as any).size,
-            price: i.price,
-            priceLabel: i.priceLabel,
-          })),
+          // Only product IDs are sent — the server looks up current price,
+          // size, and availability itself so the order total can't be
+          // manipulated by a client (see src/lib/functions/orders.ts).
+          items: items.map((i) => ({ id: i.id })),
           customerName: name.trim(),
           customerPhone: phone.trim(),
           governorate,
           address: address.trim(),
-          subtotal,
-          total,
         },
       });
       clear();
@@ -377,10 +373,8 @@ function Checkout() {
                         <p className="text-[13px] font-medium text-[#1a1a1a] truncate">
                           {item.name}
                         </p>
-                        {(item as any).size && (
-                          <p className="text-[11px] text-[#9ca3af] mt-0.5">
-                            Size: {(item as any).size}
-                          </p>
+                        {item.size && (
+                          <p className="text-[11px] text-[#9ca3af] mt-0.5">Size: {item.size}</p>
                         )}
                         <p className="text-[11px] text-[#9ca3af]">Qty 1</p>
                       </div>

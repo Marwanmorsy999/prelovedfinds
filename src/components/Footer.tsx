@@ -48,7 +48,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                   href="https://www.instagram.com/preloved.finds._"
+                  href="https://www.instagram.com/preloved.finds._"
                   target="_blank"
                   rel="noreferrer"
                   className="text-[13px] text-ink hover:text-concrete transition-colors"
@@ -75,9 +75,7 @@ export function Footer() {
           <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
             © {new Date().getFullYear()} Preloved Finds. All rights reserved.
           </p>
-          <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
-            Terms & Policies
-          </p>
+          <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">Terms & Policies</p>
         </div>
       </div>
     </footer>

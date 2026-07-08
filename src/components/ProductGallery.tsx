@@ -95,7 +95,11 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
           onMouseLeave={handleMouseLeave}
           onDoubleClick={() => setZoomed(true)}
         >
-          <ImageSlot src={slots[active]} alt={title} className="w-full h-full object-cover pointer-events-none" />
+          <ImageSlot
+            src={slots[active]}
+            alt={title}
+            className="w-full h-full object-cover pointer-events-none"
+          />
         </div>
 
         {/* Zoom hint */}
@@ -111,7 +115,10 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
         {slots.length > 1 && (
           <>
             <button
-              onClick={(e) => { e.stopPropagation(); goPrev(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                goPrev();
+              }}
               disabled={active === 0}
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Previous image"
@@ -119,7 +126,10 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
               <ChevronLeft className="h-4 w-4 text-ink" />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); goNext(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                goNext();
+              }}
               disabled={active === slots.length - 1}
               className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Next image"
@@ -132,7 +142,10 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
               {slots.map((_, i) => (
                 <button
                   key={i}
-                  onClick={(e) => { e.stopPropagation(); setActive(i); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActive(i);
+                  }}
                   className={`w-1.5 h-1.5 rounded-full transition-all ${
                     i === active ? "bg-white w-3" : "bg-white/50 hover:bg-white/80"
                   }`}
@@ -165,7 +178,11 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
               }`}
               aria-label={`View image ${i + 1}`}
             >
-              <ImageSlot src={src} alt={`${title} view ${i + 1}`} className="w-full h-full object-cover" />
+              <ImageSlot
+                src={src}
+                alt={`${title} view ${i + 1}`}
+                className="w-full h-full object-cover"
+              />
             </button>
           ))}
         </div>
@@ -183,7 +200,10 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
             className="max-h-[90vh] max-w-[90vw] object-contain"
           />
           <button
-            onClick={(e) => { e.stopPropagation(); setZoomed(false); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setZoomed(false);
+            }}
             className="absolute top-5 right-5 bg-white/10 hover:bg-white/20 p-2 transition-colors"
             aria-label="Close zoom"
           >
@@ -192,7 +212,10 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
           {slots.length > 1 && (
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-4">
               <button
-                onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goPrev();
+                }}
                 disabled={active === 0}
                 className="text-white/60 hover:text-white disabled:opacity-30 transition-colors"
                 aria-label="Previous image"
@@ -203,7 +226,10 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
                 {active + 1} / {slots.length}
               </p>
               <button
-                onClick={(e) => { e.stopPropagation(); goNext(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goNext();
+                }}
                 disabled={active === slots.length - 1}
                 className="text-white/60 hover:text-white disabled:opacity-30 transition-colors"
                 aria-label="Next image"

@@ -192,7 +192,9 @@ function Shop() {
               >
                 <option value="all">All</option>
                 {tags.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
                 ))}
               </select>
             </div>
@@ -207,7 +209,9 @@ function Shop() {
               >
                 <option value="all">All</option>
                 {conditions.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>

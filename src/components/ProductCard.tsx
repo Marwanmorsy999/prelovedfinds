@@ -23,6 +23,7 @@ export function ProductCard({ product }: { product: Product }) {
       price: product.price,
       priceLabel: product.priceLabel,
       imageUrl: product.imageUrl ?? product.images[0],
+      size: product.size,
     });
     if (ok) setAdded(true);
   };
@@ -67,11 +68,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
       )}
 
-      <Link
-        to="/product/$id"
-        params={{ id: product.id }}
-        className="block mt-3 space-y-1"
-      >
+      <Link to="/product/$id" params={{ id: product.id }} className="block mt-3 space-y-1">
         <h3 className="text-[14px] font-medium text-ink leading-snug line-clamp-2">
           {product.title}
         </h3>

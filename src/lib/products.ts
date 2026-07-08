@@ -44,8 +44,8 @@ export interface Settings {
 
 export const CATEGORIES = ["TEE", "SHIRT", "JEANS", "PANTS", "SHORTS", "OTHER"] as const;
 export const CONDITIONS = ["Excellent", "Good", "Fair"] as const;
-export type Category = typeof CATEGORIES[number];
-export type Condition = typeof CONDITIONS[number];
+export type Category = (typeof CATEGORIES)[number];
+export type Condition = (typeof CONDITIONS)[number];
 
 export function availabilityLabel(a: Availability): string {
   switch (a) {

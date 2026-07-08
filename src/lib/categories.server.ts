@@ -42,9 +42,7 @@ export async function createCategory(name: string, label: string): Promise<Categ
   const sortOrder = maxRow?.nextOrder ?? 0;
 
   await db
-    .prepare(
-      "INSERT INTO categories (name, label, sortOrder, createdAt) VALUES (?, ?, ?, ?)",
-    )
+    .prepare("INSERT INTO categories (name, label, sortOrder, createdAt) VALUES (?, ?, ?, ?)")
     .bind(name, label, sortOrder, now)
     .run();
 
@@ -57,7 +55,10 @@ export async function deleteCategory(name: string): Promise<boolean> {
   return res.success;
 }
 
-export async function updateCategory(name: string, patch: { label?: string; sortOrder?: number }): Promise<Category | null> {
+export async function updateCategory(
+  name: string,
+  patch: { label?: string; sortOrder?: number },
+): Promise<Category | null> {
   const db = getDB();
   const existing = await db
     .prepare("SELECT * FROM categories WHERE name = ?")
