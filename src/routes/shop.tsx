@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { Search, ChevronDown, X } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
+import type { Product } from "@/lib/products";
 import {
   listProductsFn,
   getDistinctTagsFn,
@@ -86,10 +87,61 @@ function Shop() {
   const [query, setQuery] = useState(search.q || "");
 
   const currentPage = Math.min(page, totalPages || 1);
-  const [gridCols, setGridCols] = useState<2 | 4>(4);
+  const [mobileCols, setMobileCols] = useState<1 | 2>(2);
+  const [desktopCols, setDesktopCols] = useState<2 | 4>(4);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const activeCols = isMobile ? mobileCols : desktopCols;
+
+  const toggleLayout = (n: 2 | 4) => {
+    if (isMobile) {
+      setMobileCols(n === 2 ? 1 : 2);
+    } else {
+      setDesktopCols(n);
+    }
+  };
+
+  const cycleCols = [2, 4] as const;
+
+  // Accumulated items across Load More clicks
+  const [accumulatedItems, setAccumulatedItems] = useState<Product[]>([]);
+  const prevSearchKeyRef = useRef(search);
+  const prevPageRef = useRef(page);
+
+  // Reset accumulated items when filters/search change, append on page increase
+  useEffect(() => {
+    const prevKey = prevSearchKeyRef.current;
+    const isFilterChange =
+      prevKey.tag !== search.tag ||
+      prevKey.condition !== search.condition ||
+      prevKey.priceRange !== search.priceRange ||
+      prevKey.q !== search.q ||
+      prevKey.sort !== search.sort;
+
+    if (isFilterChange || page <= prevPageRef.current) {
+      // Filter/search changed or page reset → start fresh
+      setAccumulatedItems(items);
+    } else if (page > prevPageRef.current) {
+      // Load More clicked → append new items
+      setAccumulatedItems((prev) => [...prev, ...items]);
+    }
+
+    prevSearchKeyRef.current = search;
+    prevPageRef.current = page;
+  }, [items, page, search]);
+
+  const displayItems = accumulatedItems.length > 0 ? accumulatedItems : items;
 
   // Scroll restoration for Load More
-  const prevItemsLengthRef = useRef(items.length);
+  const prevItemsLengthRef = useRef(displayItems.length);
   const scrollYRef = useRef(0);
   const isFirstRender = useRef(true);
 
@@ -106,14 +158,14 @@ function Shop() {
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      prevItemsLengthRef.current = items.length;
+      prevItemsLengthRef.current = displayItems.length;
       return;
     }
-    if (items.length > prevItemsLengthRef.current) {
+    if (displayItems.length > prevItemsLengthRef.current) {
       window.scrollTo({ top: scrollYRef.current, behavior: "instant" });
     }
-    prevItemsLengthRef.current = items.length;
-  }, [items.length]);
+    prevItemsLengthRef.current = displayItems.length;
+  }, [displayItems.length]);
 
   const loadMore = () => {
     scrollYRef.current = window.scrollY;
@@ -275,12 +327,18 @@ function Shop() {
           )}
 
           <div className="flex gap-1 ml-auto">
-            {([2, 4] as const).map((n) => (
+            {cycleCols.map((n) => (
               <button
                 key={n}
-                onClick={() => setGridCols(n)}
+                onClick={() => {
+                  if (isMobile) {
+                    toggleLayout(n as 2);
+                  } else {
+                    toggleLayout(n);
+                  }
+                }}
                 className={`h-9 w-9 flex items-center justify-center border transition-colors ${
-                  gridCols === n
+                  activeCols === n
                     ? "border-ink bg-ink text-paper"
                     : "border-hairline text-concrete hover:border-ink"
                 }`}
@@ -310,20 +368,20 @@ function Shop() {
           </div>
         </div>
 
-        <div
-          className="grid gap-4 md:gap-5"
-          style={{
-            gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
-          }}
-        >
-          {items.map((p) => (
+          <div
+            className="grid gap-4 md:gap-5"
+            style={{
+              gridTemplateColumns: `repeat(${activeCols}, minmax(0, 1fr))`,
+            }}
+          >
+          {displayItems.map((p) => (
             <div key={p.id} className="min-w-0">
               <ProductCard product={p} />
             </div>
           ))}
         </div>
 
-        {items.length === 0 && (
+        {displayItems.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="text-[22px] font-bold text-ink mb-2">No pieces found</p>
             <p className="text-[13px] text-[#9ca3af] mb-6">
