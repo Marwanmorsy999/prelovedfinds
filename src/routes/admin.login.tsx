@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { loginFn } from "@/lib/functions/auth";
@@ -21,8 +21,6 @@ export const Route = createFileRoute("/admin/login")({
 });
 
 function AdminLogin() {
-  const navigate = useNavigate();
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -31,16 +29,16 @@ function AdminLogin() {
     setLoading(true);
     try {
       const res = await loginFn({ data: { password } });
-      console.log("[login] response:", res);
       if (res.ok) {
         toast.success("Welcome back");
-        await router.invalidate();
-        navigate({ to: "/admin" });
+        // Hard navigation: forces a fresh HTTP request so the server reads
+        // the just-set session cookie directly, avoiding any client-side
+        // router cache/race with the auth state.
+        window.location.href = "/admin";
       } else {
         toast.error(res.error ?? "Login failed");
       }
-    } catch (err) {
-      console.log("[login] error:", err);
+    } catch {
       toast.error("Login failed");
     } finally {
       setLoading(false);
@@ -61,6 +59,7 @@ function AdminLogin() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoFocus
