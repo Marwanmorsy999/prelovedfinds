@@ -311,7 +311,10 @@ function Shop() {
         </div>
 
         <div
-          className={`grid gap-4 md:gap-5 ${gridCols === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4"}`}
+          className="grid gap-4 md:gap-5"
+          style={{
+            gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
+          }}
         >
           {items.map((p) => (
             <div key={p.id} className="min-w-0">
