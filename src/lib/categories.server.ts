@@ -1,6 +1,6 @@
 import { getDB } from "./db";
 
-export interface CategoryRow {
+interface CategoryRow {
   name: string;
   label: string;
   sortOrder: number;

@@ -1,7 +1,7 @@
 import type { Product, Availability } from "./products";
 import { getDB, rowToProduct, type ProductRow } from "./db";
 
-export type SortKey = "newest" | "featured" | "price-asc" | "price-desc";
+type SortKey = "newest" | "featured" | "price-asc" | "price-desc";
 
 export interface ListParams {
   tag?: string;

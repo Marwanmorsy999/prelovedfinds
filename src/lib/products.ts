@@ -42,18 +42,7 @@ export interface Settings {
   whatsapp: string;
 }
 
-export const CATEGORIES = ["TEE", "SHIRT", "JEANS", "PANTS", "SHORTS", "OTHER"] as const;
+const CATEGORIES = ["TEE", "SHIRT", "JEANS", "PANTS", "SHORTS", "OTHER"] as const;
 export const CONDITIONS = ["Excellent", "Good", "Fair"] as const;
 export type Category = (typeof CATEGORIES)[number];
 export type Condition = (typeof CONDITIONS)[number];
-
-export function availabilityLabel(a: Availability): string {
-  switch (a) {
-    case "available":
-      return "In stock";
-    case "one-left":
-      return "1 left";
-    case "sold":
-      return "Sold out";
-  }
-}

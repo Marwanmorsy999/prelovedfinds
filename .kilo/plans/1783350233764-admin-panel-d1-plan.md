@@ -1,6 +1,7 @@
 # Preloved Finds — Admin Panel (Cloudflare D1 + TanStack Start + Cloudinary)
 
 ## Goal
+
 Add a protected admin panel at `/admin` (login `/admin/login`) that manages the vintage
 product catalog in a **Cloudflare D1** SQLite database, replacing the current hardcoded
 `src/lib/products.ts` array. Mirror the "Mr. Pizza Steve Finds" pattern: session-token auth
@@ -9,6 +10,7 @@ pagination, revenue cards, and an amber "Mark Sold" button. Product images are u
 **Cloudinary** (unsigned preset) and the returned URLs are stored in D1.
 
 ## Confirmed decisions (from codebase inspection + user)
+
 - **Build target**: Cloudflare Workers (`nitro.preset: "cloudflare-module"` in `vite.config.ts`).
   Filesystem writes do NOT persist on Workers → **D1** is the store (approved).
 - **D1 access**: inside TanStack server functions, binding is at `globalThis.__env__.DB`
@@ -29,27 +31,29 @@ pagination, revenue cards, and an amber "Mark Sold" button. Product images are u
   into router context for clean guard + nav visibility.
 
 ## Data model (D1)
+
 Table `products` (mirrors current `Product` type in `src/lib/products.ts`):
 
-| col | type | notes |
-|-----|------|-------|
-| id | TEXT PK | slug, e.g. `levis-501-black` (admin supplies; must be unique) |
-| title | TEXT | |
-| brand | TEXT | |
-| era | TEXT | |
-| price | INTEGER | EGP, integer |
-| currency | TEXT | default `'EGP'` |
-| availability | TEXT | `'available'` \| `'one-left'` \| `'sold'` |
-| size | TEXT | |
-| images | TEXT | JSON array string of Cloudinary URLs |
-| productId | TEXT | JSON array string (bullet copy) |
-| measurements | TEXT | JSON array string |
-| createdAt | INTEGER | epoch ms |
+| col          | type    | notes                                                         |
+| ------------ | ------- | ------------------------------------------------------------- |
+| id           | TEXT PK | slug, e.g. `levis-501-black` (admin supplies; must be unique) |
+| title        | TEXT    |                                                               |
+| brand        | TEXT    |                                                               |
+| era          | TEXT    |                                                               |
+| price        | INTEGER | EGP, integer                                                  |
+| currency     | TEXT    | default `'EGP'`                                               |
+| availability | TEXT    | `'available'` \| `'one-left'` \| `'sold'`                     |
+| size         | TEXT    |                                                               |
+| images       | TEXT    | JSON array string of Cloudinary URLs                          |
+| productId    | TEXT    | JSON array string (bullet copy)                               |
+| measurements | TEXT    | JSON array string                                             |
+| createdAt    | INTEGER | epoch ms                                                      |
 
 Seed from the existing 12 products in `src/lib/products.ts` (images carry their current
 `/assets/*.jpeg` public URLs or left empty) so the live site is unchanged after migration.
 
 ## Files to create
+
 1. `wrangler.jsonc` — **add** `[[d1_databases]]` binding `DB` (name `prelovedfinds-db`,
    `database_id` placeholder, `migrations_dir = ".wrangler/migrations"`). Keep existing `main`,
    `assets`, `nodejs_compat`, `observability`. Add vars (non-secret) `CLOUDINARY_CLOUD_NAME`,
@@ -84,21 +88,23 @@ Seed from the existing 12 products in `src/lib/products.ts` (images carry their 
    Config (cloud name + preset) passed from a tiny `getCloudinaryConfigFn` server fn or read from
    `getEnv()` in the client (they are non-sensitive `vars`).
 10. Routes:
-   - `src/routes/admin.login.tsx` — password form → `loginFn` → redirect `/admin`; error via `sonner`.
-   - `src/routes/admin.tsx` — protected dashboard:
-     - Guard via router context `admin` (set in root `beforeLoad`); if false → `<Navigate to="/admin/login">`.
-     - Revenue cards + stats from `dashboardStatsFn`.
-     - `Table` (image thumb, title, brand, price, availability `Badge`, actions: Edit dialog,
-       amber **Mark Sold/Available** `Button`, Delete `AlertDialog`).
-     - Filter (availability) + sort + **pagination** (server-side, `PER_PAGE = 8`) reusing shop's
-       filter vocabulary.
-     - "Add Product" → create dialog. Edit/Create dialogs use `Input`/`Textarea`/`Select`/`Label`;
-       `productId`/`measurements` edited as newline-separated `Textarea` (joined on save);
-       **images** handled by Cloudinary upload (multiple files → URL list shown as thumbnails,
-       removable). `sonner` toasts on success/error.
-   - Logout: button in `/admin` header calling `logoutFn` → redirect `/admin/login`.
+
+- `src/routes/admin.login.tsx` — password form → `loginFn` → redirect `/admin`; error via `sonner`.
+- `src/routes/admin.tsx` — protected dashboard:
+  - Guard via router context `admin` (set in root `beforeLoad`); if false → `<Navigate to="/admin/login">`.
+  - Revenue cards + stats from `dashboardStatsFn`.
+  - `Table` (image thumb, title, brand, price, availability `Badge`, actions: Edit dialog,
+    amber **Mark Sold/Available** `Button`, Delete `AlertDialog`).
+  - Filter (availability) + sort + **pagination** (server-side, `PER_PAGE = 8`) reusing shop's
+    filter vocabulary.
+  - "Add Product" → create dialog. Edit/Create dialogs use `Input`/`Textarea`/`Select`/`Label`;
+    `productId`/`measurements` edited as newline-separated `Textarea` (joined on save);
+    **images** handled by Cloudinary upload (multiple files → URL list shown as thumbnails,
+    removable). `sonner` toasts on success/error.
+- Logout: button in `/admin` header calling `logoutFn` → redirect `/admin/login`.
 
 ## Files to modify
+
 - `src/lib/products.ts` — keep `Product` + `Availability` types (shared by UI); **delete** the
   hardcoded `products` array + `getProduct`/`getRelated` so the app can't import stale data.
   (Loaders now use server fns.)
@@ -124,14 +130,16 @@ Seed from the existing 12 products in `src/lib/products.ts` (images carry their 
   `db:create` (wrangler d1 …).
 
 ## Auth flow detail
+
 - `loginFn({password})` → constant-time compare to `ADMIN_PASSWORD`; if ok, `setCookie('session',
-  signSessionToken(), { httpOnly:true, sameSite:'lax', path:'/', maxAge: 60*60*24*7 })` → `{ok:true}`.
+signSessionToken(), { httpOnly:true, sameSite:'lax', path:'/', maxAge: 60*60*24*7 })` → `{ok:true}`.
 - Root `beforeLoad` → `admin = getIsAuthed()` (reads `getCookie('session')`, `verifySessionToken`).
 - `/admin` `beforeLoad`/component → if `!admin`, `<Navigate to="/admin/login">`.
 - Mutating server fns → `requireAdmin()` first; invalid → throws (mapped to 401 / redirect to login).
 - `logoutFn` → `deleteCookie('session')`.
 
 ## Local dev + deployment notes
+
 - **Local dev**: use `wrangler dev` (not plain `vite dev`) so D1 + bindings + Cloudinary `vars`
   are present. Run `wrangler d1 migrations apply prelovedfinds-db --local` once. `getEnv()` falls
   back to `process.env` for `vite dev` convenience.
@@ -142,6 +150,7 @@ Seed from the existing 12 products in `src/lib/products.ts` (images carry their 
 - `nodejs_compat` enabled ⇒ `crypto.subtle` + `crypto.randomUUID` available.
 
 ## Risks / open questions
+
 - `database_id` is env-specific — placeholder; operator fills + runs create/migrate before deploy.
 - `getRequest().runtime.cloudflare.env` typing is loose; `getDB()` casts defensively.
 - Plain `vite dev` lacks D1/Cloudinary env — admin flow must run via `wrangler dev`. Documented.
@@ -153,6 +162,7 @@ Seed from the existing 12 products in `src/lib/products.ts` (images carry their 
   existing static URLs; new uploads go to Cloudinary.
 
 ## Validation
+
 1. `npm run build` succeeds (`cloudflare-module`).
 2. `wrangler dev` → `/admin/login`: wrong password rejected; correct password → cookie → `/admin`.
 3. `/admin` dashboard: stats correct (12 seeded; revenue = Σ sold prices); toggle Sold flips

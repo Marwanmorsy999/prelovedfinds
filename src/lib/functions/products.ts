@@ -93,11 +93,6 @@ export const deleteProductFn = createServerFn({ method: "POST" })
     return deleteProduct(data.id);
   });
 
-export const deleteSoldProductsFn = createServerFn({ method: "POST" }).handler(async () => {
-  await requireAdmin();
-  return deleteSoldProducts();
-});
-
 export const toggleSoldFn = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
@@ -131,11 +126,3 @@ export const getDistinctSizesFn = createServerFn({ method: "GET" }).handler(asyn
 export const getDistinctConditionsFn = createServerFn({ method: "GET" }).handler(async () => {
   return getDistinctConditions();
 });
-
-export const reorderProductsFn = createServerFn({ method: "POST" })
-  .validator(z.object({ orderedIds: z.array(z.string().min(1)).min(1).max(1000) }))
-  .handler(async ({ data }) => {
-    await requireAdmin();
-    await reorderProducts(data.orderedIds);
-    return { ok: true as const };
-  });
