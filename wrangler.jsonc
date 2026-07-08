@@ -19,15 +19,5 @@
       "database_id": "85674be1-a87f-4fbb-924f-be2927b56e8b",
       "migrations_dir": "./migrations"
     }
-  ],
-  "assets": {
-    "binding": "ASSETS",
-    "directory": ".output/public"
-  },
-  "rules": [
-    {
-      "type": "ESModule",
-      "globs": ["**/*.mjs", "**/*.js"]
-    }
   ]
 }

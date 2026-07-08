@@ -8,14 +8,17 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { SettingsCtx, useSettings } from "@/lib/settings-context";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { CartProvider } from "@/lib/cart";
 import { Toaster } from "@/components/ui/sonner";
 import { getIsAuthed } from "@/lib/auth";
+import { getSettingFn } from "@/lib/functions/settings";
 
 // Change to your production domain once deployed
 const SITE_URL = "https://prelovedfinds.com";
@@ -75,10 +78,19 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient; admin: boolean }>()({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+  admin: boolean;
+  announcement: string;
+  whatsapp: string;
+}>()({
   beforeLoad: async () => {
     const admin = await getIsAuthed();
-    return { admin };
+    const [announcement, whatsapp] = await Promise.all([
+      getSettingFn({ data: { key: "announcement" } }),
+      getSettingFn({ data: { key: "whatsapp" } }),
+    ]);
+    return { admin, announcement, whatsapp };
   },
   head: () => ({
     meta: [
@@ -154,19 +166,22 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  const { queryClient, announcement, whatsapp } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <div className="flex min-h-screen flex-col bg-white">
-          <Navigation />
-          <main className="flex-1 pt-[80px]" id="main-content">
-            <Outlet />
-          </main>
-          <Footer />
-        </div>
-        <Toaster />
+        <SettingsCtx.Provider value={{ whatsapp }}>
+          <div className="flex min-h-screen flex-col bg-white">
+            <AnnouncementBanner announcement={announcement} />
+            <Navigation />
+            <main className="flex-1 pt-[80px]" id="main-content">
+              <Outlet />
+            </main>
+            <Footer whatsapp={whatsapp} />
+          </div>
+          <Toaster />
+        </SettingsCtx.Provider>
       </CartProvider>
     </QueryClientProvider>
   );

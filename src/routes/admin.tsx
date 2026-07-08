@@ -4,10 +4,11 @@ import {
   useNavigate,
   Outlet,
   useRouterState,
+  Link,
 } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Trash2, LogOut, Search, X, Plus, ImagePlus, ChevronDown } from "lucide-react";
+import { Trash2, LogOut, Search, X, Plus, ImagePlus, ChevronDown, Eye } from "lucide-react";
 
 import { getIsAuthed } from "@/lib/auth";
 import { logoutFn } from "@/lib/functions/auth";
@@ -25,7 +26,7 @@ import {
   getDistinctConditionsFn,
 } from "@/lib/functions/products";
 import { uploadToCloudinary } from "@/lib/cloudinary";
-import type { Product, Availability } from "@/lib/products";
+import type { Product, Availability, Order } from "@/lib/products";
 import {
   listOrdersFn,
   getOrderFn,
@@ -55,6 +56,7 @@ export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [{ title: "" }],
   }),
+  errorComponent: AdminErrorComponent,
   beforeLoad: async ({ location }) => {
     const authed = await getIsAuthed();
     if (!authed && location.pathname !== "/admin/login") {
@@ -90,34 +92,76 @@ export const Route = createFileRoute("/admin")({
         dbCategories: [],
       };
     }
-    const s = location.search as {
-      tag?: string;
-      size?: string;
-      condition?: string;
-      availability?: string;
-    };
-    const [products, stats, orderStats, tags, sizes, conditions, dbCategories] = await Promise.all([
-      listProductsFn({
-        data: {
-          tag: s.tag === "all" ? undefined : (s.tag as never),
-          size: s.size === "all" ? undefined : s.size,
-          condition: s.condition === "all" ? undefined : (s.condition as never),
-          availability: s.availability === "all" ? undefined : (s.availability as never),
-          page: 1,
-          perPage: PER_PAGE,
-        },
-      }),
-      dashboardStatsFn(),
-      getOrderStatsFn(),
-      getDistinctTagsFn(),
-      getDistinctSizesFn(),
-      getDistinctConditionsFn(),
-      listCategoriesFn(),
-    ]);
-    return { products, stats, orderStats, categories: tags, sizes, conditions, dbCategories };
+    try {
+      const s = location.search as {
+        tag?: string;
+        size?: string;
+        condition?: string;
+        availability?: string;
+      };
+      const [products, stats, orderStats, tags, sizes, conditions, dbCategories] =
+        await Promise.all([
+          listProductsFn({
+            data: {
+              tag: s.tag === "all" ? undefined : (s.tag as never),
+              size: s.size === "all" ? undefined : s.size,
+              condition: s.condition === "all" ? undefined : (s.condition as never),
+              availability: s.availability === "all" ? undefined : (s.availability as never),
+              page: 1,
+              perPage: PER_PAGE,
+            },
+          }),
+          dashboardStatsFn(),
+          getOrderStatsFn(),
+          getDistinctTagsFn(),
+          getDistinctSizesFn(),
+          getDistinctConditionsFn(),
+          listCategoriesFn(),
+        ]);
+      return { products, stats, orderStats, categories: tags, sizes, conditions, dbCategories };
+    } catch (err) {
+      console.error("[admin/loader] failed to load dashboard data:", err);
+      throw err;
+    }
   },
   component: AdminDashboard,
 });
+
+function AdminErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  return (
+    <div className="flex min-h-[70vh] items-center justify-center px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-[18px] font-semibold text-[#1a1a1a]">Couldn't load admin data</h1>
+        {import.meta.env?.DEV && (
+          <pre className="mt-4 text-left text-[12px] text-red-600 bg-[#111] p-4 overflow-auto max-h-64">
+            {error.message}
+            {"\n\n"}
+            {error.stack}
+          </pre>
+        )}
+        <p className="mt-2 text-[13px] text-[#6b7280]">
+          {import.meta.env?.DEV
+            ? "Check the server logs for details."
+            : "Something went wrong on our end — check the server logs (console) and try again later."}
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <button
+            onClick={reset}
+            className="border border-ink bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-background hover:opacity-80"
+          >
+            Try again
+          </button>
+          <Link
+            to="/"
+            className="border border-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink hover:bg-ink hover:text-background"
+          >
+            Go home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function slugify(s: string) {
   return s
@@ -207,11 +251,16 @@ function AdminDashboard() {
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
 
   // orders state
-  const [orders, setOrders] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [orderSearch, setOrderSearch] = useState("");
-  const [orderFilter, setOrderFilter] = useState<string>("all");
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
   const [orderSort, setOrderSort] = useState<string>("newest");
+  const [orderPage, setOrderPage] = useState(1);
+  const [orderTotalPages, setOrderTotalPages] = useState(1);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(false);
+  const [orderStatusSaving, setOrderStatusSaving] = useState(false);
 
   // settings state
   const [announcement, setAnnouncement] = useState("");
@@ -220,32 +269,63 @@ function AdminDashboard() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryLabel, setNewCategoryLabel] = useState("");
 
+  // Load settings once when the settings tab opens for the first time.
+  const settingsLoadedRef = useRef(false);
+  useEffect(() => {
+    if (settingsLoadedRef.current) return;
+    if (activeTab !== "settings") return;
+    settingsLoadedRef.current = true;
+    (async () => {
+      try {
+        const [ann, wa] = await Promise.all([
+          getSettingFn({ data: { key: "announcement" } }),
+          getSettingFn({ data: { key: "whatsapp" } }),
+        ]);
+        setAnnouncement(ann);
+        setWhatsapp(wa);
+      } catch {
+        // ignore — defaults remain
+      }
+    })();
+  }, [activeTab]);
+
   if (pathname === "/admin/login") return <Outlet />;
 
   const reload = async () => {
     const s = typeof search === "string" ? new URLSearchParams(search) : new URLSearchParams();
-    const [products, stats, orderStats, tags, sizes, conditions, dbCategories] = await Promise.all([
-      listProductsFn({
-        data: {
-          tag: (s.get("tag") || "all") === "all" ? undefined : (s.get("tag") as never),
-          size: (s.get("size") || "all") === "all" ? undefined : (s.get("size") ?? undefined),
-          condition:
-            (s.get("condition") || "all") === "all" ? undefined : (s.get("condition") as never),
-          availability:
-            (s.get("availability") || "all") === "all"
-              ? undefined
-              : (s.get("availability") as never),
-          page: 1,
-          perPage: PER_PAGE,
-        },
-      }),
-      dashboardStatsFn(),
-      getOrderStatsFn(),
-      getDistinctTagsFn(),
-      getDistinctSizesFn(),
-      getDistinctConditionsFn(),
-      listCategoriesFn(),
-    ]);
+    const [products, stats, orderStats, tags, sizes, conditions, dbCategories, ordersRes] =
+      await Promise.all([
+        listProductsFn({
+          data: {
+            tag: (s.get("tag") || "all") === "all" ? undefined : (s.get("tag") as never),
+            size: (s.get("size") || "all") === "all" ? undefined : (s.get("size") ?? undefined),
+            condition:
+              (s.get("condition") || "all") === "all" ? undefined : (s.get("condition") as never),
+            availability:
+              (s.get("availability") || "all") === "all"
+                ? undefined
+                : (s.get("availability") as never),
+            page: 1,
+            perPage: PER_PAGE,
+          },
+        }),
+        dashboardStatsFn(),
+        getOrderStatsFn(),
+        getDistinctTagsFn(),
+        getDistinctSizesFn(),
+        getDistinctConditionsFn(),
+        listCategoriesFn(),
+        listOrdersFn({
+          data: {
+            status:
+              orderStatusFilter === "all"
+                ? undefined
+                : (orderStatusFilter as "pending" | "confirmed" | "completed" | "cancelled"),
+            q: orderSearch.trim() || undefined,
+            sort: orderSort as "newest" | "oldest" | "total-asc" | "total-desc",
+          },
+        }),
+      ]);
     setData(products);
     setStats(stats);
     setOrderStats(orderStats);
@@ -256,6 +336,9 @@ function AdminDashboard() {
     setSizes(sizes);
     setConditions(conditions);
     setBulkSelected(new Set());
+    setOrders(ordersRes);
+    setOrderPage(1);
+    setOrderTotalPages(Math.max(1, Math.ceil(ordersRes.length / PER_PAGE)));
   };
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -462,6 +545,47 @@ function AdminDashboard() {
       await reload();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
+    }
+  };
+
+  const handleOrderStatusUpdate = async (id: string, status: Order["status"]) => {
+    if (orderStatusSaving) return;
+    setOrderStatusSaving(true);
+    try {
+      await updateOrderStatusFn({ data: { id, status } });
+      toast.success("Order updated");
+      setSelectedOrder(null);
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to update order");
+    } finally {
+      setOrderStatusSaving(false);
+    }
+  };
+
+  const confirmDeleteOrder = async (o: Order) => {
+    try {
+      await deleteOrderFn({ data: { id: o.id } });
+      toast.success("Order deleted");
+      setOrderToDelete(null);
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete order");
+    }
+  };
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      await Promise.all([
+        setSettingFn({ data: { key: "announcement", value: announcement } }),
+        setSettingFn({ data: { key: "whatsapp", value: whatsapp } }),
+      ]);
+      toast.success("Settings saved");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save settings");
+    } finally {
+      setSavingSettings(false);
     }
   };
 
@@ -1104,17 +1228,201 @@ function AdminDashboard() {
         )}
 
         {activeTab === "orders" && (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-[12px] font-bold uppercase tracking-widest text-[#555] mb-2">
-              Orders
-            </p>
-            <p className="text-[13px] text-[#444]">Order management coming soon.</p>
+          <div>
+            {/* Filters */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-[#555] mb-1">
+                  Status
+                </label>
+                <select
+                  value={orderStatusFilter}
+                  onChange={(e) => {
+                    setOrderStatusFilter(e.target.value);
+                    setOrderPage(1);
+                  }}
+                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
+                >
+                  <option value="all">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-[#555] mb-1">
+                  Sort
+                </label>
+                <select
+                  value={orderSort}
+                  onChange={(e) => {
+                    setOrderSort(e.target.value);
+                    setOrderPage(1);
+                  }}
+                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="total-asc">Total: Low–High</option>
+                  <option value="total-desc">Total: High–Low</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-[#555] mb-1">
+                  Search
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#555]" />
+                  <input
+                    value={orderSearch}
+                    onChange={(e) => {
+                      setOrderSearch(e.target.value);
+                      setOrderPage(1);
+                    }}
+                    placeholder="Name, phone, or order ID…"
+                    className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[13px] pl-9 pr-3 py-2 outline-none focus:border-[#444] placeholder:text-[#444]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Orders count */}
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[12px] font-bold uppercase tracking-widest text-white">
+                Orders ({orders.length})
+              </p>
+            </div>
+
+            {/* Orders list */}
+            <div className="space-y-1">
+              {orders.length === 0 && (
+                <p className="text-[13px] text-[#555] py-8 text-center">No orders found</p>
+              )}
+              {orders.map((o) => {
+                const statusColors: Record<string, string> = {
+                  pending: "bg-yellow-900/40 text-yellow-400 border-yellow-700",
+                  confirmed: "bg-blue-900/40 text-blue-400 border-blue-700",
+                  completed: "bg-green-900/40 text-green-400 border-green-700",
+                  cancelled: "bg-red-900/40 text-red-400 border-red-700",
+                };
+                return (
+                  <div
+                    key={o.id}
+                    className="flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-2.5 hover:border-[#333] transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-[13px] font-medium text-white truncate">{o.id}</p>
+                        <span
+                          className={`inline-block text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 border ${statusColors[o.status] || "bg-[#2a2a2a] text-[#888] border-[#333]"}`}
+                        >
+                          {o.status}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#555]">
+                        {o.customerName} · {o.customerPhone} · {o.governorate || "N/A"}
+                      </p>
+                      <p className="text-[11px] text-[#555]">
+                        {o.items.length} item{o.items.length !== 1 ? "s" : ""} ·{" "}
+                        {new Date(o.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className="text-[13px] font-medium text-white whitespace-nowrap">
+                        LE {o.total.toLocaleString()}
+                      </span>
+                      <button
+                        onClick={() => setSelectedOrder(o)}
+                        className="p-1.5 text-[#555] hover:text-white transition-colors"
+                        aria-label="View order"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setOrderToDelete(o)}
+                        className="p-1.5 text-[#555] hover:text-red-400 transition-colors"
+                        aria-label="Delete order"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination */}
+            {orderTotalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-6">
+                <button
+                  onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
+                  disabled={orderPage <= 1}
+                  className="px-4 py-2 bg-[#1a1a1a] border border-[#333] text-[11px] font-bold uppercase tracking-widest text-[#888] hover:text-white hover:border-[#555] transition-colors disabled:opacity-40"
+                >
+                  Prev
+                </button>
+                <span className="text-[12px] text-[#888]">
+                  Page {orderPage} / {orderTotalPages}
+                </span>
+                <button
+                  onClick={() => setOrderPage((p) => Math.min(orderTotalPages, p + 1))}
+                  disabled={orderPage >= orderTotalPages}
+                  className="px-4 py-2 bg-[#1a1a1a] border border-[#333] text-[11px] font-bold uppercase tracking-widest text-[#888] hover:text-white hover:border-[#555] transition-colors disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         )}
 
         {activeTab === "settings" && (
           <div className="space-y-6 max-w-md">
             <p className="text-[12px] font-bold uppercase tracking-widest text-[#888]">Settings</p>
+
+            {/* Announcement Banner */}
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-4 space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[#555]">
+                Announcement Banner
+              </p>
+              <p className="text-[12px] text-[#666]">
+                Shown at the top of the storefront. Leave empty to hide.
+              </p>
+              <textarea
+                value={announcement}
+                onChange={(e) => setAnnouncement(e.target.value)}
+                placeholder="e.g. Free shipping on orders over EGP 1000"
+                rows={2}
+                maxLength={1000}
+                className="w-full bg-[#111] border border-[#333] text-white text-[12px] px-3 py-2 outline-none focus:border-[#555] placeholder:text-[#444] resize-none"
+              />
+            </div>
+
+            {/* WhatsApp Number */}
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-4 space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[#555]">
+                WhatsApp Number
+              </p>
+              <p className="text-[12px] text-[#666]">
+                Used for order confirmations and contact links.
+              </p>
+              <input
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="e.g. 201234567890"
+                className="w-full bg-[#111] border border-[#333] text-white text-[12px] px-3 py-2 outline-none focus:border-[#555] placeholder:text-[#444]"
+              />
+            </div>
+
+            {/* Save button */}
+            <button
+              onClick={saveSettings}
+              disabled={savingSettings}
+              className="px-5 py-2 bg-white text-[#111] text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-50"
+            >
+              {savingSettings ? "Saving…" : "Save Settings"}
+            </button>
 
             {/* Category Management */}
             <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-4 space-y-3">
@@ -1237,6 +1545,136 @@ function AdminDashboard() {
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={() => confirmDelete(deleteTarget)}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {/* Order detail modal */}
+      <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+        <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white sm:rounded-lg max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white">Order {selectedOrder?.id}</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="space-y-4">
+              <div className="bg-[#111] border border-[#2a2a2a] p-4 space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#555]">
+                  Customer
+                </p>
+                <p className="text-[13px] text-white">{selectedOrder.customerName}</p>
+                <p className="text-[13px] text-[#888]">{selectedOrder.customerPhone}</p>
+                {selectedOrder.customerInstagram && (
+                  <p className="text-[13px] text-[#888]">@{selectedOrder.customerInstagram}</p>
+                )}
+              </div>
+              <div className="bg-[#111] border border-[#2a2a2a] p-4 space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#555]">
+                  Shipping
+                </p>
+                <p className="text-[13px] text-white">{selectedOrder.address}</p>
+                {selectedOrder.governorate && (
+                  <p className="text-[13px] text-[#888]">{selectedOrder.governorate}</p>
+                )}
+                <p className="text-[13px] text-[#888]">
+                  {selectedOrder.pickup ? "Pickup" : "Delivery"}
+                </p>
+                {selectedOrder.notes && (
+                  <p className="text-[13px] text-[#888]">Notes: {selectedOrder.notes}</p>
+                )}
+              </div>
+              <div className="bg-[#111] border border-[#2a2a2a] p-4 space-y-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#555]">
+                  Items
+                </p>
+                {selectedOrder.items.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[13px] text-white">{item.name}</p>
+                      {item.size && <p className="text-[11px] text-[#888]">Size: {item.size}</p>}
+                    </div>
+                    <p className="text-[13px] text-white">LE {item.price?.toLocaleString()}</p>
+                  </div>
+                ))}
+                <div className="border-t border-[#2a2a2a] pt-2 mt-2 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] text-[#888]">Subtotal</span>
+                    <span className="text-[13px] text-white">
+                      LE {selectedOrder.subtotal?.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] text-[#888]">Shipping</span>
+                    <span className="text-[13px] text-white">
+                      LE {(selectedOrder.total - (selectedOrder.subtotal || 0)).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-[#2a2a2a]">
+                    <span className="text-[14px] font-bold text-white">Total</span>
+                    <span className="text-[14px] font-bold text-white">
+                      LE {selectedOrder.total.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-[#111] border border-[#2a2a2a] p-4 space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#555]">
+                  Status
+                </p>
+                <select
+                  value={selectedOrder.status}
+                  disabled={orderStatusSaving}
+                  onChange={(e) =>
+                    handleOrderStatusUpdate(selectedOrder.id, e.target.value as Order["status"])
+                  }
+                  className="w-full bg-[#1a1a1a] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  className="flex-1 py-2.5 border border-[#333] text-[12px] font-bold uppercase tracking-widest text-[#888] hover:border-[#555] transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setOrderToDelete(selectedOrder);
+                    setSelectedOrder(null);
+                  }}
+                  className="flex-1 py-2.5 bg-red-900/40 border border-red-800 text-red-400 text-[12px] font-bold uppercase tracking-widest hover:bg-red-900 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Order delete confirm */}
+      {orderToDelete && (
+        <AlertDialog
+          open={!!orderToDelete}
+          onOpenChange={(open) => !open && setOrderToDelete(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete order?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This permanently removes order &ldquo;{orderToDelete.id}&rdquo;. Cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setOrderToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => confirmDeleteOrder(orderToDelete)}>
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>

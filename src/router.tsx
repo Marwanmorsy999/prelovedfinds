@@ -7,7 +7,7 @@ export const getRouter = () => {
 
   const router = createRouter({
     routeTree,
-    context: { queryClient, admin: false },
+    context: { queryClient, admin: false, announcement: "", whatsapp: "" },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
   });

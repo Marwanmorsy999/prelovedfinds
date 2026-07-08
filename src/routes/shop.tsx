@@ -72,16 +72,18 @@ function Shop() {
   const { items, total, totalPages, page } = loader.products;
   const initialTags = Array.isArray(loader.tags) ? loader.tags : [];
   const initialSizes = Array.isArray(loader.sizes) ? loader.sizes : [];
-  const initialConditions = Array.isArray(loader.conditions) ? loader.conditions : [];
   const [tags] = useState<string[]>(initialTags);
   const [sizes] = useState<string[]>(initialSizes);
-  const [conditions, setConditions] = useState<string[]>(initialConditions);
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [query, setQuery] = useState(search.q || "");
+  const [conditions, setConditions] = useState<string[]>([]);
 
   useEffect(() => {
-    setConditions(initialConditions);
-  }, [initialConditions]);
+    if (Array.isArray(loader.conditions)) {
+      setConditions(loader.conditions);
+    }
+  }, [loader.conditions]);
+
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [query, setQuery] = useState(search.q || "");
 
   const currentPage = Math.min(page, totalPages || 1);
   const [gridCols, setGridCols] = useState<2 | 4>(4);

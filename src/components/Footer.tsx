@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
 
-export function Footer() {
+export function Footer({ whatsapp }: { whatsapp?: string }) {
+  const waHref = whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}` : undefined;
+
   return (
     <footer className="bg-paper border-t border-hairline">
       {/* Main footer */}
@@ -64,6 +66,18 @@ export function Footer() {
                   Contact
                 </Link>
               </li>
+              {waHref && (
+                <li>
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[13px] text-ink hover:text-concrete transition-colors"
+                  >
+                    WhatsApp
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Instagram } from "lucide-react";
+import { Instagram, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import { useSettings } from "@/lib/settings-context";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -19,6 +20,8 @@ export const Route = createFileRoute("/contact")({
 function Contact() {
   const [sent, setSent] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
+  const { whatsapp } = useSettings();
+  const waHref = whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}` : null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,6 +131,17 @@ function Contact() {
               <Instagram className="h-4 w-4" />
               @preloved.finds._
             </a>
+            {waHref && (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2.5 text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+              >
+                <MessageCircle className="h-4 w-4" />
+                WhatsApp
+              </a>
+            )}
           </div>
         </div>
       </div>
