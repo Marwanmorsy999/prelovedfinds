@@ -87,7 +87,7 @@ export const Route = createFileRoute("/shop")({
 
 const PRICE_LABELS: Record<string, string> = {
   "under-700": "Under EGP 700",
-  "700-900": "EGP 700–900",
+  "700-900": "EGP 700-900",
   "over-900": "Over EGP 900",
 };
 
@@ -183,7 +183,7 @@ function Shop() {
   return (
     <div className="min-h-screen bg-paper page-enter">
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="border-b border-hairline px-5 py-6 md:px-10">
         <div className="mx-auto max-w-7xl flex items-end justify-between">
           <div>
@@ -198,11 +198,10 @@ function Shop() {
         </div>
       </div>
 
-      {/* ── Filter Bar ── */}
+      {/* Filter Bar */}
       <div className="sticky top-0 z-20 bg-paper border-b border-hairline">
         <div className="mx-auto max-w-7xl px-5 md:px-10 py-3 flex items-center gap-3">
 
-          {/* Search */}
           <div className="relative flex-1 min-w-0 max-w-[260px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-concrete pointer-events-none" />
             <input
@@ -222,7 +221,6 @@ function Shop() {
             )}
           </div>
 
-          {/* Desktop filters */}
           <div className="hidden md:flex items-center gap-2">
             <div className="relative">
               <select value={search.tag} onChange={(e) => updateSearch({ tag: e.target.value, page: 1 })} className={selectClass}>
@@ -244,7 +242,7 @@ function Shop() {
               <select value={search.priceRange} onChange={(e) => updateSearch({ priceRange: e.target.value, page: 1 })} className={selectClass}>
                 <option value="all">Price</option>
                 <option value="under-700">Under EGP 700</option>
-                <option value="700-900">EGP 700–900</option>
+                <option value="700-900">EGP 700-900</option>
                 <option value="over-900">Over EGP 900</option>
               </select>
               <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-concrete" />
@@ -252,7 +250,6 @@ function Shop() {
             </div>
           </div>
 
-          {/* Mobile filters button */}
           <button
             onClick={() => setShowMobileFilters(true)}
             className="md:hidden flex items-center gap-1.5 h-10 px-3 text-[11px] font-bold uppercase tracking-widest border border-hairline text-concrete hover:border-ink hover:text-ink transition-colors"
@@ -265,20 +262,19 @@ function Shop() {
             )}
           </button>
 
-          {/* Sort */}
           <div className="relative ml-auto">
             <select value={search.sort} onChange={(e) => updateSearch({ sort: e.target.value, page: 1 })} className={selectClass}>
               <option value="newest">Newest</option>
               <option value="featured">Featured</option>
-              <option value="price-asc">Price ↑</option>
-              <option value="price-desc">Price ↓</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-concrete" />
           </div>
         </div>
       </div>
 
-      {/* ── Active Filter Chips ── */}
+      {/* Active Filter Chips */}
       {hasActiveFilters && (
         <div className="mx-auto max-w-7xl px-5 md:px-10 pt-4">
           <div className="flex flex-wrap gap-2">
@@ -316,7 +312,7 @@ function Shop() {
         </div>
       )}
 
-      {/* ── Product Grid ── */}
+      {/* Product Grid */}
       <div className="mx-auto max-w-7xl px-5 md:px-10 py-6 md:py-8">
         {displayItems.length > 0 ? (
           <>
@@ -345,7 +341,7 @@ function Shop() {
         ) : (
           <div className="flex flex-col items-center justify-center py-28 text-center">
             <p className="font-display text-[72px] font-bold text-rust italic leading-none mb-4 select-none">
-              ¿
+              ?
             </p>
             <p className="font-display text-[18px] font-bold uppercase tracking-widest text-ink mb-2">
               No pieces found
@@ -366,7 +362,7 @@ function Shop() {
         )}
       </div>
 
-      {/* ── Mobile Filter Drawer ── */}
+      {/* Mobile Filter Drawer */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-50 flex items-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileFilters(false)} />
@@ -411,7 +407,7 @@ function Shop() {
                 >
                   <option value="all">All</option>
                   <option value="under-700">Under EGP 700</option>
-                  <option value="700-900">EGP 700–900</option>
+                  <option value="700-900">EGP 700-900</option>
                   <option value="over-900">Over EGP 900</option>
                 </select>
               </div>
