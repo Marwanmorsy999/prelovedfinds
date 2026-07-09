@@ -91,7 +91,7 @@ export function Navigation() {
             className="flex items-center justify-center w-1/3 hover:opacity-85 transition-opacity duration-200"
             aria-label="Preloved Finds — home"
           >
-            <Logo className="h-14 w-auto max-w-[180px]" />
+            <Logo className="h-16 w-auto" />
           </Link>
 
           {/* Right: admin link + cart */}
@@ -228,7 +228,7 @@ export function Navigation() {
         aria-label="Navigation"
       >
         <div className="flex items-center justify-between px-4 h-16 border-b border-hairline">
-          <Logo className="h-11 w-auto" />
+          <Logo className="h-12 w-auto" />
           <button
             onClick={() => setMobileOpen(false)}
             className="p-1 text-[#9ca3af] hover:text-ink transition-colors"

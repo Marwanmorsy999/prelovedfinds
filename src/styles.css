@@ -35,11 +35,11 @@
   --font-mono: "Inter", ui-monospace, "SFMono-Regular", monospace;
   --color-ink: #1a1a1a;
   --color-concrete: #6b7280;
-  --color-surface: #f4f4f4;
+  --color-surface: #f5f5f5;
   --color-paper: #ffffff;
   --color-olive: #16a34a;
   --color-grain: transparent;
-  --color-hairline: #e5e7eb;
+  --color-hairline: #e5e5e5;
 
   /* Status colors */
   --color-instock: #16a34a;
@@ -47,8 +47,8 @@
   --color-outofstock: #9ca3af;
   --color-error: #dc2626;
   --color-success: #16a34a;
-  --color-bg-light: #f9fafb;
-  --color-bg-dark: #f3f4f6;
+  --color-bg-light: #fafafa;
+  --color-bg-dark: #f5f5f5;
 }
 
 :root {
@@ -61,11 +61,11 @@
   --popover-foreground: #1a1a1a;
   --primary: #1a1a1a;
   --primary-foreground: #ffffff;
-  --secondary: #f4f4f4;
+  --secondary: #f5f5f5;
   --secondary-foreground: #1a1a1a;
-  --muted: #f4f4f4;
+  --muted: #f5f5f5;
   --muted-foreground: #6b7280;
-  --accent: #f4f4f4;
+  --accent: #f5f5f5;
   --accent-foreground: #1a1a1a;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
