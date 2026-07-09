@@ -32,6 +32,9 @@ narrow.mjs
 # Screenshots dropped in the repo root by manual QA / browser tools
 /*.png
 
+# Windows reserved device-name artifacts that confuse Git
+nul
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
