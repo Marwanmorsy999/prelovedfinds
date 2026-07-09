@@ -43,6 +43,28 @@ export interface ListResult {
   totalPages: number;
 }
 
+// Global cache for product data.
+// Note: In Cloudflare Workers, this persists across requests within the same isolate.
+const cache = new Map<string, { value: unknown; expires: number }>();
+let cacheVersion = 0;
+
+function withCache<T>(key: string, ttlSeconds: number, fn: () => Promise<T>): Promise<T> {
+  const now = Date.now();
+  const entry = cache.get(key);
+  if (entry && entry.expires > now) {
+    return Promise.resolve(entry.value as T);
+  }
+  return fn().then((value) => {
+    cache.set(key, { value, expires: now + ttlSeconds * 1000 });
+    return value;
+  });
+}
+
+function invalidateCache(id?: string) {
+  if (id) cache.delete(`byId:${id}`);
+  cacheVersion++;
+}
+
 function buildWhere(params: ListParams): { clause: string; args: unknown[] } {
   const where: string[] = [];
   const args: unknown[] = [];
@@ -105,47 +127,60 @@ function sortSql(sort: SortKey | undefined): string {
 }
 
 export async function listProducts(params: ListParams = {}): Promise<ListResult> {
-  const perPage = Math.max(1, params.perPage ?? 8);
-  const page = Math.max(1, params.page ?? 1);
-  const { clause, args } = buildWhere(params);
-  const sort = sortSql(params.sort);
+  const key = `list:${JSON.stringify(params)}:v${cacheVersion}`;
+  return withCache(key, 60, async () => {
+    const perPage = Math.max(1, params.perPage ?? 8);
+    const page = Math.max(1, params.page ?? 1);
+    const { clause, args } = buildWhere(params);
+    const sort = sortSql(params.sort);
 
-  const db = getDB();
-  const countRow = await db
-    .prepare(`SELECT COUNT(*) as count FROM products ${clause}`)
-    .bind(...args)
-    .first<{ count: number }>();
+    const db = getDB();
+    const countRow = await db
+      .prepare(`SELECT COUNT(*) as count FROM products ${clause}`)
+      .bind(...args)
+      .first<{ count: number }>();
 
-  const total = countRow?.count ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / perPage));
+    const total = countRow?.count ?? 0;
+    const totalPages = Math.max(1, Math.ceil(total / perPage));
 
-  const rows = await db
-    .prepare(`SELECT * FROM products ${clause} ${sort} LIMIT ? OFFSET ?`)
-    .bind(...args, perPage, (page - 1) * perPage)
-    .all<ProductRow>();
+    const rows = await db
+      .prepare(`SELECT * FROM products ${clause} ${sort} LIMIT ? OFFSET ?`)
+      .bind(...args, perPage, (page - 1) * perPage)
+      .all<ProductRow>();
 
-  return {
-    items: (rows.results ?? []).map(rowToProduct),
-    total,
-    page,
-    perPage,
-    totalPages,
-  };
+    return {
+      items: (rows.results ?? []).map(rowToProduct),
+      total,
+      page,
+      perPage,
+      totalPages,
+    };
+  });
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  const db = getDB();
-  const row = await db.prepare("SELECT * FROM products WHERE id = ?").bind(id).first<ProductRow>();
-  return row ? rowToProduct(row) : null;
+  return withCache(`byId:${id}`, 60, async () => {
+    const db = getDB();
+    const row = await db
+      .prepare("SELECT * FROM products WHERE id = ?")
+      .bind(id)
+      .first<ProductRow>();
+    return row ? rowToProduct(row) : null;
+  });
 }
 
 export async function getRelated(id: string, n = 4): Promise<Product[]> {
-  const db = getDB();
-  const rows = await db
-    .prepare("SELECT * FROM products WHERE id != ? ORDER BY sortOrder ASC, createdAt DESC LIMIT ?")
-    .bind(id, n)
-    .all<ProductRow>();
-  return (rows.results ?? []).map(rowToProduct);
+  const key = `related:${id}:${n}:v${cacheVersion}`;
+  return withCache(key, 60, async () => {
+    const db = getDB();
+    const rows = await db
+      .prepare(
+        "SELECT * FROM products WHERE id != ? ORDER BY sortOrder ASC, createdAt DESC LIMIT ?",
+      )
+      .bind(id, n)
+      .all<ProductRow>();
+    return (rows.results ?? []).map(rowToProduct);
+  });
 }
 
 export async function createProduct(input: ProductInput): Promise<Product> {
@@ -199,6 +234,7 @@ export async function createProduct(input: ProductInput): Promise<Product> {
     )
     .run();
 
+  invalidateCache();
   return product;
 }
 
@@ -256,12 +292,14 @@ export async function createProducts(inputs: ProductInput[]): Promise<Product[]>
     ),
   );
 
+  invalidateCache();
   return products;
 }
 
 export async function deleteSoldProducts(): Promise<number> {
   const db = getDB();
   const res = await db.prepare("DELETE FROM products WHERE availability = 'sold'").run();
+  invalidateCache();
   return (res.meta as { changes?: number | undefined } | undefined)?.changes ?? 0;
 }
 
@@ -321,6 +359,7 @@ export async function updateProduct(
     )
     .run();
 
+  invalidateCache(id);
   return merged;
 }
 
@@ -329,10 +368,12 @@ export async function reorderProducts(orderedIds: string[]): Promise<void> {
   const stmt = db.prepare("UPDATE products SET sortOrder = ? WHERE id = ?");
   const batch = orderedIds.map((id, idx) => stmt.bind(idx, id));
   await db.batch(batch);
+  invalidateCache();
 }
 
 export async function deleteProduct(id: string): Promise<boolean> {
   const res = await getDB().prepare("DELETE FROM products WHERE id = ?").bind(id).run();
+  invalidateCache(id);
   return res.success;
 }
 
@@ -408,40 +449,54 @@ export async function getDashboardStats(): Promise<{
 }
 
 export async function getDistinctTags(): Promise<string[]> {
-  const db = getDB();
-  const rows = await db
-    .prepare(`SELECT DISTINCT tag FROM products WHERE tag != '' ORDER BY tag ASC`)
-    .all<{ tag: string }>();
-  return (rows.results ?? []).map((r) => r.tag);
+  const key = `distinctTags:v${cacheVersion}`;
+  return withCache(key, 3600, async () => {
+    const db = getDB();
+    const rows = await db
+      .prepare(`SELECT DISTINCT tag FROM products WHERE tag != '' ORDER BY tag ASC`)
+      .all<{ tag: string }>();
+    return (rows.results ?? []).map((r) => r.tag);
+  });
 }
 
 export async function getDistinctSizes(): Promise<string[]> {
-  const db = getDB();
-  const rows = await db
-    .prepare(`SELECT DISTINCT size FROM products WHERE size != '' ORDER BY size ASC`)
-    .all<{ size: string }>();
-  return (rows.results ?? []).map((r) => r.size);
+  const key = `distinctSizes:v${cacheVersion}`;
+  return withCache(key, 3600, async () => {
+    const db = getDB();
+    const rows = await db
+      .prepare(`SELECT DISTINCT size FROM products WHERE size != '' ORDER BY size ASC`)
+      .all<{ size: string }>();
+    return (rows.results ?? []).map((r) => r.size);
+  });
 }
 
 export async function getDistinctConditions(): Promise<string[]> {
-  const db = getDB();
-  const rows = await db
-    .prepare(`SELECT DISTINCT condition FROM products WHERE condition != '' ORDER BY condition ASC`)
-    .all<{ condition: string }>();
-  return (rows.results ?? []).map((r) => r.condition);
+  const key = `distinctConditions:v${cacheVersion}`;
+  return withCache(key, 3600, async () => {
+    const db = getDB();
+    const rows = await db
+      .prepare(
+        `SELECT DISTINCT condition FROM products WHERE condition != '' ORDER BY condition ASC`,
+      )
+      .all<{ condition: string }>();
+    return (rows.results ?? []).map((r) => r.condition);
+  });
 }
 
 export async function searchProducts(query: string): Promise<Product[]> {
-  const db = getDB();
-  const searchTerm = `%${query}%`;
-  const rows = await db
-    .prepare(
-      `SELECT * FROM products
+  const key = `search:${query}:v${cacheVersion}`;
+  return withCache(key, 60, async () => {
+    const db = getDB();
+    const searchTerm = `%${query}%`;
+    const rows = await db
+      .prepare(
+        `SELECT * FROM products
        WHERE title LIKE ? OR brand LIKE ? OR era LIKE ? OR tag LIKE ? OR size LIKE ? OR condition LIKE ? OR id LIKE ?
        ORDER BY sortOrder ASC, createdAt DESC
        LIMIT 50`,
-    )
-    .bind(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm)
-    .all<ProductRow>();
-  return (rows.results ?? []).map(rowToProduct);
+      )
+      .bind(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm)
+      .all<ProductRow>();
+    return (rows.results ?? []).map(rowToProduct);
+  });
 }
