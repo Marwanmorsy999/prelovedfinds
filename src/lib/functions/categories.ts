@@ -30,3 +30,18 @@ export const deleteCategoryFn = createServerFn({ method: "POST" })
     await requireAdmin();
     return deleteCategory(data.name);
   });
+
+export const updateCategoryFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      name: z.string().min(1),
+      patch: z.object({
+        name: z.string().min(1).max(60).optional(),
+        label: z.string().min(1).max(60).optional(),
+      }),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    return updateCategory(data.name, data.patch);
+  });

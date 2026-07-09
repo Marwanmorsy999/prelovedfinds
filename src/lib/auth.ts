@@ -55,10 +55,13 @@ async function verifySessionToken(token: string | undefined): Promise<boolean> {
   const payload = `${parts[0]}.${parts[1]}`;
   const expected = await hmac(payload);
   const actual = parts[2];
-  if (expected.length !== actual.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < expected.length; i++) {
-    mismatch |= expected.charCodeAt(i) ^ actual.charCodeAt(i);
+
+  // Constant-time comparison for both length and content
+  let mismatch = expected.length ^ actual.length;
+  for (let i = 0; i < Math.max(expected.length, actual.length); i++) {
+    const a = expected.charCodeAt(i) || 0;
+    const b = actual.charCodeAt(i) || 0;
+    mismatch |= a ^ b;
   }
   return mismatch === 0;
 }
@@ -91,8 +94,11 @@ export async function verifyPassword(password: string): Promise<boolean> {
   if (!expected) return false;
   const a = toBytes(password);
   const b = toBytes(expected);
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i++) mismatch |= a[i] ^ b[i];
+
+  // Constant-time comparison for both length and content
+  let mismatch = a.length ^ b.length;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    mismatch |= (a[i] || 0) ^ (b[i] || 0);
+  }
   return mismatch === 0;
 }

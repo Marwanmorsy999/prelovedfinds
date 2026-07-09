@@ -6,7 +6,7 @@ import {
   useRouterState,
   Link,
 } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { Trash2, LogOut, Search, X, Plus, ImagePlus, ChevronDown, Eye } from "lucide-react";
 
@@ -24,6 +24,7 @@ import {
   getDistinctTagsFn,
   getDistinctSizesFn,
   getDistinctConditionsFn,
+  reorderProductsFn,
 } from "@/lib/functions/products";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Product, Availability, Order } from "@/lib/products";
@@ -86,7 +87,7 @@ export const Route = createFileRoute("/admin")({
           revenue: 0,
           ordersCount: 0,
         },
-        tags: [],
+        categories: [],
         sizes: [],
         conditions: [],
         dbCategories: [],
@@ -256,7 +257,6 @@ function AdminDashboard() {
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
   const [orderSort, setOrderSort] = useState<string>("newest");
   const [orderPage, setOrderPage] = useState(1);
-  const [orderTotalPages, setOrderTotalPages] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(false);
@@ -268,6 +268,42 @@ function AdminDashboard() {
   const [savingSettings, setSavingSettings] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryLabel, setNewCategoryLabel] = useState("");
+
+  const fetchOrders = useCallback(async () => {
+    setLoadingOrders(true);
+    try {
+      const res = await listOrdersFn({
+        data: {
+          status:
+            orderStatusFilter === "all"
+              ? undefined
+              : (orderStatusFilter as "pending" | "confirmed" | "completed" | "cancelled"),
+          q: orderSearch.trim() || undefined,
+          sort: orderSort as "newest" | "oldest" | "total-asc" | "total-desc",
+        },
+      });
+      setOrders(res);
+    } catch {
+      toast.error("Failed to fetch orders");
+    } finally {
+      setLoadingOrders(false);
+    }
+  }, [orderStatusFilter, orderSearch, orderSort]);
+
+  useEffect(() => {
+    if (activeTab !== "orders") return;
+    const t = setTimeout(fetchOrders, orderSearch.trim() ? 300 : 0);
+    return () => clearTimeout(t);
+  }, [activeTab, orderStatusFilter, orderSearch, orderSort, fetchOrders]);
+
+  const { pagedOrders, orderTotalPages } = useMemo(() => {
+    const totalPages = Math.max(1, Math.ceil(orders.length / PER_PAGE));
+    const start = (orderPage - 1) * PER_PAGE;
+    return {
+      pagedOrders: orders.slice(start, start + PER_PAGE),
+      orderTotalPages: totalPages,
+    };
+  }, [orders, orderPage]);
 
   // Load settings once when the settings tab opens for the first time.
   const settingsLoadedRef = useRef(false);
@@ -289,8 +325,10 @@ function AdminDashboard() {
     })();
   }, [activeTab]);
 
-  const reload = async () => {
-    const s = typeof search === "string" ? new URLSearchParams(search) : new URLSearchParams();
+  const reload = async (forcedParams?: URLSearchParams) => {
+    const s =
+      forcedParams ||
+      (typeof search === "string" ? new URLSearchParams(search) : new URLSearchParams());
     const [products, stats, orderStats, tags, sizes, conditions, dbCategories, ordersRes] =
       await Promise.all([
         listProductsFn({
@@ -335,8 +373,6 @@ function AdminDashboard() {
     setConditions(conditions);
     setBulkSelected(new Set());
     setOrders(ordersRes);
-    setOrderPage(1);
-    setOrderTotalPages(Math.max(1, Math.ceil(ordersRes.length / PER_PAGE)));
   };
 
   useEffect(() => {
@@ -592,6 +628,44 @@ function AdminDashboard() {
   const availableCount = data.items.filter((p) => p.availability !== "sold").length;
   const readyCount = bulkRows.filter((r) => r.title && r.price).length;
   const categoryOptions = getCategoryOptions();
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDragId(id);
+    e.dataTransfer.setData("text/plain", id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData("text/plain");
+    if (sourceId === targetId) return;
+
+    const items = [...data.items];
+    const sourceIdx = items.findIndex((p) => p.id === sourceId);
+    const targetIdx = items.findIndex((p) => p.id === targetId);
+
+    if (sourceIdx === -1 || targetIdx === -1) return;
+
+    const [moved] = items.splice(sourceIdx, 1);
+    items.splice(targetIdx, 0, moved);
+
+    // Optimistic update
+    setData({ ...data, items });
+
+    try {
+      await reorderProductsFn({ data: { ids: items.map((p) => p.id) } });
+    } catch {
+      toast.error("Failed to reorder");
+      await reload();
+    } finally {
+      setDragId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#111] text-white">
@@ -1059,7 +1133,6 @@ function AdminDashboard() {
                     else s.set("tag", v);
                     s.delete("page");
                     navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
                   }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
@@ -1086,7 +1159,6 @@ function AdminDashboard() {
                     else s.set("size", v);
                     s.delete("page");
                     navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
                   }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
@@ -1113,7 +1185,6 @@ function AdminDashboard() {
                     else s.set("condition", v);
                     s.delete("page");
                     navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
                   }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
@@ -1140,7 +1211,6 @@ function AdminDashboard() {
                     else s.set("availability", v);
                     s.delete("page");
                     navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
                   }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
@@ -1163,8 +1233,15 @@ function AdminDashboard() {
               >
                 Bulk sold
               </button>
-              <button className="px-3 py-1 bg-[#2a2a2a] text-[11px] font-semibold uppercase tracking-widest text-[#aaa] hover:text-white border border-[#333] hover:border-[#555] transition-colors">
-                ⇅ Reorder
+              <button
+                onClick={() => setReorderMode(!reorderMode)}
+                className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-widest transition-colors border ${
+                  reorderMode
+                    ? "bg-white text-black border-white"
+                    : "bg-[#2a2a2a] text-[#aaa] hover:text-white border-[#333] hover:border-[#555]"
+                }`}
+              >
+                {reorderMode ? "Done Reordering" : "⇅ Reorder"}
               </button>
             </div>
 
@@ -1178,7 +1255,13 @@ function AdminDashboard() {
               {displayedProducts.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-2.5 hover:border-[#333] transition-colors"
+                  draggable={reorderMode}
+                  onDragStart={(e) => handleDragStart(e, p.id)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, p.id)}
+                  className={`flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-2.5 transition-colors ${
+                    reorderMode ? "cursor-move hover:border-white/50" : "hover:border-[#333]"
+                  } ${dragId === p.id ? "opacity-50 border-white" : ""}`}
                 >
                   {p.images[0] ? (
                     <img
@@ -1295,60 +1378,63 @@ function AdminDashboard() {
 
             {/* Orders list */}
             <div className="space-y-1">
-              {orders.length === 0 && (
+              {loadingOrders && orders.length === 0 ? (
+                <p className="text-[13px] text-[#555] py-8 text-center">Loading orders…</p>
+              ) : pagedOrders.length === 0 ? (
                 <p className="text-[13px] text-[#555] py-8 text-center">No orders found</p>
-              )}
-              {orders.map((o) => {
-                const statusColors: Record<string, string> = {
-                  pending: "bg-yellow-900/40 text-yellow-400 border-yellow-700",
-                  confirmed: "bg-blue-900/40 text-blue-400 border-blue-700",
-                  completed: "bg-green-900/40 text-green-400 border-green-700",
-                  cancelled: "bg-red-900/40 text-red-400 border-red-700",
-                };
-                return (
-                  <div
-                    key={o.id}
-                    className="flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-2.5 hover:border-[#333] transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-[13px] font-medium text-white truncate">{o.id}</p>
-                        <span
-                          className={`inline-block text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 border ${statusColors[o.status] || "bg-[#2a2a2a] text-[#888] border-[#333]"}`}
-                        >
-                          {o.status}
-                        </span>
+              ) : (
+                pagedOrders.map((o) => {
+                  const statusColors: Record<string, string> = {
+                    pending: "bg-yellow-900/40 text-yellow-400 border-yellow-700",
+                    confirmed: "bg-blue-900/40 text-blue-400 border-blue-700",
+                    completed: "bg-green-900/40 text-green-400 border-green-700",
+                    cancelled: "bg-red-900/40 text-red-400 border-red-700",
+                  };
+                  return (
+                    <div
+                      key={o.id}
+                      className="flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-2.5 hover:border-[#333] transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="text-[13px] font-medium text-white truncate">{o.id}</p>
+                          <span
+                            className={`inline-block text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 border ${statusColors[o.status] || "bg-[#2a2a2a] text-[#888] border-[#333]"}`}
+                          >
+                            {o.status}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#555]">
+                          {o.customerName} · {o.customerPhone} · {o.governorate || "N/A"}
+                        </p>
+                        <p className="text-[11px] text-[#555]">
+                          {o.items.length} item{o.items.length !== 1 ? "s" : ""} ·{" "}
+                          {new Date(o.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
-                      <p className="text-[11px] text-[#555]">
-                        {o.customerName} · {o.customerPhone} · {o.governorate || "N/A"}
-                      </p>
-                      <p className="text-[11px] text-[#555]">
-                        {o.items.length} item{o.items.length !== 1 ? "s" : ""} ·{" "}
-                        {new Date(o.createdAt).toLocaleDateString()}
-                      </p>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className="text-[13px] font-medium text-white whitespace-nowrap">
+                          LE {o.total.toLocaleString()}
+                        </span>
+                        <button
+                          onClick={() => setSelectedOrder(o)}
+                          className="p-1.5 text-[#555] hover:text-white transition-colors"
+                          aria-label="View order"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setOrderToDelete(o)}
+                          className="p-1.5 text-[#555] hover:text-red-400 transition-colors"
+                          aria-label="Delete order"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className="text-[13px] font-medium text-white whitespace-nowrap">
-                        LE {o.total.toLocaleString()}
-                      </span>
-                      <button
-                        onClick={() => setSelectedOrder(o)}
-                        className="p-1.5 text-[#555] hover:text-white transition-colors"
-                        aria-label="View order"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setOrderToDelete(o)}
-                        className="p-1.5 text-[#555] hover:text-red-400 transition-colors"
-                        aria-label="Delete order"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
             {/* Pagination */}
