@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import hero from "@/assets/hero.jpeg";
+import hero from "@/assets/hero.webp";
+import heroMobile from "@/assets/hero-mobile.webp";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Newsletter } from "@/components/Newsletter";
 import { listProductsFn } from "@/lib/functions/products";
@@ -16,11 +17,41 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Preloved Finds - Curated Vintage Streetwear" },
       { property: "og:description", content: "One-of-one vintage and pre-owned streetwear." },
     ],
+    links: [
+      {
+        rel: "preload",
+        href: hero,
+        as: "image",
+        fetchpriority: "high",
+        media: "(min-width: 768px)",
+      },
+      {
+        rel: "preload",
+        href: heroMobile,
+        as: "image",
+        fetchpriority: "high",
+        media: "(max-width: 767px)",
+      },
+      { rel: "preconnect", href: "https://res.cloudinary.com" },
+    ],
   }),
   loader: async () => {
     const { items } = await listProductsFn({ data: { sort: "newest", perPage: 8 } });
     return { newPicks: items };
   },
+  pendingComponent: () => (
+    <div className="page-enter">
+      <section className="relative h-[70vh] min-h-[400px] md:h-screen md:min-h-[600px] bg-[#f4f4f4] animate-pulse" />
+      <section className="mx-auto max-w-7xl px-4 py-14 md:px-8 md:py-16">
+        <div className="h-6 w-40 bg-[#e5e7eb] rounded mb-8 animate-pulse" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="aspect-[3/4] bg-[#e5e7eb] rounded animate-pulse" />
+          ))}
+        </div>
+      </section>
+    </div>
+  ),
   component: Home,
 });
 
@@ -32,7 +63,18 @@ function Home() {
       {/* Hero — full viewport */}
       <section className="relative h-[70vh] min-h-[400px] md:h-screen md:min-h-[600px]">
         <div className="absolute inset-0 overflow-hidden bg-[#f4f4f4]">
-          <img src={hero} alt="Featured vintage piece" className="h-full w-full object-cover" />
+          <img
+            src={hero}
+            srcSet={`${heroMobile} 640w, ${hero} 1920w`}
+            sizes="100vw"
+            alt="Featured vintage piece"
+            width="1920"
+            height="1080"
+            fetchPriority="high"
+            loading="eager"
+            decoding="sync"
+            className="h-full w-full object-cover"
+          />
           <div className="absolute inset-0 bg-black/30" />
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">

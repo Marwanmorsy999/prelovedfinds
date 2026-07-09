@@ -1,11 +1,11 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { ShoppingBag, X, Menu } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, memo, useCallback } from "react";
 import { useCart } from "@/lib/cart";
 import { ImageSlot } from "@/components/ImageSlot";
 import { Logo } from "@/components/Logo";
 
-export function Navigation() {
+export const Navigation = memo(function Navigation() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const admin = useRouterState({
@@ -50,6 +50,13 @@ export function Navigation() {
   ];
 
   const cartTotal = items.reduce((sum, i) => sum + i.price, 0);
+
+  const closeCart = useCallback(() => {
+    setCartOpen(false);
+    cartTriggerRef.current?.focus();
+  }, []);
+
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   return (
     <>
@@ -140,10 +147,7 @@ export function Navigation() {
             Bag {count > 0 && <span className="text-ink">({count})</span>}
           </p>
           <button
-            onClick={() => {
-              setCartOpen(false);
-              cartTriggerRef.current?.focus();
-            }}
+            onClick={closeCart}
             className="p-1 text-[#9ca3af] hover:text-ink transition-colors rounded-full hover:bg-surface"
             aria-label="Close cart"
           >
@@ -233,7 +237,7 @@ export function Navigation() {
         <div className="flex items-center justify-between px-4 h-16 border-b border-hairline">
           <Logo className="h-11 w-auto" />
           <button
-            onClick={() => setMobileOpen(false)}
+            onClick={closeMobile}
             className="p-1 text-[#9ca3af] hover:text-ink transition-colors"
             aria-label="Close menu"
           >
@@ -262,4 +266,4 @@ export function Navigation() {
       </div>
     </>
   );
-}
+});

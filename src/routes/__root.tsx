@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { SettingsCtx, useSettings } from "@/lib/settings-context";
+import { reportWebVitals } from "@/lib/web-vitals";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -134,9 +135,17 @@ export const Route = createRootRouteWithContext<{
         crossOrigin: "anonymous",
       },
       {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+        rel: "preload",
+        as: "style",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
       },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+        media: "print",
+        onload: "this.media='all'",
+      },
+      { rel: "preload", href: appCss, as: "style" },
     ],
   }),
   shellComponent: RootShell,
@@ -146,6 +155,20 @@ export const Route = createRootRouteWithContext<{
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    // Register service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {
+          // SW registration is non-critical
+        });
+      });
+    }
+
+    // Report web vitals
+    reportWebVitals();
+  }, []);
+
   return (
     <html lang="en">
       <head>

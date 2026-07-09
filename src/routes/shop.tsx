@@ -65,6 +65,27 @@ export const Route = createFileRoute("/shop")({
       conditions: conditionsRow,
     };
   },
+  pendingComponent: () => (
+    <div className="page-enter">
+      <div className="border-b border-hairline px-4 py-7 md:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="h-4 w-24 bg-[#e5e7eb] rounded animate-pulse mb-1" />
+          <div className="h-8 w-48 bg-[#e5e7eb] rounded animate-pulse" />
+        </div>
+      </div>
+      <div className="mx-auto max-w-7xl px-4 py-6 md:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5 mt-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="space-y-3">
+              <div className="aspect-[3/4] bg-[#e5e7eb] rounded animate-pulse" />
+              <div className="h-4 w-3/4 bg-[#e5e7eb] rounded animate-pulse" />
+              <div className="h-3 w-1/2 bg-[#e5e7eb] rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  ),
   component: Shop,
 });
 

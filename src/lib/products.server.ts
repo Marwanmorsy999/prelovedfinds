@@ -1,5 +1,6 @@
 import type { Product, Availability } from "./products";
 import { getDB, rowToProduct, type ProductRow } from "./db";
+import { withCache, deduplicate } from "./cache.server";
 
 type SortKey = "newest" | "featured" | "price-asc" | "price-desc";
 
@@ -104,49 +105,73 @@ function sortSql(sort: SortKey | undefined): string {
   }
 }
 
-export async function listProducts(params: ListParams = {}): Promise<ListResult> {
-  const perPage = Math.max(1, params.perPage ?? 8);
-  const page = Math.max(1, params.page ?? 1);
-  const { clause, args } = buildWhere(params);
-  const sort = sortSql(params.sort);
+export const listProducts = deduplicate(
+  withCache(
+    async (params: ListParams = {}): Promise<ListResult> => {
+      const perPage = Math.max(1, params.perPage ?? 8);
+      const page = Math.max(1, params.page ?? 1);
+      const { clause, args } = buildWhere(params);
+      const sort = sortSql(params.sort);
 
-  const db = getDB();
-  const countRow = await db
-    .prepare(`SELECT COUNT(*) as count FROM products ${clause}`)
-    .bind(...args)
-    .first<{ count: number }>();
+      const db = getDB();
+      const countRow = await db
+        .prepare(`SELECT COUNT(*) as count FROM products ${clause}`)
+        .bind(...args)
+        .first<{ count: number }>();
 
-  const total = countRow?.count ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / perPage));
+      const total = countRow?.count ?? 0;
+      const totalPages = Math.max(1, Math.ceil(total / perPage));
 
-  const rows = await db
-    .prepare(`SELECT * FROM products ${clause} ${sort} LIMIT ? OFFSET ?`)
-    .bind(...args, perPage, (page - 1) * perPage)
-    .all<ProductRow>();
+      const rows = await db
+        .prepare(`SELECT * FROM products ${clause} ${sort} LIMIT ? OFFSET ?`)
+        .bind(...args, perPage, (page - 1) * perPage)
+        .all<ProductRow>();
 
-  return {
-    items: (rows.results ?? []).map(rowToProduct),
-    total,
-    page,
-    perPage,
-    totalPages,
-  };
-}
+      return {
+        items: (rows.results ?? []).map(rowToProduct),
+        total,
+        page,
+        perPage,
+        totalPages,
+      };
+    },
+    "products",
+    (params) => `list:${JSON.stringify(params)}`,
+    { ttl: 30 },
+  ),
+  (params) => `list:${JSON.stringify(params)}`,
+);
 
-export async function getProductById(id: string): Promise<Product | null> {
-  const db = getDB();
-  const row = await db.prepare("SELECT * FROM products WHERE id = ?").bind(id).first<ProductRow>();
-  return row ? rowToProduct(row) : null;
-}
+export const getProductById = deduplicate(
+  withCache(
+    async (id: string): Promise<Product | null> => {
+      const db = getDB();
+      const row = await db.prepare("SELECT * FROM products WHERE id = ?").bind(id).first<ProductRow>();
+      return row ? rowToProduct(row) : null;
+    },
+    "products",
+    (id) => `byId:${id}`,
+    { ttl: 60 },
+  ),
+  (id) => `byId:${id}`,
+);
 
-export async function getRelated(id: string, n = 4): Promise<Product[]> {
-  const db = getDB();
-  const rows = await db
-    .prepare("SELECT * FROM products WHERE id != ? ORDER BY sortOrder ASC, createdAt DESC LIMIT ?")
-    .bind(id, n)
-    .all<ProductRow>();
-  return (rows.results ?? []).map(rowToProduct);
-}
+export const getRelated = deduplicate(
+  withCache(
+    async (id: string, n = 4): Promise<Product[]> => {
+      const db = getDB();
+      const rows = await db
+        .prepare("SELECT * FROM products WHERE id != ? ORDER BY sortOrder ASC, createdAt DESC LIMIT ?")
+        .bind(id, n)
+        .all<ProductRow>();
+      return (rows.results ?? []).map(rowToProduct);
+    },
+    "products",
+    (id, n = 4) => `related:${id}:${n}`,
+    { ttl: 60 },
+  ),
+  (id, n = 4) => `related:${id}:${n}`,
+);
 
 export async function createProduct(input: ProductInput): Promise<Product> {
   const db = getDB();
@@ -407,41 +432,73 @@ export async function getDashboardStats(): Promise<{
   return stats;
 }
 
-export async function getDistinctTags(): Promise<string[]> {
-  const db = getDB();
-  const rows = await db
-    .prepare(`SELECT DISTINCT tag FROM products WHERE tag != '' ORDER BY tag ASC`)
-    .all<{ tag: string }>();
-  return (rows.results ?? []).map((r) => r.tag);
-}
+export const getDistinctTags = deduplicate(
+  withCache(
+    async (): Promise<string[]> => {
+      const db = getDB();
+      const rows = await db
+        .prepare(`SELECT DISTINCT tag FROM products WHERE tag != '' ORDER BY tag ASC`)
+        .all<{ tag: string }>();
+      return (rows.results ?? []).map((r) => r.tag);
+    },
+    "products",
+    () => "distinctTags",
+    { ttl: 120 },
+  ),
+  () => "distinctTags",
+);
 
-export async function getDistinctSizes(): Promise<string[]> {
-  const db = getDB();
-  const rows = await db
-    .prepare(`SELECT DISTINCT size FROM products WHERE size != '' ORDER BY size ASC`)
-    .all<{ size: string }>();
-  return (rows.results ?? []).map((r) => r.size);
-}
+export const getDistinctSizes = deduplicate(
+  withCache(
+    async (): Promise<string[]> => {
+      const db = getDB();
+      const rows = await db
+        .prepare(`SELECT DISTINCT size FROM products WHERE size != '' ORDER BY size ASC`)
+        .all<{ size: string }>();
+      return (rows.results ?? []).map((r) => r.size);
+    },
+    "products",
+    () => "distinctSizes",
+    { ttl: 120 },
+  ),
+  () => "distinctSizes",
+);
 
-export async function getDistinctConditions(): Promise<string[]> {
-  const db = getDB();
-  const rows = await db
-    .prepare(`SELECT DISTINCT condition FROM products WHERE condition != '' ORDER BY condition ASC`)
-    .all<{ condition: string }>();
-  return (rows.results ?? []).map((r) => r.condition);
-}
+export const getDistinctConditions = deduplicate(
+  withCache(
+    async (): Promise<string[]> => {
+      const db = getDB();
+      const rows = await db
+        .prepare(`SELECT DISTINCT condition FROM products WHERE condition != '' ORDER BY condition ASC`)
+        .all<{ condition: string }>();
+      return (rows.results ?? []).map((r) => r.condition);
+    },
+    "products",
+    () => "distinctConditions",
+    { ttl: 120 },
+  ),
+  () => "distinctConditions",
+);
 
-export async function searchProducts(query: string): Promise<Product[]> {
-  const db = getDB();
-  const searchTerm = `%${query}%`;
-  const rows = await db
-    .prepare(
-      `SELECT * FROM products
-       WHERE title LIKE ? OR brand LIKE ? OR era LIKE ? OR tag LIKE ? OR size LIKE ? OR condition LIKE ? OR id LIKE ?
-       ORDER BY sortOrder ASC, createdAt DESC
-       LIMIT 50`,
-    )
-    .bind(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm)
-    .all<ProductRow>();
-  return (rows.results ?? []).map(rowToProduct);
-}
+export const searchProducts = deduplicate(
+  withCache(
+    async (query: string): Promise<Product[]> => {
+      const db = getDB();
+      const searchTerm = `%${query}%`;
+      const rows = await db
+        .prepare(
+          `SELECT * FROM products
+           WHERE title LIKE ? OR brand LIKE ? OR era LIKE ? OR tag LIKE ? OR size LIKE ? OR condition LIKE ? OR id LIKE ?
+           ORDER BY sortOrder ASC, createdAt DESC
+           LIMIT 50`,
+        )
+        .bind(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm)
+        .all<ProductRow>();
+      return (rows.results ?? []).map(rowToProduct);
+    },
+    "products",
+    (query) => `search:${query}`,
+    { ttl: 15 },
+  ),
+  (query) => `search:${query}`,
+);

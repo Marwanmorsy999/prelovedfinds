@@ -42,19 +42,17 @@ export function ProductInfo({ product }: { product: Product }) {
   const handleAdd = () => {
     if (sold || adding || alreadyInCart) return;
     setAdding(true);
-    setTimeout(() => {
-      add({
-        id: product.id,
-        name: product.title,
-        price: product.price,
-        priceLabel: product.priceLabel,
-        imageUrl: product.imageUrl ?? product.images[0],
-        size: product.size,
-      });
-      setAdding(false);
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
-    }, 400);
+    add({
+      id: product.id,
+      name: product.title,
+      price: product.price,
+      priceLabel: product.priceLabel,
+      imageUrl: product.imageUrl ?? product.images[0],
+      size: product.size,
+    });
+    setAdding(false);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
   };
 
   return (

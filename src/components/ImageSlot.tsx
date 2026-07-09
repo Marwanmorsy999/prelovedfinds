@@ -1,3 +1,5 @@
+import { cloudinaryUrl } from "@/lib/cloudinary";
+
 type ImageSlotProps = {
   src?: string;
   alt: string;
@@ -5,6 +7,8 @@ type ImageSlotProps = {
   widths?: readonly number[];
   fetchPriority?: "high" | "auto" | "low";
   decoding?: "async" | "auto" | "sync";
+  width?: number;
+  height?: number;
 };
 
 const DEFAULT_WIDTHS = [400, 800, 1200] as const;
@@ -16,6 +20,8 @@ export function ImageSlot({
   widths = DEFAULT_WIDTHS,
   fetchPriority,
   decoding = "async",
+  width,
+  height,
 }: ImageSlotProps) {
   if (src) {
     const isCloudinary = src.includes("res.cloudinary.com");
@@ -23,21 +29,26 @@ export function ImageSlot({
     let sizes = "100vw";
 
     if (isCloudinary) {
-      const base = src.split("?").shift() ?? src;
       srcset = widths
-        .map((w) => `${base}?w=${w}&f_auto&q_auto:good&c_limit${w > 800 ? ",cs_tinysrgb" : ""} ${w}w`)
+        .map((w) => `${cloudinaryUrl(src, { width: w, format: "auto", quality: "auto:good", crop: "limit" })} ${w}w`)
         .join(", ");
       sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw";
     }
 
+    const optimizedSrc = isCloudinary
+      ? cloudinaryUrl(src, { width: widths[0], format: "auto", quality: "auto:good", crop: "limit" })
+      : src;
+
     return (
       <img
-        src={src}
+        src={optimizedSrc}
         srcSet={isCloudinary ? srcset : undefined}
         sizes={isCloudinary ? sizes : undefined}
         alt={alt}
         fetchPriority={fetchPriority}
         decoding={decoding}
+        width={width}
+        height={height}
         className={`h-full w-full object-cover ${className}`}
         loading={fetchPriority === "high" ? "eager" : "lazy"}
       />

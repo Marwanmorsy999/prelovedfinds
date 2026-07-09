@@ -9,6 +9,41 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 export default defineConfig({
   vite: {
     resolve: { tsconfigPaths: true },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            // Vendor chunks
+            if (id.includes("node_modules/react-dom") || id.includes("node_modules/react/")) {
+              return "vendor-react";
+            }
+            if (id.includes("node_modules/@tanstack/react-router")) {
+              return "vendor-router";
+            }
+            if (id.includes("node_modules/@tanstack/react-query")) {
+              return "vendor-query";
+            }
+            if (id.includes("node_modules/@radix-ui/")) {
+              return "vendor-radix";
+            }
+            if (id.includes("node_modules/lucide-react")) {
+              return "vendor-icons";
+            }
+            if (id.includes("node_modules/recharts")) {
+              return "vendor-charts";
+            }
+            // Admin route chunk
+            if (id.includes("src/routes/admin")) {
+              return "route-admin";
+            }
+            // Shared UI components chunk
+            if (id.includes("src/components/ui/")) {
+              return "shared-ui";
+            }
+          },
+        },
+      },
+    },
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).

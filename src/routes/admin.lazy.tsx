@@ -1,5 +1,5 @@
-import {
-  createFileRoute,
+﻿import {
+  createLazyFileRoute,
   redirect,
   useNavigate,
   Outlet,
@@ -52,117 +52,10 @@ import {
 const PER_PAGE = 24;
 const CONDITIONS = ["Excellent", "Good", "Fair"];
 
-export const Route = createFileRoute("/admin")({
-  preload: "none",
-  head: () => ({
-    meta: [{ title: "" }],
-  }),
-  errorComponent: AdminErrorComponent,
-  beforeLoad: async ({ location }) => {
-    const authed = await getIsAuthed();
-    if (!authed && location.pathname !== "/admin/login") {
-      throw redirect({ to: "/admin/login" });
-    }
-    return { authed };
-  },
-  loader: async ({ location }) => {
-    if (location.pathname === "/admin/login") {
-      return {
-        products: { items: [], total: 0, page: 1, perPage: PER_PAGE, totalPages: 1 },
-        stats: {
-          total: 0,
-          available: 0,
-          sold: 0,
-          oneLeft: 0,
-          revenue: 0,
-          avgOrderValue: 0,
-          avgOrderCount: 0,
-          topTags: [],
-        },
-        orderStats: {
-          pending: 0,
-          confirmed: 0,
-          completed: 0,
-          cancelled: 0,
-          revenue: 0,
-          ordersCount: 0,
-        },
-        tags: [],
-        sizes: [],
-        conditions: [],
-        dbCategories: [],
-      };
-    }
-    try {
-      const s = location.search as {
-        tag?: string;
-        size?: string;
-        condition?: string;
-        availability?: string;
-      };
-      const [products, stats, orderStats, tags, sizes, conditions, dbCategories] =
-        await Promise.all([
-          listProductsFn({
-            data: {
-              tag: s.tag === "all" ? undefined : (s.tag as never),
-              size: s.size === "all" ? undefined : s.size,
-              condition: s.condition === "all" ? undefined : (s.condition as never),
-              availability: s.availability === "all" ? undefined : (s.availability as never),
-              page: 1,
-              perPage: PER_PAGE,
-            },
-          }),
-          dashboardStatsFn(),
-          getOrderStatsFn(),
-          getDistinctTagsFn(),
-          getDistinctSizesFn(),
-          getDistinctConditionsFn(),
-          listCategoriesFn(),
-        ]);
-      return { products, stats, orderStats, categories: tags, sizes, conditions, dbCategories };
-    } catch (err) {
-      console.error("[admin/loader] failed to load dashboard data:", err);
-      throw err;
-    }
-  },
+export const Route = createLazyFileRoute("/admin")({
   component: AdminDashboard,
 });
 
-function AdminErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  return (
-    <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-[18px] font-semibold text-[#1a1a1a]">Couldn't load admin data</h1>
-        {import.meta.env?.DEV && (
-          <pre className="mt-4 text-left text-[12px] text-red-600 bg-[#111] p-4 overflow-auto max-h-64">
-            {error.message}
-            {"\n\n"}
-            {error.stack}
-          </pre>
-        )}
-        <p className="mt-2 text-[13px] text-[#6b7280]">
-          {import.meta.env?.DEV
-            ? "Check the server logs for details."
-            : "Something went wrong on our end — check the server logs (console) and try again later."}
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={reset}
-            className="border border-ink bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-background hover:opacity-80"
-          >
-            Try again
-          </button>
-          <Link
-            to="/"
-            className="border border-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink hover:bg-ink hover:text-background"
-          >
-            Go home
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function slugify(s: string) {
   return s
@@ -285,7 +178,7 @@ function AdminDashboard() {
         setAnnouncement(ann);
         setWhatsapp(wa);
       } catch {
-        // ignore — defaults remain
+        // ignore â€” defaults remain
       }
     })();
   }, [activeTab]);
@@ -712,7 +605,7 @@ function AdminDashboard() {
                         }}
                         className="w-full bg-[#111] border border-[#333] text-white text-[13px] px-3 py-2.5 outline-none focus:border-[#555]"
                       >
-                        <option value="">Select category…</option>
+                        <option value="">Select categoryâ€¦</option>
                         {categoryOptions.map((c) => (
                           <option key={c} value={c}>
                             {c}
@@ -766,7 +659,7 @@ function AdminDashboard() {
                           }
                           className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]"
                         >
-                          ×
+                          أ—
                         </button>
                       </div>
                     ))}
@@ -796,7 +689,7 @@ function AdminDashboard() {
                       />
                     </label>
                     {single.uploading && (
-                      <span className="text-[11px] text-[#888]">Uploading…</span>
+                      <span className="text-[11px] text-[#888]">Uploadingâ€¦</span>
                     )}
                   </div>
                   <div className="flex gap-2 pt-1">
@@ -805,7 +698,7 @@ function AdminDashboard() {
                       disabled={saving}
                       className="bg-white text-[#111] px-5 py-2 text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-50"
                     >
-                      {saving ? "Adding…" : "+ ADD PRODUCT"}
+                      {saving ? "Addingâ€¦" : "+ ADD PRODUCT"}
                     </button>
                   </div>
                 </div>
@@ -837,7 +730,7 @@ function AdminDashboard() {
                               }
                               className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full h-3.5 w-3.5 flex items-center justify-center text-[8px]"
                             >
-                              ×
+                              أ—
                             </button>
                           </div>
                         ))}
@@ -927,7 +820,7 @@ function AdminDashboard() {
                           }}
                           className="bg-[#1a1a1a] border border-[#333] text-white text-[12px] px-2 py-1.5 outline-none focus:border-[#555]"
                         >
-                          <option value="">Category…</option>
+                          <option value="">Categoryâ€¦</option>
                           {categoryOptions.map((c) => (
                             <option key={c} value={c}>
                               {c}
@@ -1018,8 +911,8 @@ function AdminDashboard() {
                       className="flex items-center gap-2 bg-white text-[#111] px-5 py-2 text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-40"
                     >
                       {saving
-                        ? "Publishing…"
-                        : `Publish Drop (${readyCount} Item${readyCount !== 1 ? "s" : ""}) ✓`}
+                        ? "Publishingâ€¦"
+                        : `Publish Drop (${readyCount} Item${readyCount !== 1 ? "s" : ""}) âœ“`}
                     </button>
                   </div>
                 </div>
@@ -1032,7 +925,7 @@ function AdminDashboard() {
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, tag, or size…"
+                placeholder="Search by name, tag, or sizeâ€¦"
                 className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[13px] pl-9 pr-3 py-2.5 outline-none focus:border-[#444] placeholder:text-[#444]"
               />
               {searching && (
@@ -1165,7 +1058,7 @@ function AdminDashboard() {
                 Bulk sold
               </button>
               <button className="px-3 py-1 bg-[#2a2a2a] text-[11px] font-semibold uppercase tracking-widest text-[#aaa] hover:text-white border border-[#333] hover:border-[#555] transition-colors">
-                ⇅ Reorder
+                â‡… Reorder
               </button>
             </div>
 
@@ -1193,7 +1086,7 @@ function AdminDashboard() {
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-medium text-white truncate">{p.title}</p>
                     <p className="text-[11px] text-[#555]">
-                      {p.tag} · LE {p.price.toLocaleString()} · {p.size}
+                      {p.tag} آ· LE {p.price.toLocaleString()} آ· {p.size}
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -1264,8 +1157,8 @@ function AdminDashboard() {
                 >
                   <option value="newest">Newest</option>
                   <option value="oldest">Oldest</option>
-                  <option value="total-asc">Total: Low–High</option>
-                  <option value="total-desc">Total: High–Low</option>
+                  <option value="total-asc">Total: Lowâ€“High</option>
+                  <option value="total-desc">Total: Highâ€“Low</option>
                 </select>
               </div>
               <div className="col-span-2">
@@ -1280,7 +1173,7 @@ function AdminDashboard() {
                       setOrderSearch(e.target.value);
                       setOrderPage(1);
                     }}
-                    placeholder="Name, phone, or order ID…"
+                    placeholder="Name, phone, or order IDâ€¦"
                     className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[13px] pl-9 pr-3 py-2 outline-none focus:border-[#444] placeholder:text-[#444]"
                   />
                 </div>
@@ -1321,10 +1214,10 @@ function AdminDashboard() {
                         </span>
                       </div>
                       <p className="text-[11px] text-[#555]">
-                        {o.customerName} · {o.customerPhone} · {o.governorate || "N/A"}
+                        {o.customerName} آ· {o.customerPhone} آ· {o.governorate || "N/A"}
                       </p>
                       <p className="text-[11px] text-[#555]">
-                        {o.items.length} item{o.items.length !== 1 ? "s" : ""} ·{" "}
+                        {o.items.length} item{o.items.length !== 1 ? "s" : ""} آ·{" "}
                         {new Date(o.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -1421,7 +1314,7 @@ function AdminDashboard() {
               disabled={savingSettings}
               className="px-5 py-2 bg-white text-[#111] text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-50"
             >
-              {savingSettings ? "Saving…" : "Save Settings"}
+              {savingSettings ? "Savingâ€¦" : "Save Settings"}
             </button>
 
             {/* Category Management */}
@@ -1807,7 +1700,7 @@ function EditModal({
               onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })}
               className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]"
             >
-              ×
+              أ—
             </button>
           </div>
         ))}
@@ -1844,7 +1737,7 @@ function EditModal({
           disabled={saving}
           className="flex-1 py-2.5 bg-white text-[#111] text-[12px] font-bold uppercase tracking-widest hover:bg-[#eee] transition-colors disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save Changes"}
+          {saving ? "Savingâ€¦" : "Save Changes"}
         </button>
       </div>
     </div>
