@@ -12,7 +12,7 @@ export function Footer({ whatsapp }: { whatsapp?: string }) {
           {/* Brand */}
           <div>
             <Link to="/" className="inline-block mb-4 hover:opacity-80 transition-opacity">
-              <Logo className="h-14 w-auto" />
+               <Logo className="h-16 w-auto" />
             </Link>
             <p className="text-[13px] text-concrete leading-relaxed max-w-[220px]">
               Curated vintage & pre-owned pieces. One-of-one, shipped from Cairo.
