@@ -170,7 +170,7 @@ export function ProductInfo({ product }: { product: Product }) {
         <p className="text-[11px] font-semibold uppercase tracking-widest text-ink mb-2">
           Shipping & Returns
         </p>
-        <p className="text-[13px] text-concrete">Ships from Cairo. 3–7 business days.</p>
+        <p className="text-[13px] text-concrete">3–7 business days.</p>
       </div>
     </div>
   );

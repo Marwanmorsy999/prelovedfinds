@@ -15,7 +15,7 @@ export function Footer({ whatsapp }: { whatsapp?: string }) {
               <Logo className="h-16 w-auto" />
             </Link>
             <p className="text-[13px] text-concrete leading-relaxed max-w-[220px]">
-              Curated vintage & pre-owned pieces. One-of-one, shipped from Cairo.
+              Curated vintage & pre-owned pieces. One-of-one.
             </p>
           </div>
 
