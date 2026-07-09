@@ -6,9 +6,9 @@ import {
   useRouterState,
   Link,
 } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
-import { Trash2, LogOut, Search, X, Plus, ImagePlus, ChevronDown, Eye } from "lucide-react";
+import { Trash2, LogOut, Search, X, Plus, ImagePlus, ChevronDown, Eye, GripVertical } from "lucide-react";
 
 import { getIsAuthed } from "@/lib/auth";
 import { logoutFn } from "@/lib/functions/auth";
@@ -24,6 +24,7 @@ import {
   getDistinctTagsFn,
   getDistinctSizesFn,
   getDistinctConditionsFn,
+  reorderProductsFn,
 } from "@/lib/functions/products";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Product, Availability, Order } from "@/lib/products";
@@ -53,7 +54,6 @@ const PER_PAGE = 24;
 const CONDITIONS = ["Excellent", "Good", "Fair"];
 
 export const Route = createFileRoute("/admin")({
-  preload: "none",
   head: () => ({
     meta: [{ title: "" }],
   }),
@@ -63,7 +63,6 @@ export const Route = createFileRoute("/admin")({
     if (!authed && location.pathname !== "/admin/login") {
       throw redirect({ to: "/admin/login" });
     }
-    return { authed };
   },
   loader: async ({ location }) => {
     if (location.pathname === "/admin/login") {
@@ -87,7 +86,7 @@ export const Route = createFileRoute("/admin")({
           revenue: 0,
           ordersCount: 0,
         },
-        tags: [],
+        categories: [],
         sizes: [],
         conditions: [],
         dbCategories: [],
@@ -224,11 +223,11 @@ function newRow(): BulkRow {
   };
 }
 
-function AdminDashboard() {
+export function AdminDashboard() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const search = useRouterState({ select: (s) => s.location.search });
-  const initial = Route.useLoaderData();
+  const initial = Route.useLoaderData()!;
   const [data, setData] = useState(initial.products);
   const [stats, setStats] = useState(initial.stats);
   const [categories, setCategories] = useState(initial.categories);
@@ -249,6 +248,10 @@ function AdminDashboard() {
   const [orderStats, setOrderStats] = useState(initial.orderStats);
   const [reorderMode, setReorderMode] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [reorderList, setReorderList] = useState<Product[]>([]);
+  const [reorderDirty, setReorderDirty] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
 
   // orders state
@@ -257,7 +260,19 @@ function AdminDashboard() {
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
   const [orderSort, setOrderSort] = useState<string>("newest");
   const [orderPage, setOrderPage] = useState(1);
-  const [orderTotalPages, setOrderTotalPages] = useState(1);
+  // Recalculate total pages whenever the orders array changes.
+  // This keeps pagination in sync without needing to call reload().
+  const derivedOrderTotalPages = useMemo(
+    () => Math.max(1, Math.ceil(orders.length / PER_PAGE)),
+    [orders.length],
+  );
+  // Clamp current page when the total shrinks (e.g. after filter change or reload)
+  const clampedOrderPage = Math.min(orderPage, derivedOrderTotalPages);
+  useEffect(() => {
+    if (clampedOrderPage !== orderPage) {
+      setOrderPage(clampedOrderPage);
+    }
+  }, [clampedOrderPage, orderPage]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(false);
@@ -290,9 +305,39 @@ function AdminDashboard() {
     })();
   }, [activeTab]);
 
+  // Fetch orders with the current filter/sort/search state.
+  // This is called on tab-open and whenever filters change.
+  const fetchOrders = useCallback(async () => {
+    setLoadingOrders(true);
+    try {
+      const res = await listOrdersFn({
+        data: {
+          status:
+            orderStatusFilter === "all"
+              ? undefined
+              : (orderStatusFilter as "pending" | "confirmed" | "completed" | "cancelled"),
+          q: orderSearch.trim() || undefined,
+          sort: orderSort as "newest" | "oldest" | "total-asc" | "total-desc",
+        },
+      });
+      setOrders(res);
+      setOrderPage(1);
+    } catch {
+      toast.error("Failed to load orders");
+    } finally {
+      setLoadingOrders(false);
+    }
+  }, [orderStatusFilter, orderSearch, orderSort]);
+
+  // Fetch orders when the Orders tab opens or filters change
+  useEffect(() => {
+    if (activeTab !== "orders") return;
+    fetchOrders();
+  }, [activeTab, fetchOrders]);
+
   const reload = async () => {
     const s = typeof search === "string" ? new URLSearchParams(search) : new URLSearchParams();
-    const [products, stats, orderStats, tags, sizes, conditions, dbCategories, ordersRes] =
+    const [products, stats, orderStats, tags, sizes, conditions, dbCategories] =
       await Promise.all([
         listProductsFn({
           data: {
@@ -314,16 +359,6 @@ function AdminDashboard() {
         getDistinctSizesFn(),
         getDistinctConditionsFn(),
         listCategoriesFn(),
-        listOrdersFn({
-          data: {
-            status:
-              orderStatusFilter === "all"
-                ? undefined
-                : (orderStatusFilter as "pending" | "confirmed" | "completed" | "cancelled"),
-            q: orderSearch.trim() || undefined,
-            sort: orderSort as "newest" | "oldest" | "total-asc" | "total-desc",
-          },
-        }),
       ]);
     setData(products);
     setStats(stats);
@@ -335,9 +370,70 @@ function AdminDashboard() {
     setSizes(sizes);
     setConditions(conditions);
     setBulkSelected(new Set());
-    setOrders(ordersRes);
-    setOrderPage(1);
-    setOrderTotalPages(Math.max(1, Math.ceil(ordersRes.length / PER_PAGE)));
+    // Refresh orders too when reload() runs (e.g. after a product mutation)
+    fetchOrders();
+  };
+
+  // Drag-and-drop reorder handlers
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+    setDragId(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverId(id);
+  };
+
+  const handleDragEnd = () => {
+    setDragId(null);
+    setDragOverId(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    const draggedId = e.dataTransfer.getData("text/plain");
+    if (!draggedId || draggedId === targetId) {
+      setDragId(null);
+      setDragOverId(null);
+      return;
+    }
+
+    const fromIdx = reorderList.findIndex((p) => p.id === draggedId);
+    const toIdx = reorderList.findIndex((p) => p.id === targetId);
+    if (fromIdx === -1 || toIdx === -1) {
+      setDragId(null);
+      setDragOverId(null);
+      return;
+    }
+
+    // Optimistic local reorder only — batch-saved when "Save Order" is clicked
+    const newList = [...reorderList];
+    const [moved] = newList.splice(fromIdx, 1);
+    newList.splice(toIdx, 0, moved);
+    setReorderList(newList);
+    setReorderDirty(true);
+    setDragId(null);
+    setDragOverId(null);
+  };
+
+  // Persist the accumulated reorder to the backend
+  const handleSaveOrder = async () => {
+    if (savingOrder) return;
+    setSavingOrder(true);
+    try {
+      await reorderProductsFn({ data: { orderedIds: reorderList.map((p) => p.id) } });
+      setReorderDirty(false);
+      // Sync the reordered list back into data so exiting reorder mode shows the new order
+      setData((prev) => ({ ...prev, items: reorderList }));
+      toast.success("Order saved");
+    } catch {
+      toast.error("Failed to save reorder");
+    } finally {
+      setSavingOrder(false);
+    }
   };
 
   useEffect(() => {
@@ -589,7 +685,7 @@ function AdminDashboard() {
     }
   };
 
-  const displayedProducts = searchActive ? searchResults : data.items;
+  const displayedProducts: Product[] = searchActive ? searchResults : data.items;
   const availableCount = data.items.filter((p) => p.availability !== "sold").length;
   const readyCount = bulkRows.filter((r) => r.title && r.price).length;
   const categoryOptions = getCategoryOptions();
@@ -1060,7 +1156,6 @@ function AdminDashboard() {
                     else s.set("tag", v);
                     s.delete("page");
                     navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
                   }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
@@ -1087,7 +1182,6 @@ function AdminDashboard() {
                     else s.set("size", v);
                     s.delete("page");
                     navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
                   }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
@@ -1114,7 +1208,6 @@ function AdminDashboard() {
                     else s.set("condition", v);
                     s.delete("page");
                     navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
                   }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
@@ -1141,7 +1234,6 @@ function AdminDashboard() {
                     else s.set("availability", v);
                     s.delete("page");
                     navigate({ to: "/admin", search: Object.fromEntries(s) });
-                    reload();
                   }}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-[12px] px-2 py-2 outline-none focus:border-[#444]"
                 >
@@ -1154,33 +1246,90 @@ function AdminDashboard() {
             </div>
 
             {/* List header */}
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
               <p className="text-[12px] font-bold uppercase tracking-widest text-white">
-                Available ({availableCount})
+                {reorderMode
+                  ? `Reorder (${reorderList.length} items)`
+                  : `Available (${availableCount})`}
               </p>
+              {!reorderMode && (
+                <button
+                  onClick={bulkSold}
+                  className="px-3 py-1 bg-[#2a2a2a] text-[11px] font-semibold uppercase tracking-widest text-[#aaa] hover:text-white border border-[#333] hover:border-[#555] transition-colors"
+                >
+                  Bulk sold
+                </button>
+              )}
               <button
-                onClick={bulkSold}
-                className="px-3 py-1 bg-[#2a2a2a] text-[11px] font-semibold uppercase tracking-widest text-[#aaa] hover:text-white border border-[#333] hover:border-[#555] transition-colors"
+                onClick={() => {
+                  if (reorderMode) {
+                    // Exiting reorder mode — discard pending order
+                    setReorderMode(false);
+                    setReorderList([]);
+                    setReorderDirty(false);
+                    setDragId(null);
+                    setDragOverId(null);
+                  } else {
+                    // Entering reorder mode — snapshot current list
+                    setReorderList([...displayedProducts]);
+                    setReorderMode(true);
+                  }
+                }}
+                className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-widest border transition-colors ${
+                  reorderMode
+                    ? "bg-white text-[#111] border-white hover:bg-[#eee]"
+                    : "bg-[#2a2a2a] text-[#aaa] border-[#333] hover:border-[#555] hover:text-white"
+                }`}
               >
-                Bulk sold
+                {reorderMode ? "Cancel" : "⇅ Reorder"}
               </button>
-              <button className="px-3 py-1 bg-[#2a2a2a] text-[11px] font-semibold uppercase tracking-widest text-[#aaa] hover:text-white border border-[#333] hover:border-[#555] transition-colors">
-                ⇅ Reorder
-              </button>
+              {reorderMode && (
+                <button
+                  onClick={handleSaveOrder}
+                  disabled={!reorderDirty || savingOrder}
+                  className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-widest border transition-colors ${
+                    reorderDirty && !savingOrder
+                      ? "bg-green-600 text-white border-green-500 hover:bg-green-500"
+                      : "bg-[#2a2a2a] text-[#555] border-[#333] cursor-not-allowed"
+                  }`}
+                >
+                  {savingOrder ? "Saving…" : reorderDirty ? "★ Save Order" : "✓ Saved"}
+                </button>
+              )}
             </div>
 
             {/* Product rows */}
             <div className="space-y-1">
-              {displayedProducts.length === 0 && (
+              {(reorderMode ? reorderList : displayedProducts).length === 0 && (
                 <p className="text-[13px] text-[#555] py-8 text-center">
                   {searchActive ? "No results found" : "No products yet"}
                 </p>
               )}
-              {displayedProducts.map((p) => (
+              {(reorderMode ? reorderList : displayedProducts).map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-2.5 hover:border-[#333] transition-colors"
+                  draggable={reorderMode}
+                  onDragStart={reorderMode ? (e) => handleDragStart(e, p.id) : undefined}
+                  onDragOver={reorderMode ? (e) => handleDragOver(e, p.id) : undefined}
+                  onDragLeave={reorderMode ? () => setDragOverId(null) : undefined}
+                  onDrop={reorderMode ? (e) => handleDrop(e, p.id) : undefined}
+                  onDragEnd={reorderMode ? handleDragEnd : undefined}
+                  className={`flex items-center gap-3 bg-[#1a1a1a] border ${
+                    reorderMode
+                      ? dragOverId === p.id
+                        ? "border-t-2 border-t-white border-x-[#2a2a2a] border-b-[#2a2a2a]"
+                        : "border-[#333] cursor-grab active:cursor-grabbing"
+                      : "border-[#2a2a2a] hover:border-[#333]"
+                  } px-3 py-2.5 transition-colors ${
+                    dragId === p.id && reorderMode ? "opacity-40" : ""
+                  }`}
                 >
+                  {/* Drag handle in reorder mode */}
+                  {reorderMode && (
+                    <span className="text-[#555] flex-shrink-0">
+                      <GripVertical className="h-4 w-4" />
+                    </span>
+                  )}
                   {p.images[0] ? (
                     <img
                       src={p.images[0]}
@@ -1196,31 +1345,39 @@ function AdminDashboard() {
                       {p.tag} · LE {p.price.toLocaleString()} · {p.size}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <button
-                      onClick={() => toggle(p)}
-                      className={`px-3 py-1 text-[11px] font-bold uppercase tracking-widest border transition-colors ${
-                        p.availability === "sold"
-                          ? "bg-[#2a2a2a] text-[#888] border-[#333] hover:border-white hover:text-white"
-                          : "bg-white text-[#111] border-white hover:bg-[#eee]"
-                      }`}
-                    >
-                      {p.availability === "sold" ? "Unsell" : "Sold"}
-                    </button>
-                    <button
-                      onClick={() => setEditTarget(p)}
-                      className="px-3 py-1 text-[11px] font-bold uppercase tracking-widest border border-[#333] text-[#888] hover:border-white hover:text-white transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => setDeleteTarget(p)}
-                      className="p-1.5 text-[#555] hover:text-red-400 transition-colors"
-                      aria-label="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {!reorderMode && (
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button
+                        onClick={() => toggle(p)}
+                        className={`px-3 py-1 text-[11px] font-bold uppercase tracking-widest border transition-colors ${
+                          p.availability === "sold"
+                            ? "bg-[#2a2a2a] text-[#888] border-[#333] hover:border-white hover:text-white"
+                            : "bg-white text-[#111] border-white hover:bg-[#eee]"
+                        }`}
+                      >
+                        {p.availability === "sold" ? "Unsell" : "Sold"}
+                      </button>
+                      <button
+                        onClick={() => setEditTarget(p)}
+                        className="px-3 py-1 text-[11px] font-bold uppercase tracking-widest border border-[#333] text-[#888] hover:border-white hover:text-white transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteTarget(p)}
+                        className="p-1.5 text-[#555] hover:text-red-400 transition-colors"
+                        aria-label="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                  {/* In reorder mode, show position badge */}
+                  {reorderMode && (
+                    <span className="text-[10px] font-mono text-[#555] flex-shrink-0 mr-1">
+                      #{(reorderList.findIndex((r) => r.id === p.id) + 1)}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
@@ -1299,7 +1456,7 @@ function AdminDashboard() {
               {orders.length === 0 && (
                 <p className="text-[13px] text-[#555] py-8 text-center">No orders found</p>
               )}
-              {orders.map((o) => {
+              {orders.slice((clampedOrderPage - 1) * PER_PAGE, clampedOrderPage * PER_PAGE).map((o) => {
                 const statusColors: Record<string, string> = {
                   pending: "bg-yellow-900/40 text-yellow-400 border-yellow-700",
                   confirmed: "bg-blue-900/40 text-blue-400 border-blue-700",
@@ -1353,21 +1510,21 @@ function AdminDashboard() {
             </div>
 
             {/* Pagination */}
-            {orderTotalPages > 1 && (
+            {derivedOrderTotalPages > 1 && (
               <div className="flex items-center justify-center gap-3 mt-6">
                 <button
                   onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
-                  disabled={orderPage <= 1}
+                  disabled={clampedOrderPage <= 1}
                   className="px-4 py-2 bg-[#1a1a1a] border border-[#333] text-[11px] font-bold uppercase tracking-widest text-[#888] hover:text-white hover:border-[#555] transition-colors disabled:opacity-40"
                 >
                   Prev
                 </button>
                 <span className="text-[12px] text-[#888]">
-                  Page {orderPage} / {orderTotalPages}
+                  Page {clampedOrderPage} / {derivedOrderTotalPages}
                 </span>
                 <button
-                  onClick={() => setOrderPage((p) => Math.min(orderTotalPages, p + 1))}
-                  disabled={orderPage >= orderTotalPages}
+                  onClick={() => setOrderPage((p) => Math.min(derivedOrderTotalPages, p + 1))}
+                  disabled={clampedOrderPage >= derivedOrderTotalPages}
                   className="px-4 py-2 bg-[#1a1a1a] border border-[#333] text-[11px] font-bold uppercase tracking-widest text-[#888] hover:text-white hover:border-[#555] transition-colors disabled:opacity-40"
                 >
                   Next

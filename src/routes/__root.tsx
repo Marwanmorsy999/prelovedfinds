@@ -4,12 +4,14 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { SettingsCtx, useSettings } from "@/lib/settings-context";
 import { reportWebVitals } from "@/lib/web-vitals";
+import { Search, ArrowRight } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -26,19 +28,71 @@ const SITE_URL = "https://prelovedfinds.com";
 const OG_IMAGE = `${SITE_URL}/og.jpg`;
 
 function NotFoundComponent() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      navigate({ to: "/shop", search: { tag: "all", condition: "all", priceRange: "all", sort: "newest", q: query.trim(), page: 1 } });
+    }
+  };
+
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="max-w-md text-center">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-grey">404</p>
-        <h1 className="mt-3 text-2xl font-semibold text-ink">Page not found</h1>
-        <p className="mt-2 text-sm text-grey">The page you're looking for doesn't exist.</p>
-        <div className="mt-6">
+      <div className="max-w-md w-full text-center">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-concrete">404</p>
+        <h1 className="mt-3 text-[28px] font-bold uppercase tracking-widest text-ink">
+          Page not found
+        </h1>
+        <p className="mt-2 text-[14px] text-concrete">
+          This page doesn't exist or may have been moved.
+        </p>
+
+        {/* Search */}
+        <form onSubmit={handleSearch} className="mt-8 relative max-w-sm mx-auto">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-concrete pointer-events-none" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search the shop…"
+            className="w-full h-12 border border-hairline bg-paper pl-10 pr-4 text-[13px] text-ink outline-none focus:border-ink transition-colors placeholder:text-concrete"
+            aria-label="Search products"
+          />
+        </form>
+
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
             to="/"
-            className="border border-ink bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-background hover:opacity-80"
+            className="inline-flex h-12 items-center justify-center bg-ink text-paper px-8 text-[11px] font-bold uppercase tracking-widest hover:bg-concrete transition-colors"
           >
             Go home
           </Link>
+          <Link
+            to="/shop"
+            search={{ tag: "all", condition: "all", priceRange: "all", sort: "newest", q: "", page: 1 }}
+            className="inline-flex h-12 items-center justify-center gap-1.5 border border-ink text-ink px-8 text-[11px] font-bold uppercase tracking-widest hover:bg-ink hover:text-paper transition-colors"
+          >
+            Shop All <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="mt-10 pt-8 border-t border-hairline">
+          <p className="text-[11px] uppercase tracking-widest text-concrete mb-4">
+            Looking for something specific?
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {["TEE", "JEANS", "SHIRT", "JACKET"].map((tag) => (
+              <Link
+                key={tag}
+                to="/shop"
+                search={{ tag, condition: "all", priceRange: "all", sort: "newest", q: "", page: 1 }}
+                className="px-4 py-2 border border-hairline text-[11px] font-bold uppercase tracking-widest text-concrete hover:border-ink hover:text-ink transition-colors"
+              >
+                {tag}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -156,11 +210,11 @@ export const Route = createRootRouteWithContext<{
 
 function RootShell({ children }: { children: ReactNode }) {
   useEffect(() => {
-    // Register service worker
+    // Register service worker (only if sw.js exists in build output)
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("/sw.js").catch(() => {
-          // SW registration is non-critical
+          // SW registration is non-critical — sw.js may not exist yet
         });
       });
     }
@@ -188,17 +242,47 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function simpleHash(s: string): string {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (h << 5) - h + s.charCodeAt(i);
+    h |= 0;
+  }
+  return String(Math.abs(h));
+}
+
 function RootComponent() {
   const { queryClient, announcement, whatsapp } = Route.useRouteContext();
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  // Sync banner dismissed state from sessionStorage when announcement changes
+  useEffect(() => {
+    if (!announcement) {
+      setBannerDismissed(false);
+      return;
+    }
+    const key = `dismissed-announcement-${simpleHash(announcement)}`;
+    try {
+      if (sessionStorage.getItem(key) === "1") {
+        setBannerDismissed(true);
+      } else {
+        setBannerDismissed(false);
+      }
+    } catch {
+      setBannerDismissed(false);
+    }
+  }, [announcement]);
+
+  const bannerH = announcement && !bannerDismissed ? "36px" : "0px";
 
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <SettingsCtx.Provider value={{ whatsapp }}>
-          <div className="flex min-h-screen flex-col bg-white">
-            <AnnouncementBanner announcement={announcement} />
+          <div className="flex min-h-screen flex-col bg-white" style={{ "--banner-h": bannerH } as React.CSSProperties}>
+            <AnnouncementBanner announcement={announcement} onDismiss={() => setBannerDismissed(true)} />
             <Navigation />
-            <main className="flex-1 pt-[80px]" id="main-content">
+            <main className="flex-1" id="main-content" style={{ paddingTop: `calc(80px + ${bannerH})` }}>
               <Outlet />
             </main>
             <Footer whatsapp={whatsapp} />

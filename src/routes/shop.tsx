@@ -98,10 +98,7 @@ function Shop() {
   const { items, total, totalPages, page } = loader.products;
 
   const [tags] = useState<string[]>(Array.isArray(loader.tags) ? loader.tags : []);
-  const [conditions, setConditions] = useState<string[]>([]);
-  useEffect(() => {
-    if (Array.isArray(loader.conditions)) setConditions(loader.conditions);
-  }, [loader.conditions]);
+  const [conditions] = useState<string[]>(Array.isArray(loader.conditions) ? loader.conditions : []);
 
   const [query, setQuery] = useState(search.q || "");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -199,7 +196,7 @@ function Shop() {
       </div>
 
       {/* Filter Bar */}
-      <div className="sticky top-0 z-20 bg-paper border-b border-hairline">
+      <div className="sticky z-20 bg-paper border-b border-hairline" style={{ top: 'calc(80px + var(--banner-h, 0px))' }}>
         <div className="mx-auto max-w-7xl px-5 md:px-10 py-3 flex items-center gap-3">
 
           <div className="relative flex-1 min-w-0 max-w-[260px]">

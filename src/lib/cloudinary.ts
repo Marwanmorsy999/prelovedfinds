@@ -41,9 +41,16 @@ export async function uploadToCloudinary(file: File): Promise<string> {
  */
 export function getPublicId(url: string): string {
   try {
+    // Cloudinary URL format: /upload/v<NUM>/<public_id>.<ext>
+    // We want just the <public_id> part.
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.\w+)?$/);
+    if (match?.[1]) {
+      // Remove any transformation segments before the public ID
+      return match[1].replace(/^[^/]+\//, "");
+    }
     const parts = url.split("/");
     const last = parts[parts.length - 1] ?? "";
-    return last.replace(/\.[^.]+$/, "").replace(/^v\d+\//, "");
+    return last.replace(/\.[^.]+$/, "");
   } catch {
     return url;
   }

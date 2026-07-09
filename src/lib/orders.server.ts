@@ -1,10 +1,10 @@
 import { getDB, rowToOrder, type OrderRow } from "./db";
 import type { Order } from "./products";
 
-export async function listOrders(): Promise<OrderRow[]> {
+export async function listOrders(): Promise<Order[]> {
   const db = getDB();
   const rows = await db.prepare("SELECT * FROM orders ORDER BY createdAt DESC").all<OrderRow>();
-  return rows.results ?? [];
+  return (rows.results ?? []).map(rowToOrder);
 }
 
 export async function getOrderById(id: string): Promise<Order | null> {

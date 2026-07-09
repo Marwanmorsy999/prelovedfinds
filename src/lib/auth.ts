@@ -91,8 +91,10 @@ export async function verifyPassword(password: string): Promise<boolean> {
   if (!expected) return false;
   const a = toBytes(password);
   const b = toBytes(expected);
-  if (a.length !== b.length) return false;
   let mismatch = 0;
-  for (let i = 0; i < a.length; i++) mismatch |= a[i] ^ b[i];
+  const maxLen = Math.max(a.length, b.length);
+  for (let i = 0; i < maxLen; i++) {
+    mismatch |= (a[i] ?? 0) ^ (b[i] ?? 0);
+  }
   return mismatch === 0;
 }

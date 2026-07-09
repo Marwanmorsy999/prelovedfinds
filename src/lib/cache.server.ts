@@ -132,12 +132,16 @@ export function deduplicate<T, Args extends unknown[]>(
     }
 
     // Create new request and track it
-    const promise = fn(...args).finally(() => {
+    try {
+      const promise = fn(...args).finally(() => {
+        inflightRequests.delete(key);
+      });
+      inflightRequests.set(key, promise);
+      return promise;
+    } catch (err) {
       inflightRequests.delete(key);
-    });
-
-    inflightRequests.set(key, promise);
-    return promise;
+      throw err;
+    }
   };
 }
 

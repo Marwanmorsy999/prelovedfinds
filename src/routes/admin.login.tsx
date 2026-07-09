@@ -15,7 +15,6 @@ export const Route = createFileRoute("/admin/login")({
   beforeLoad: async () => {
     const authed = await getIsAuthed();
     if (authed) throw redirect({ to: "/admin" });
-    return { authed };
   },
   component: AdminLogin,
 });

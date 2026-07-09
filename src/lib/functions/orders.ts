@@ -10,7 +10,6 @@ import {
   getOrderStats,
 } from "@/lib/orders.server";
 import { getProductById, updateProduct } from "@/lib/products.server";
-import { rowToOrder } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 
 // Shipping cost by governorate, mirrored from the checkout UI (src/routes/checkout.tsx).
@@ -66,8 +65,7 @@ export const listOrdersFn = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     await requireAdmin();
-    const rows = await listOrders();
-    let filtered = rows.map(rowToOrder);
+    let filtered = await listOrders();
 
     if (data?.status) {
       filtered = filtered.filter((o) => o.status === data.status);

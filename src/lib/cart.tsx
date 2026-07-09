@@ -92,6 +92,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const buyNow = (item: CartItem) => {
     setItems([item]);
+    // Persist immediately so the hydration useEffect doesn't clobber this selection
+    saveCart([item]);
+    setHydrated(true);
   };
 
   return (

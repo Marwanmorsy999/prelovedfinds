@@ -23,9 +23,15 @@ function Contact() {
   const { whatsapp } = useSettings();
   const waHref = whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}` : null;
 
+  // TODO: Wire this form to an actual backend email/notification service.
+  // Currently the data is only logged to console and discarded.
+  // Options: Cloudflare Email Service, Resend, SendGrid, or a webhook.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Contact form submitted:", formData);
+    console.info("[Contact] Form submitted:", formData);
+    if (import.meta.env.DEV) {
+      console.warn("[Contact] No backend service configured — form data goes nowhere");
+    }
     setSent(true);
   };
 

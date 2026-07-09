@@ -24,7 +24,7 @@ const availabilityEnum = z.enum(["available", "one-left", "sold"]);
 const productInputSchema = z.object({
   id: z.string().min(1).max(120),
   title: z.string().min(1).max(200),
-  price: z.number().int().nonnegative(),
+  price: z.number().int().positive(),
   priceLabel: z.string().max(120).optional(),
   availability: availabilityEnum,
   tag: z.string(),
@@ -33,7 +33,7 @@ const productInputSchema = z.object({
   size: z.string().min(1).max(40),
   imageUrl: z.string().url().optional().nullable().default(null),
   images: z.array(z.string().url()).optional().default([]),
-  sortOrder: z.number().int().nonnegative().optional(),
+  sortOrder: z.number().int().min(0).optional(),
   brand: z.string().optional(),
   era: z.string().optional(),
   currency: z.string().optional(),
@@ -73,7 +73,7 @@ export const createProductFn = createServerFn({ method: "POST" })
   });
 
 export const updateProductFn = createServerFn({ method: "POST" })
-  .validator(z.object({ id: z.string(), patch: z.any() }))
+  .validator(z.object({ id: z.string(), patch: productInputSchema.partial() }))
   .handler(async ({ data }) => {
     await requireAdmin();
     return updateProduct(data.id, data.patch as Partial<ProductInput>);
@@ -125,4 +125,16 @@ export const getDistinctSizesFn = createServerFn({ method: "GET" }).handler(asyn
 
 export const getDistinctConditionsFn = createServerFn({ method: "GET" }).handler(async () => {
   return getDistinctConditions();
+});
+
+export const reorderProductsFn = createServerFn({ method: "POST" })
+  .validator(z.object({ orderedIds: z.array(z.string()).min(1) }))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    return reorderProducts(data.orderedIds);
+  });
+
+export const deleteSoldProductsFn = createServerFn({ method: "POST" }).handler(async () => {
+  await requireAdmin();
+  return deleteSoldProducts();
 });

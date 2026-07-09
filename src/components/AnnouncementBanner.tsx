@@ -10,10 +10,15 @@ function simpleHash(s: string): string {
   return String(Math.abs(h));
 }
 
-export function AnnouncementBanner({ announcement }: { announcement: string }) {
+export function AnnouncementBanner({ announcement, onDismiss }: { announcement: string; onDismiss?: () => void }) {
   const [dismissed, setDismissed] = useState(false);
 
+  // Sync internal state with sessionStorage on mount and when announcement changes
   useEffect(() => {
+    if (!announcement) {
+      setDismissed(false);
+      return;
+    }
     const key = `dismissed-announcement-${simpleHash(announcement)}`;
     try {
       const stored = sessionStorage.getItem(key);
@@ -35,10 +40,11 @@ export function AnnouncementBanner({ announcement }: { announcement: string }) {
       // ignore
     }
     setDismissed(true);
+    onDismiss?.();
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[var(--z-nav)] bg-ink text-paper">
+    <div className="fixed top-0 left-0 right-0 z-[51] bg-ink text-paper">
       <div className="mx-auto max-w-7xl flex items-center justify-center gap-3 px-4 py-2">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-center">
           {announcement}

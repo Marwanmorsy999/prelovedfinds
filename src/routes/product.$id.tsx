@@ -26,11 +26,24 @@ export const Route = createFileRoute("/product/$id")({
           {
             rel: "preload" as const,
             as: "image" as const,
-            href: firstImage,
-            imageSrcSet: [400, 800, 1200]
-              .map((w) => `${firstImage}?w=${w}&f_auto&q_auto:good ${w}w`)
+            href: firstImage.includes("res.cloudinary.com")
+              ? firstImage.replace(
+                  /(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload)\//,
+                  `$1/w_800,f_auto,q_auto:good,c_limit/`,
+                )
+              : firstImage,
+            imagesrcset: [400, 800, 1200]
+              .map((w) => {
+                const url = firstImage.includes("res.cloudinary.com")
+                  ? firstImage.replace(
+                      /(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload)\//,
+                      `$1/w_${w},f_auto,q_auto:good,c_limit/`,
+                    )
+                  : firstImage;
+                return `${url} ${w}w`;
+              })
               .join(", "),
-            imageSizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
+            imagesizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
           },
         ]
       : [];

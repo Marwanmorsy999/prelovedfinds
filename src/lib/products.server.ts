@@ -1,6 +1,6 @@
 import type { Product, Availability } from "./products";
 import { getDB, rowToProduct, type ProductRow } from "./db";
-import { withCache, deduplicate } from "./cache.server";
+import { withCache, deduplicate, cacheInvalidate } from "./cache.server";
 
 type SortKey = "newest" | "featured" | "price-asc" | "price-desc";
 
@@ -91,6 +91,27 @@ function buildWhere(params: ListParams): { clause: string; args: unknown[] } {
   return { clause, args };
 }
 
+// Cache-busting version counter — incremented on every product mutation so that
+// list/search/distinct cached responses go stale immediately within the current
+// Worker isolate. This does not reach edge POP caches (each isolate has its own
+// counter), so the TTL is still the backstop for other regions.
+let cacheVersion = 0;
+function bumpCacheVersion(): void {
+  cacheVersion++;
+}
+
+function cacheKeyWithVersion(key: string): string {
+  return `${key}:v${cacheVersion}`;
+}
+
+function invalidateProductCache(id: string): void {
+  // Invalidate the specific product's cache entry
+  cacheInvalidate("products", `byId:${id}`);
+  cacheInvalidate("products", `related:${id}:4`);
+  // Bump version for list/search/distinct keys (broad-stroke within this isolate)
+  bumpCacheVersion();
+}
+
 function sortSql(sort: SortKey | undefined): string {
   switch (sort) {
     case "price-asc":
@@ -139,7 +160,7 @@ export const listProducts = deduplicate(
     (params) => `list:${JSON.stringify(params)}`,
     { ttl: 30 },
   ),
-  (params) => `list:${JSON.stringify(params)}`,
+  (params) => `list:${cacheKeyWithVersion(JSON.stringify(params))}`,
 );
 
 export const getProductById = deduplicate(
@@ -224,6 +245,7 @@ export async function createProduct(input: ProductInput): Promise<Product> {
     )
     .run();
 
+  invalidateProductCache(product.id);
   return product;
 }
 
@@ -281,12 +303,18 @@ export async function createProducts(inputs: ProductInput[]): Promise<Product[]>
     ),
   );
 
+  // Invalidate cache for all created products and bump version for list keys
+  for (const p of products) {
+    cacheInvalidate("products", `byId:${p.id}`);
+  }
+  bumpCacheVersion();
   return products;
 }
 
 export async function deleteSoldProducts(): Promise<number> {
   const db = getDB();
   const res = await db.prepare("DELETE FROM products WHERE availability = 'sold'").run();
+  bumpCacheVersion();
   return (res.meta as { changes?: number | undefined } | undefined)?.changes ?? 0;
 }
 
@@ -346,6 +374,7 @@ export async function updateProduct(
     )
     .run();
 
+  invalidateProductCache(merged.id);
   return merged;
 }
 
@@ -354,10 +383,12 @@ export async function reorderProducts(orderedIds: string[]): Promise<void> {
   const stmt = db.prepare("UPDATE products SET sortOrder = ? WHERE id = ?");
   const batch = orderedIds.map((id, idx) => stmt.bind(idx, id));
   await db.batch(batch);
+  bumpCacheVersion();
 }
 
 export async function deleteProduct(id: string): Promise<boolean> {
   const res = await getDB().prepare("DELETE FROM products WHERE id = ?").bind(id).run();
+  invalidateProductCache(id);
   return res.success;
 }
 
@@ -442,10 +473,10 @@ export const getDistinctTags = deduplicate(
       return (rows.results ?? []).map((r) => r.tag);
     },
     "products",
-    () => "distinctTags",
+    () => cacheKeyWithVersion("distinctTags"),
     { ttl: 120 },
   ),
-  () => "distinctTags",
+  () => cacheKeyWithVersion("distinctTags"),
 );
 
 export const getDistinctSizes = deduplicate(
@@ -458,10 +489,10 @@ export const getDistinctSizes = deduplicate(
       return (rows.results ?? []).map((r) => r.size);
     },
     "products",
-    () => "distinctSizes",
+    () => cacheKeyWithVersion("distinctSizes"),
     { ttl: 120 },
   ),
-  () => "distinctSizes",
+  () => cacheKeyWithVersion("distinctSizes"),
 );
 
 export const getDistinctConditions = deduplicate(
@@ -474,10 +505,10 @@ export const getDistinctConditions = deduplicate(
       return (rows.results ?? []).map((r) => r.condition);
     },
     "products",
-    () => "distinctConditions",
+    () => cacheKeyWithVersion("distinctConditions"),
     { ttl: 120 },
   ),
-  () => "distinctConditions",
+  () => cacheKeyWithVersion("distinctConditions"),
 );
 
 export const searchProducts = deduplicate(
@@ -500,5 +531,5 @@ export const searchProducts = deduplicate(
     (query) => `search:${query}`,
     { ttl: 15 },
   ),
-  (query) => `search:${query}`,
+  (query) => `search:${cacheKeyWithVersion(query)}`,
 );
