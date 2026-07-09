@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, ChevronDown, X } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import {
@@ -85,16 +85,38 @@ function Shop() {
   const [sizes] = useState<string[]>(initialSizes);
   const [conditions, setConditions] = useState<string[]>([]);
 
+  // Accumulated items across pages — fix "load more replaces" bug
+  const [allItems, setAllItems] = useState(items);
+  const prevFilterKey = useRef<string>("");
+
   useEffect(() => {
     if (Array.isArray(loader.conditions)) {
       setConditions(loader.conditions);
     }
   }, [loader.conditions]);
 
+  useEffect(() => {
+    // Build a key from everything except page — if filters change, reset
+    const filterKey = `${search.tag}|${search.size}|${search.condition}|${search.priceRange}|${search.sort}|${search.q}`;
+    if (filterKey !== prevFilterKey.current || page === 1) {
+      // Filter changed or back to page 1 — reset list
+      setAllItems(items);
+    } else {
+      // Same filters, new page — append
+      setAllItems((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const newItems = items.filter((p) => !existingIds.has(p.id));
+        return [...prev, ...newItems];
+      });
+    }
+    prevFilterKey.current = filterKey;
+  }, [items, page, search.tag, search.size, search.condition, search.priceRange, search.sort, search.q]);
+
   const [filterOpen, setFilterOpen] = useState(false);
   const [query, setQuery] = useState(search.q || "");
 
   const currentPage = Math.min(page, totalPages || 1);
+  // Default 2 cols on mobile (handled by CSS), 4 on desktop
   const [gridCols, setGridCols] = useState<2 | 4>(4);
 
   const updateSearch = (patch: Record<string, unknown>) =>
@@ -124,8 +146,9 @@ function Shop() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-8">
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          <div className="relative flex-1 min-w-[180px] max-w-xs">
+        {/* Search + Filter toggle + Sort — one row */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
             <input
               value={query}
@@ -133,7 +156,7 @@ function Shop() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") updateSearch({ q: query, page: 1 });
               }}
-              placeholder="Search title, tag, size..."
+              placeholder="Search..."
               className="h-10 w-full border border-hairline bg-paper pl-9 pr-8 text-[13px] text-ink outline-none focus:border-ink transition-colors placeholder:text-[#9ca3af]"
               aria-label="Search products"
             />
@@ -150,11 +173,12 @@ function Shop() {
             )}
           </div>
 
+          {/* Filter toggle — visible on mobile too */}
           <button
             type="button"
             onClick={() => setFilterOpen(!filterOpen)}
-            className={`flex items-center gap-2 h-10 px-4 text-[11px] font-bold uppercase tracking-widest border transition-colors ${
-              filterOpen
+            className={`shrink-0 flex items-center gap-1.5 h-10 px-3 text-[11px] font-bold uppercase tracking-widest border transition-colors ${
+              filterOpen || hasActiveFilters
                 ? "border-ink bg-ink text-paper"
                 : "border-hairline text-concrete hover:border-ink hover:text-ink"
             }`}
@@ -172,114 +196,31 @@ function Shop() {
               <line x1="4" y1="12" x2="20" y2="12" />
               <line x1="4" y1="18" x2="20" y2="18" />
             </svg>
-            Filters
+            <span className="hidden sm:inline">Filters</span>
+            {hasActiveFilters && (
+              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-paper text-ink text-[10px] font-bold">
+                {[search.tag, search.size, search.condition, search.priceRange].filter(v => v !== "all").length}
+              </span>
+            )}
           </button>
 
-          <div className="relative ml-auto">
+          {/* Sort */}
+          <div className="relative shrink-0">
             <select
               value={search.sort}
               onChange={(e) => updateSearch({ sort: e.target.value, page: 1 })}
-              className="h-10 appearance-none border border-hairline bg-paper pl-3 pr-8 text-[12px] font-semibold uppercase tracking-widest text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+              className="h-10 appearance-none border border-hairline bg-paper pl-3 pr-7 text-[12px] font-semibold uppercase tracking-widest text-ink outline-none hover:border-ink transition-colors cursor-pointer"
             >
               <option value="newest">Newest</option>
               <option value="featured">Featured</option>
-              <option value="price-asc">Price: Low–High</option>
-              <option value="price-desc">Price: High–Low</option>
+              <option value="price-asc">Low–High</option>
+              <option value="price-desc">High–Low</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-concrete" />
           </div>
-        </div>
 
-        <div className={`${filterOpen ? "block" : "hidden"} md:block mb-6`}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-concrete mb-1.5">
-                Category
-              </label>
-              <select
-                value={search.tag}
-                onChange={(e) => updateSearch({ tag: e.target.value, page: 1 })}
-                className="w-full h-10 appearance-none border border-hairline bg-paper pl-3 pr-8 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
-              >
-                <option value="all">All</option>
-                {tags.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-concrete mb-1.5">
-                Condition
-              </label>
-              <select
-                value={search.condition}
-                onChange={(e) => updateSearch({ condition: e.target.value, page: 1 })}
-                className="w-full h-10 appearance-none border border-hairline bg-paper pl-3 pr-8 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
-              >
-                <option value="all">All</option>
-                {conditions.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-concrete mb-1.5">
-                Size
-              </label>
-              <select
-                value={search.size}
-                onChange={(e) => updateSearch({ size: e.target.value, page: 1 })}
-                className="w-full h-10 appearance-none border border-hairline bg-paper pl-3 pr-8 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
-              >
-                <option value="all">All</option>
-                {sizes.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-concrete mb-1.5">
-                Price
-              </label>
-              <select
-                value={search.priceRange}
-                onChange={(e) => updateSearch({ priceRange: e.target.value, page: 1 })}
-                className="w-full h-10 appearance-none border border-hairline bg-paper pl-3 pr-8 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
-              >
-                <option value="all">All</option>
-                <option value="under-700">Under EGP 700</option>
-                <option value="700-900">EGP 700 – 900</option>
-                <option value="over-900">Over EGP 900</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          {hasActiveFilters && (
-            <button
-              onClick={() =>
-                updateSearch({
-                  tag: "all",
-                  size: "all",
-                  condition: "all",
-                  priceRange: "all",
-                  page: 1,
-                })
-              }
-              className="flex items-center gap-1.5 h-10 px-3 text-[11px] font-semibold uppercase tracking-widest text-ink border border-hairline hover:border-ink transition-colors"
-            >
-              <X className="h-3 w-3" /> Clear
-            </button>
-          )}
-
-          <div className="flex gap-1 ml-auto">
+          {/* Grid toggle — desktop only */}
+          <div className="hidden md:flex gap-1 shrink-0">
             {([2, 4] as const).map((n) => (
               <button
                 key={n}
@@ -315,15 +256,97 @@ function Shop() {
           </div>
         </div>
 
+        {/* Filter panel — compact, collapsible on mobile */}
+        {filterOpen && (
+          <div className="mb-4 p-3 border border-hairline bg-paper">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
+                  Category
+                </label>
+                <select
+                  value={search.tag}
+                  onChange={(e) => updateSearch({ tag: e.target.value, page: 1 })}
+                  className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+                >
+                  <option value="all">All</option>
+                  {tags.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
+                  Condition
+                </label>
+                <select
+                  value={search.condition}
+                  onChange={(e) => updateSearch({ condition: e.target.value, page: 1 })}
+                  className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+                >
+                  <option value="all">All</option>
+                  {conditions.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
+                  Size
+                </label>
+                <select
+                  value={search.size}
+                  onChange={(e) => updateSearch({ size: e.target.value, page: 1 })}
+                  className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+                >
+                  <option value="all">All</option>
+                  {sizes.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
+                  Price
+                </label>
+                <select
+                  value={search.priceRange}
+                  onChange={(e) => updateSearch({ priceRange: e.target.value, page: 1 })}
+                  className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+                >
+                  <option value="all">All</option>
+                  <option value="under-700">Under EGP 700</option>
+                  <option value="700-900">EGP 700–900</option>
+                  <option value="over-900">Over EGP 900</option>
+                </select>
+              </div>
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={() => {
+                  updateSearch({ tag: "all", size: "all", condition: "all", priceRange: "all", page: 1 });
+                  setFilterOpen(false);
+                }}
+                className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-concrete hover:text-ink transition-colors"
+              >
+                <X className="h-3 w-3" /> Clear all filters
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Product grid — always 2 cols on mobile, toggle on desktop */}
         <div
-          className={`grid gap-4 md:gap-5 ${gridCols === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4"}`}
+          className={`grid gap-3 md:gap-5 grid-cols-2 ${
+            gridCols === 4 ? "md:grid-cols-4" : "md:grid-cols-2"
+          }`}
         >
-          {items.map((p) => (
+          {allItems.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
 
-        {items.length === 0 && (
+        {allItems.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="text-[22px] font-bold text-ink mb-2">No pieces found</p>
             <p className="text-[13px] text-[#9ca3af] mb-6">
