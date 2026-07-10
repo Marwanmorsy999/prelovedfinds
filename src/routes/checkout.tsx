@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Phone, MapPin, User, ChevronDown, Shield, Truck } from "lucide-react";
 import { useCart } from "@/lib/cart";
@@ -81,10 +81,27 @@ function Checkout() {
   const { items, clear, count } = useCart();
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [governorate, setGovernorate] = useState("");
-  const [address, setAddress] = useState("");
+  const [name, setName] = useState(() => sessionStorage.getItem("checkout_name") ?? "");
+  const [phone, setPhone] = useState(() => sessionStorage.getItem("checkout_phone") ?? "");
+  const [governorate, setGovernorate] = useState(() => sessionStorage.getItem("checkout_governorate") ?? "");
+  const [address, setAddress] = useState(() => sessionStorage.getItem("checkout_address") ?? "");
+  const persistRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Persist non-payment fields to sessionStorage debounced at 200ms
+  useEffect(() => {
+    if (persistRef.current) clearTimeout(persistRef.current);
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    persistRef.current = setTimeout(() => {
+      try {
+        sessionStorage.setItem("checkout_name", name);
+        sessionStorage.setItem("checkout_phone", phone);
+        sessionStorage.setItem("checkout_governorate", governorate);
+        sessionStorage.setItem("checkout_address", address);
+      } catch {
+        // ignore
+      }
+    }, 200);
+  }, [name, phone, governorate, address]);
 
   const subtotal = items.reduce((sum, i) => sum + i.price, 0);
   const shippingCost = governorate ? (SHIPPING_ZONES[governorate] ?? 100) : 0;
@@ -185,7 +202,7 @@ function Checkout() {
                   priceRange: "all",
                   sort: "newest",
                   q: "",
-                  page: 1,
+                  pages: 1,
                 },
               })
             }
@@ -215,7 +232,7 @@ function Checkout() {
                     priceRange: "all",
                     sort: "newest",
                     q: "",
-                    page: 1,
+                    pages: 1,
                   },
                 })
               }

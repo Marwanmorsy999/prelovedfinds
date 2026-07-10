@@ -26,7 +26,7 @@ export const Route = createFileRoute("/shop")({
     priceRange: typeof search.priceRange === "string" ? search.priceRange : "all",
     sort: typeof search.sort === "string" ? search.sort : "newest",
     q: typeof search.q === "string" ? search.q : "",
-    page: typeof search.page === "number" ? search.page : 1,
+    pages: typeof search.pages === "number" ? search.pages : 1,
   }),
   loaderDeps: ({ search }) => ({
     tag: search.tag,
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/shop")({
     priceRange: search.priceRange,
     sort: search.sort,
     q: search.q,
-    page: search.page,
+    pages: search.pages,
   }),
   loader: async ({ location }) => {
     const search = location.search as {
@@ -45,7 +45,7 @@ export const Route = createFileRoute("/shop")({
       priceRange?: string;
       sort?: string;
       q?: string;
-      page?: number;
+      pages?: number;
     };
     const [products, tagsRow, sizesRow, conditionsRow] = await Promise.all([
       listProductsFn({
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/shop")({
           condition: search.condition === "all" ? undefined : (search.condition as never),
           priceRange: search.priceRange === "all" ? undefined : (search.priceRange as never),
           sort: search.sort as never,
-          page: search.page,
+          page: 1,
           perPage: 16,
           q: search.q,
         },
@@ -85,9 +85,10 @@ function Shop() {
   const [sizes] = useState<string[]>(initialSizes);
   const [conditions, setConditions] = useState<string[]>([]);
 
-  // Accumulated items across pages — fix "load more replaces" bug
+  // Accumulated items across pages
   const [allItems, setAllItems] = useState(items);
   const prevFilterKey = useRef<string>("");
+  const prevPages = useRef<number>(search.pages);
 
   useEffect(() => {
     if (Array.isArray(loader.conditions)) {
@@ -95,33 +96,102 @@ function Shop() {
     }
   }, [loader.conditions]);
 
+  // On mount or when filters change, fetch additional pages if pages > 1
   useEffect(() => {
-    // Build a key from everything except page — if filters change, reset
     const filterKey = `${search.tag}|${search.size}|${search.condition}|${search.priceRange}|${search.sort}|${search.q}`;
-    if (filterKey !== prevFilterKey.current || page === 1) {
-      // Filter changed or back to page 1 — reset list
+
+    if (filterKey !== prevFilterKey.current) {
+      // Filters changed — reset to first page only
       setAllItems(items);
-    } else {
-      // Same filters, new page — append
-      setAllItems((prev) => {
-        const existingIds = new Set(prev.map((p) => p.id));
-        const newItems = items.filter((p) => !existingIds.has(p.id));
-        return [...prev, ...newItems];
-      });
+      prevFilterKey.current = filterKey;
+      prevPages.current = 1;
+      return;
     }
-    prevFilterKey.current = filterKey;
-  }, [items, page, search.tag, search.size, search.condition, search.priceRange, search.sort, search.q]);
+
+    // Same filters — check if we need to fetch more pages
+    if (search.pages > 1 && search.pages > prevPages.current) {
+      // Load more was clicked — fetch the next page
+      const pageToFetch = search.pages;
+      listProductsFn({
+        data: {
+          tag: search.tag === "all" ? undefined : (search.tag as never),
+          size: search.size === "all" ? undefined : search.size,
+          condition: search.condition === "all" ? undefined : (search.condition as never),
+          priceRange: search.priceRange === "all" ? undefined : (search.priceRange as never),
+          sort: search.sort as never,
+          page: pageToFetch,
+          perPage: 16,
+          q: search.q,
+        },
+      }).then((result) => {
+        setAllItems((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id));
+          const newItems = result.items.filter((p) => !existingIds.has(p.id));
+          return [...prev, ...newItems];
+        });
+      });
+      prevPages.current = search.pages;
+    } else if (search.pages > 1 && prevPages.current === 1) {
+      // Page refresh with pages > 1 — fetch all pages up to search.pages
+      const fetchAllPages = async () => {
+        let accumulated = [...items];
+        for (let p = 2; p <= search.pages; p++) {
+          const result = await listProductsFn({
+            data: {
+              tag: search.tag === "all" ? undefined : (search.tag as never),
+              size: search.size === "all" ? undefined : search.size,
+              condition: search.condition === "all" ? undefined : (search.condition as never),
+              priceRange: search.priceRange === "all" ? undefined : (search.priceRange as never),
+              sort: search.sort as never,
+              page: p,
+              perPage: 16,
+              q: search.q,
+            },
+          });
+          const existingIds = new Set(accumulated.map((p) => p.id));
+          const newItems = result.items.filter((p) => !existingIds.has(p.id));
+          accumulated = [...accumulated, ...newItems];
+        }
+        setAllItems(accumulated);
+      };
+      fetchAllPages();
+      prevPages.current = search.pages;
+    } else {
+      // pages === 1 — just use loader data
+      setAllItems(items);
+      prevPages.current = 1;
+    }
+  }, [items, search.pages, search.tag, search.size, search.condition, search.priceRange, search.sort, search.q]);
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [query, setQuery] = useState(search.q || "");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const currentPage = Math.min(page, totalPages || 1);
+  // Sync local query when URL changes externally
+  useEffect(() => {
+    setQuery(search.q);
+  }, [search.q]);
+
+  // Debounce URL update when user types
+  const handleQueryChange = (value: string) => {
+    setQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      navigate({
+        to: "/shop",
+        search: { ...search, q: value, pages: 1 },
+        replace: true,
+      });
+    }, 200);
+  };
+
   // Default 2 cols on mobile (handled by CSS), 4 on desktop
   const [gridCols, setGridCols] = useState<2 | 4>(4);
 
   const updateSearch = (patch: Record<string, unknown>) =>
     navigate({ to: "/shop", search: { ...search, ...patch } as typeof search });
 
+  const currentPage = search.pages;
   const hasMore = currentPage < totalPages;
   const hasActiveFilters =
     search.tag !== "all" ||
@@ -152,20 +222,14 @@ function Shop() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
             <input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") updateSearch({ q: query, page: 1 });
-              }}
+              onChange={(e) => handleQueryChange(e.target.value)}
               placeholder="Search..."
               className="h-10 w-full border border-hairline bg-paper pl-9 pr-8 text-[13px] text-ink outline-none focus:border-ink transition-colors placeholder:text-[#9ca3af]"
               aria-label="Search products"
             />
             {query && (
               <button
-                onClick={() => {
-                  setQuery("");
-                  updateSearch({ q: "", page: 1 });
-                }}
+                onClick={() => handleQueryChange("")}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-ink"
               >
                 <X className="h-3.5 w-3.5" />
@@ -178,7 +242,7 @@ function Shop() {
             type="button"
             onClick={() => setFilterOpen(!filterOpen)}
             aria-expanded={filterOpen}
-            className={`shrink-0 flex items-center gap-1.5 h-10 px-3 text-[11px] font-bold uppercase tracking-widest border transition-colors ${
+            className={`shrink-0 flex items-center gap-1.5 h-10 px-3 text-[11px] font-bold uppercase tracking-widest border transition-opacity duration-150 ${
               filterOpen || hasActiveFilters
                 ? "border-ink bg-ink text-paper"
                 : "border-hairline text-concrete hover:border-ink hover:text-ink"
@@ -209,7 +273,7 @@ function Shop() {
           <div className="relative shrink-0">
             <select
               value={search.sort}
-              onChange={(e) => updateSearch({ sort: e.target.value, page: 1 })}
+              onChange={(e) => updateSearch({ sort: e.target.value, pages: 1 })}
               className="h-10 appearance-none border border-hairline bg-paper pl-3 pr-7 text-[12px] font-semibold uppercase tracking-widest text-ink outline-none hover:border-ink transition-colors cursor-pointer"
             >
               <option value="newest">Newest</option>
@@ -272,7 +336,7 @@ function Shop() {
                   </label>
                   <select
                     value={search.tag}
-                    onChange={(e) => updateSearch({ tag: e.target.value, page: 1 })}
+                    onChange={(e) => updateSearch({ tag: e.target.value, pages: 1 })}
                     className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
                   >
                     <option value="all">All</option>
@@ -287,7 +351,7 @@ function Shop() {
                   </label>
                   <select
                     value={search.condition}
-                    onChange={(e) => updateSearch({ condition: e.target.value, page: 1 })}
+                    onChange={(e) => updateSearch({ condition: e.target.value, pages: 1 })}
                     className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
                   >
                     <option value="all">All</option>
@@ -302,7 +366,7 @@ function Shop() {
                   </label>
                   <select
                     value={search.size}
-                    onChange={(e) => updateSearch({ size: e.target.value, page: 1 })}
+                    onChange={(e) => updateSearch({ size: e.target.value, pages: 1 })}
                     className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
                   >
                     <option value="all">All</option>
@@ -317,7 +381,7 @@ function Shop() {
                   </label>
                   <select
                     value={search.priceRange}
-                    onChange={(e) => updateSearch({ priceRange: e.target.value, page: 1 })}
+                    onChange={(e) => updateSearch({ priceRange: e.target.value, pages: 1 })}
                     className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
                   >
                     <option value="all">All</option>
@@ -330,7 +394,7 @@ function Shop() {
               {hasActiveFilters && (
                 <button
                   onClick={() => {
-                    updateSearch({ tag: "all", size: "all", condition: "all", priceRange: "all", page: 1 });
+                    updateSearch({ tag: "all", size: "all", condition: "all", priceRange: "all", pages: 1 });
                     setFilterOpen(false);
                   }}
                   className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-concrete hover:text-ink transition-colors"
@@ -355,7 +419,9 @@ function Shop() {
 
         {allItems.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="text-[22px] font-bold text-ink mb-2">No pieces found</p>
+            <p className="text-[22px] font-bold text-ink mb-2">
+              {search.q ? `No results for '${search.q}'` : "No pieces found"}
+            </p>
             <p className="text-[13px] text-[#9ca3af] mb-6">
               Try different filters or clear everything
             </p>
@@ -368,7 +434,8 @@ function Shop() {
                   condition: "all",
                   priceRange: "all",
                   sort: "newest",
-                  page: 1,
+                  q: "",
+                  pages: 1,
                 });
               }}
               className="h-11 bg-ink text-paper px-8 text-[12px] font-bold uppercase tracking-widest hover:bg-concrete transition-colors"
@@ -381,7 +448,14 @@ function Shop() {
         {hasMore && (
           <div className="mt-14 text-center">
             <button
-              onClick={() => updateSearch({ page: currentPage + 1 })}
+              onClick={() =>
+                navigate({
+                  to: "/shop",
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  search: (prev: any) => ({ ...prev, pages: (prev.pages ?? 1) + 1 }),
+                  replace: true,
+                })
+              }
               className="h-11 border border-ink px-10 text-[12px] font-bold uppercase tracking-widest text-ink hover:bg-ink hover:text-paper transition-colors"
             >
               Load more

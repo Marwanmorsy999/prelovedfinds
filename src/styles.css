@@ -87,12 +87,15 @@
     border-color: var(--color-hairline);
   }
 
-  html,
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: var(--color-paper);
     color: var(--color-ink);
     font-family:
-      "Helvetica Neue Bold", "Helvetica Neue", "Inter", ui-sans-serif, system-ui, sans-serif;
+      "Playfair Display", "Helvetica Neue", "Inter", ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -266,4 +269,9 @@
 .gpu-accelerated {
   will-change: transform;
   transform: translateZ(0);
+}
+
+/* ── Sliding panel (filter drawer) ── */
+.will-change-transform {
+  will-change: transform;
 }

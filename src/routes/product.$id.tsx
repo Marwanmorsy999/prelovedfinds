@@ -51,7 +51,7 @@ export const Route = createFileRoute("/product/$id")({
           priceRange: "all",
           sort: "newest",
           q: "",
-          page: 1,
+          pages: 1,
         }}
         className="mt-6 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors"
       >
@@ -82,7 +82,7 @@ function ProductPage() {
               priceRange: "all",
               sort: "newest",
               q: "",
-              page: 1,
+              pages: 1,
             }}
             className="hover:text-[#1a1a1a] transition-colors"
           >

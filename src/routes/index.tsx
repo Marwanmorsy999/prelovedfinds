@@ -78,7 +78,7 @@ function Home() {
               priceRange: "all",
               sort: "newest",
               q: "",
-              page: 1,
+              pages: 1,
             }}
             className="relative inline-flex h-12 items-center justify-center border-2 border-white/80 bg-white/10 text-white px-10 uppercase tracking-[0.2em] backdrop-blur-sm [-webkit-backdrop-filter:blur(6px)] hover:bg-white/20 hover:text-white transition-colors mt-10 md:mt-14 [@supports_not_(backdrop-filter:blur(1px))]:bg-black/45"
             style={{
@@ -106,7 +106,7 @@ function Home() {
               priceRange: "all",
               sort: "newest",
               q: "",
-              page: 1,
+              pages: 1,
             }}
             className="text-[12px] font-semibold uppercase tracking-widest text-ink border-b border-ink hover:text-concrete hover:border-concrete transition-colors pb-0.5"
           >

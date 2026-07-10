@@ -74,7 +74,7 @@ function About() {
               priceRange: "all",
               sort: "newest",
               q: "",
-              page: 1,
+              pages: 1,
             }}
             className="inline-flex h-12 items-center justify-center bg-[#1a1a1a] text-white px-10 text-[12px] font-semibold uppercase tracking-widest hover:bg-[#6b7280] transition-colors"
           >
