@@ -24,6 +24,14 @@ import { getSettingFn } from "@/lib/functions/settings";
 const SITE_URL = "https://prelovedfinds.com";
 const OG_IMAGE = `${SITE_URL}/og.jpg`;
 
+const sanitize = (s: string) =>
+  s
+    .replace(/&/g, "\x26amp;")
+    .replace(/</g, "\x26lt;")
+    .replace(/>/g, "\x26gt;")
+    .replace(/"/g, "\x26quot;")
+    .replace(/'/g, "\x26#x27;");
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
@@ -173,12 +181,12 @@ function RootComponent() {
       <CartProvider>
         <SettingsCtx.Provider value={{ whatsapp }}>
           <div className="flex min-h-screen flex-col bg-white">
-            <AnnouncementBanner announcement={announcement} />
+            <AnnouncementBanner announcement={sanitize(announcement)} />
             <Navigation />
             <main className="flex-1 pt-[80px]" id="main-content">
               <Outlet />
             </main>
-            <Footer whatsapp={whatsapp} />
+            <Footer whatsapp={sanitize(whatsapp)} />
           </div>
           <Toaster />
         </SettingsCtx.Provider>

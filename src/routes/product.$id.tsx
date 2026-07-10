@@ -99,13 +99,13 @@ function ProductPage() {
           <ProductInfo product={product} />
         </div>
 
-        {related.length > 0 && (
+        {related?.length > 0 && (
           <section className="mt-20 border-t border-[#e5e7eb] pt-12">
             <h2 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a] mb-8">
               You may also like
             </h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {related.map((p) => (
+              {related.filter(Boolean).map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>

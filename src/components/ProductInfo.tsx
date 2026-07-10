@@ -3,13 +3,12 @@ import { useCart } from "@/lib/cart";
 import { Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { readStorage, writeStorage } from "@/lib/storage";
+
+const WISHLIST_KEY = "wishlist";
 
 function getWishlist(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem("wishlist") || "[]");
-  } catch {
-    return [];
-  }
+  return readStorage<string[]>(WISHLIST_KEY, []);
 }
 
 function toggleWishlist(id: string): boolean {
@@ -17,11 +16,11 @@ function toggleWishlist(id: string): boolean {
   const idx = list.indexOf(id);
   if (idx > -1) {
     list.splice(idx, 1);
-    localStorage.setItem("wishlist", JSON.stringify(list));
+    writeStorage(WISHLIST_KEY, list);
     return false;
   }
   list.push(id);
-  localStorage.setItem("wishlist", JSON.stringify(list));
+  writeStorage(WISHLIST_KEY, list);
   return true;
 }
 

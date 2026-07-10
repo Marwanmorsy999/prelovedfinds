@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useRef, useEffect, type ReactNode } from "react";
+import { readStorage, writeStorage } from "@/lib/storage";
 import type { Product } from "@/lib/products";
 
 const STORAGE_KEY = "preloved_cart";
@@ -35,24 +36,13 @@ const FALLBACK: CartCtx = {
 };
 
 function loadCart(): CartItem[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch {
-    // ignore
-  }
+  const data = readStorage<CartItem[] | null>(STORAGE_KEY, null);
+  if (Array.isArray(data)) return data;
   return [];
 }
 
 function saveCart(items: CartItem[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  } catch {
-    // ignore
-  }
+  writeStorage(STORAGE_KEY, items);
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {

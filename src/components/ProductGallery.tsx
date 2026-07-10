@@ -14,6 +14,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
     const container = galleryRef.current;
     if (!container) return;
     const slides = container.querySelectorAll<HTMLElement>(".slide");
+    if (!slides.length) return;
     const observer = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
@@ -23,7 +24,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
     );
     slides.forEach((s) => observer.observe(s));
     return () => observer.disconnect();
-  }, [slots.length]);
+  }, []); // empty deps — runs once after mount, cleans up on unmount
 
   // Sync scroll when active changes via dots/arrows
   useEffect(() => {
@@ -85,7 +86,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
               }}
               disabled={active === 0}
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              aria-label="Previous image"
+              aria-label="Previous photo"
             >
               <ChevronLeft className="h-4 w-4 text-ink" />
             </button>
@@ -96,7 +97,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
               }}
               disabled={active === slots.length - 1}
               className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              aria-label="Next image"
+              aria-label="Next photo"
             >
               <ChevronRight className="h-4 w-4 text-ink" />
             </button>
