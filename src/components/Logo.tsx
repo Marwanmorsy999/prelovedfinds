@@ -6,6 +6,10 @@ type LogoProps = {
 
 export function Logo({ className = "h-12 w-auto" }: LogoProps) {
   return (
-    <img src={logoSrc} alt="Preloved Finds" className={`bg-paper object-contain ${className}`} />
+    <img
+      src={logoSrc}
+      alt="Preloved Finds"
+      className={`object-contain [mix-blend-mode:multiply] ${className}`}
+    />
   );
 }

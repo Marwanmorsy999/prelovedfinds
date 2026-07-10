@@ -54,7 +54,7 @@ export function Navigation() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-paper border-b border-hairline transition-all duration-300">
-        <div className="mx-auto max-w-7xl flex h-20 items-center justify-between px-4 md:px-8">
+        <div className="mx-auto max-w-7xl flex h-14 md:h-16 items-center justify-between px-4 md:px-8">
           {/* Left: hamburger mobile / nav links desktop */}
           <div className="flex items-center gap-8 w-1/3">
             <button
@@ -91,7 +91,7 @@ export function Navigation() {
             className="flex items-center justify-center w-1/3 hover:opacity-85 transition-opacity duration-200"
             aria-label="Preloved Finds — home"
           >
-            <Logo className="h-16 w-auto" />
+            <Logo className="h-8 md:h-10 w-auto" />
           </Link>
 
           {/* Right: admin link + cart */}
@@ -229,7 +229,7 @@ export function Navigation() {
         aria-label="Navigation"
       >
         <div className="flex items-center justify-between px-4 h-16 border-b border-hairline">
-          <Logo className="h-12 w-auto" />
+          <Logo className="h-8 md:h-10 w-auto" />
           <button
             onClick={() => setMobileOpen(false)}
             className="p-1 text-[#9ca3af] hover:text-ink transition-colors"

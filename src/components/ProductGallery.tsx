@@ -1,37 +1,35 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ImageSlot } from "./ImageSlot";
 import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function ProductGallery({ images, title }: { images: string[]; title: string }) {
   const [active, setActive] = useState(0);
   const [zoomed, setZoomed] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isScrolling = useRef(false);
+  const galleryRef = useRef<HTMLDivElement>(null);
 
   const slots = images.filter(Boolean).length ? images.filter(Boolean) : [undefined];
 
-  // Update active index on scroll snap
-  const handleScroll = useCallback(() => {
-    if (!containerRef.current || isScrolling.current) return;
-    isScrolling.current = true;
-    requestAnimationFrame(() => {
-      if (!containerRef.current) {
-        isScrolling.current = false;
-        return;
-      }
-      const index = Math.round(
-        containerRef.current.scrollLeft / containerRef.current.clientWidth,
-      );
-      setActive(Math.max(0, Math.min(index, slots.length - 1)));
-      isScrolling.current = false;
-    });
+  // Track active slide via IntersectionObserver — no JS scroll handlers
+  useEffect(() => {
+    const container = galleryRef.current;
+    if (!container) return;
+    const slides = container.querySelectorAll<HTMLElement>(".slide");
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.index));
+        }),
+      { root: container, threshold: 0.6 },
+    );
+    slides.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
   }, [slots.length]);
 
   // Sync scroll when active changes via dots/arrows
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTo({
-        left: active * containerRef.current.clientWidth,
+    if (galleryRef.current) {
+      galleryRef.current.scrollTo({
+        left: active * galleryRef.current.clientWidth,
         behavior: "smooth",
       });
     }
@@ -45,14 +43,14 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
       {/* Main gallery with CSS scroll snapping — no JS drag/swipe */}
       <div className="relative overflow-hidden bg-surface select-none group">
         <div
-          ref={containerRef}
-          onScroll={handleScroll}
-          className="flex overflow-x-auto snap-x snap-mandatory [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [touch-action:pan-x]"
+          ref={galleryRef}
+          className="flex overflow-x-scroll snap-x snap-mandatory [scroll-behavior:smooth] [scrollbar-width:none] [-ms-overflow-style:none] [touch-action:pan-x] [-webkit-overflow-scrolling:touch] [will-change:scroll-position] [&::-webkit-scrollbar]:hidden"
         >
           {slots.map((src, i) => (
             <div
               key={i}
-              className="flex-shrink-0 w-full snap-start aspect-square relative"
+              data-index={i}
+              className="slide flex-shrink-0 w-full snap-start aspect-square relative [user-select:none]"
               onDoubleClick={() => setZoomed(true)}
             >
               <ImageSlot

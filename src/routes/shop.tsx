@@ -111,7 +111,7 @@ function Shop() {
   const [gridCols, setGridCols] = useState<2 | 4>(4);
 
   const updateSearch = (patch: Record<string, unknown>) =>
-    navigate({ to: "/shop", search: { ...search, ...patch } as typeof search });
+    navigate({ to: "/shop", search: { ...search, ...patch } as typeof search, replace: true });
 
   const currentPage = search.pages;
   const hasMore = currentPage < totalPages;
