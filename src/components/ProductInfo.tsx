@@ -60,11 +60,13 @@ export function ProductInfo({ product }: { product: Product }) {
   return (
     <div className="space-y-6 md:sticky md:top-28 md:self-start">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-concrete mb-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-concrete mb-1 h-4">
           {product.tag}
         </p>
-        <h1 className="text-[22px] font-bold text-ink leading-tight">{product.title}</h1>
-        <p className="mt-2 text-[18px] font-semibold text-ink">
+        <h1 className="text-[22px] font-bold text-ink leading-tight min-h-[28px]">
+          {product.title}
+        </h1>
+        <p className="mt-2 text-[18px] font-semibold text-ink h-[32px]">
           {product.priceLabel ? product.priceLabel : `LE ${product.price.toLocaleString()}`}
         </p>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { ImageSlot } from "./ImageSlot";
 import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -6,100 +6,66 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
   const [active, setActive] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
-  const isDragging = useRef(false);
-  const dragStartX = useRef(0);
-  const dragOffset = useRef(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const isScrolling = useRef(false);
 
   const slots = images.filter(Boolean).length ? images.filter(Boolean) : [undefined];
 
-  const goTo = useCallback(
-    (index: number) => {
-      if (isTransitioning) return;
-      const next = Math.max(0, Math.min(index, slots.length - 1));
-      if (next !== active) {
-        setIsTransitioning(true);
-        setActive(next);
-        setTimeout(() => setIsTransitioning(false), 300);
+  // Update active index on scroll snap
+  const handleScroll = useCallback(() => {
+    if (!containerRef.current || isScrolling.current) return;
+    isScrolling.current = true;
+    requestAnimationFrame(() => {
+      if (!containerRef.current) {
+        isScrolling.current = false;
+        return;
       }
-    },
-    [active, slots.length, isTransitioning],
-  );
+      const index = Math.round(
+        containerRef.current.scrollLeft / containerRef.current.clientWidth,
+      );
+      setActive(Math.max(0, Math.min(index, slots.length - 1)));
+      isScrolling.current = false;
+    });
+  }, [slots.length]);
 
-  const goNext = useCallback(() => goTo(active + 1), [goTo, active]);
-  const goPrev = useCallback(() => goTo(active - 1), [goTo, active]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) goNext();
-      else goPrev();
-    }
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    dragStartX.current = e.clientX;
-    dragOffset.current = 0;
+  // Sync scroll when active changes via dots/arrows
+  useEffect(() => {
     if (containerRef.current) {
-      containerRef.current.style.cursor = "grabbing";
+      containerRef.current.scrollTo({
+        left: active * containerRef.current.clientWidth,
+        behavior: "smooth",
+      });
     }
-  };
+  }, [active]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current) return;
-    dragOffset.current = e.clientX - dragStartX.current;
-  };
-
-  const handleMouseUp = () => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    if (containerRef.current) {
-      containerRef.current.style.cursor = "grab";
-    }
-    if (Math.abs(dragOffset.current) > 50) {
-      if (dragOffset.current < 0) goNext();
-      else goPrev();
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (isDragging.current) {
-      handleMouseUp();
-    }
-  };
+  // Preload next image eagerly
+  const nextIndex = active + 1 < slots.length ? active + 1 : -1;
 
   return (
     <div className="space-y-3">
-      {/* Main image with swipe support */}
-      <div className="relative overflow-hidden bg-surface aspect-[4/5] select-none">
+      {/* Main gallery with CSS scroll snapping — no JS drag/swipe */}
+      <div className="relative overflow-hidden bg-surface select-none group">
         <div
           ref={containerRef}
-          className="relative w-full h-full cursor-grab active:cursor-grabbing"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
-          onDoubleClick={() => setZoomed(true)}
+          onScroll={handleScroll}
+          className="flex overflow-x-auto snap-x snap-mandatory [-webkit-overflow-scrolling:touch] [scrollbar-width:none] touch-action-pan-x"
         >
-          <ImageSlot
-            src={slots[active]}
-            alt={title}
-            className="w-full h-full object-cover pointer-events-none"
-          />
+          {slots.map((src, i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 w-full snap-start aspect-[4/5] relative"
+              onDoubleClick={() => setZoomed(true)}
+            >
+              <ImageSlot
+                src={src}
+                alt={title}
+                className="w-full h-full"
+                width={800}
+                height={1000}
+                loading={i === 0 ? "eager" : i === nextIndex ? "eager" : "lazy"}
+                fetchPriority={i === 0 ? "high" : undefined}
+              />
+            </div>
+          ))}
         </div>
 
         {/* Zoom hint */}
@@ -117,7 +83,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                goPrev();
+                setActive((a) => Math.max(0, a - 1));
               }}
               disabled={active === 0}
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -128,7 +94,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                goNext();
+                setActive((a) => Math.min(slots.length - 1, a + 1));
               }}
               disabled={active === slots.length - 1}
               className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -181,7 +147,10 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
               <ImageSlot
                 src={src}
                 alt={`${title} view ${i + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full"
+                width={200}
+                height={250}
+                loading="lazy"
               />
             </button>
           ))}
@@ -214,7 +183,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  goPrev();
+                  setActive((a) => Math.max(0, a - 1));
                 }}
                 disabled={active === 0}
                 className="text-white/60 hover:text-white disabled:opacity-30 transition-colors"
@@ -228,7 +197,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  goNext();
+                  setActive((a) => Math.min(slots.length - 1, a + 1));
                 }}
                 disabled={active === slots.length - 1}
                 className="text-white/60 hover:text-white disabled:opacity-30 transition-colors"

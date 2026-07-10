@@ -275,3 +275,8 @@
 .will-change-transform {
   will-change: transform;
 }
+
+/* ── Touch action for horizontal scroll areas ── */
+.touch-action-pan-x {
+  touch-action: pan-x;
+}

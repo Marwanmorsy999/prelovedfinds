@@ -166,13 +166,14 @@ export function Navigation() {
           ) : (
             items.map((item) => (
               <div key={item.id} className="flex items-start gap-3 group">
-                <div className="h-20 w-16 bg-surface flex-shrink-0 overflow-hidden">
-                  <ImageSlot
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+                <ImageSlot
+                  src={item.imageUrl}
+                  alt={item.name}
+                  className="h-20 w-16 flex-shrink-0"
+                  width={200}
+                  height={250}
+                  loading="lazy"
+                />
                 <div className="flex-1 min-w-0 pt-0.5">
                   <p className="text-[13px] font-medium text-ink leading-snug line-clamp-2">
                     {item.name}

@@ -1,14 +1,26 @@
+import { memo } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Product } from "@/lib/products";
 import { Plus, Check } from "lucide-react";
 import { useCart } from "@/lib/cart";
 
-export function ProductCard({ product }: { product: Product }) {
+/**
+ * Transforms a Cloudinary URL to request an optimised size.
+ */
+function cloudinaryUrl(src: string, width: number): string {
+  if (src.includes("cloudinary.com")) {
+    return src.replace(/\/upload\//, `/upload/w_${width},q_auto,f_auto/`);
+  }
+  return src;
+}
+
+function ProductCardInner({ product }: { product: Product }) {
   const sold = product.availability === "sold";
   const { items, add } = useCart();
   const isInCart = items.some((i) => i.id === product.id);
 
   const imageSrc = product.imageUrl ?? product.images[0];
+  const optimisedSrc = imageSrc ? cloudinaryUrl(imageSrc, 800) : "";
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -24,7 +36,7 @@ export function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="group transition-all duration-200 ease-out">
+    <div className="group transition-all duration-200 ease-out product-card">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
@@ -33,7 +45,7 @@ export function ProductCard({ product }: { product: Product }) {
       >
         <div className="relative w-full aspect-square overflow-hidden bg-white">
           <img
-            src={imageSrc}
+            src={optimisedSrc}
             alt={product.title}
             loading="lazy"
             decoding="async"
@@ -78,3 +90,13 @@ export function ProductCard({ product }: { product: Product }) {
     </div>
   );
 }
+
+export const ProductCard = memo(ProductCardInner, (prev, next) => {
+  return (
+    prev.product.id === next.product.id &&
+    prev.product.title === next.product.title &&
+    prev.product.price === next.product.price &&
+    prev.product.availability === next.product.availability &&
+    prev.product.imageUrl === next.product.imageUrl
+  );
+});
