@@ -24,7 +24,7 @@ export function Newsletter() {
             setEmail("");
             setTimeout(() => setDone(false), 3000);
           }}
-          className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto"
+          className="flex max-w-[420px]"
         >
           <input
             type="email"
@@ -32,12 +32,12 @@ export function Newsletter() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 h-11 px-4 border border-hairline bg-paper text-[13px] text-ink outline-none focus:border-ink transition-colors placeholder:text-[#9ca3af]"
+            className="flex-1 bg-white text-[#111] border border-[#111] border-r-0 px-4 py-3 text-[14px] outline-none focus:border-[#2d2d2d] transition-colors placeholder:text-[#a09880] placeholder:opacity-100 rounded-none"
             aria-label="Email address"
           />
           <button
             type="submit"
-            className="h-11 px-6 bg-ink text-paper text-[12px] font-semibold uppercase tracking-widest hover:bg-black transition-colors whitespace-nowrap"
+            className="bg-[#111] text-white border border-[#111] px-5 py-3 text-[13px] font-bold uppercase tracking-widest hover:bg-[#2d2d2d] transition-colors cursor-pointer rounded-none whitespace-nowrap"
           >
             {done ? "Subscribed ✓" : "Subscribe"}
           </button>

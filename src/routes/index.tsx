@@ -80,7 +80,7 @@ function Home() {
               q: "",
               page: 1,
             }}
-            className="relative inline-flex h-12 items-center justify-center border-2 border-white bg-transparent text-white px-10 uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors mt-10 md:mt-14"
+            className="relative inline-flex h-12 items-center justify-center border-2 border-white/80 bg-white/10 text-white px-10 uppercase tracking-[0.2em] backdrop-blur-sm [-webkit-backdrop-filter:blur(6px)] hover:bg-white/20 hover:text-white transition-colors mt-10 md:mt-14 [@supports_not_(backdrop-filter:blur(1px))]:bg-black/45"
             style={{
               fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif",
               fontSize: "14px",
