@@ -177,6 +177,7 @@ function Shop() {
           <button
             type="button"
             onClick={() => setFilterOpen(!filterOpen)}
+            aria-expanded={filterOpen}
             className={`shrink-0 flex items-center gap-1.5 h-10 px-3 text-[11px] font-bold uppercase tracking-widest border transition-colors ${
               filterOpen || hasActiveFilters
                 ? "border-ink bg-ink text-paper"
@@ -257,83 +258,89 @@ function Shop() {
         </div>
 
         {/* Filter panel — compact, collapsible on mobile */}
-        {filterOpen && (
-          <div className="mb-4 p-3 border border-hairline bg-paper">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
-                  Category
-                </label>
-                <select
-                  value={search.tag}
-                  onChange={(e) => updateSearch({ tag: e.target.value, page: 1 })}
-                  className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
-                >
-                  <option value="all">All</option>
-                  {tags.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+        <div
+          className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none ${
+            filterOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
+        >
+          <div className="min-h-0">
+            <div className="mb-4 p-3 border border-hairline bg-paper">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={search.tag}
+                    onChange={(e) => updateSearch({ tag: e.target.value, page: 1 })}
+                    className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+                  >
+                    <option value="all">All</option>
+                    {tags.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
+                    Condition
+                  </label>
+                  <select
+                    value={search.condition}
+                    onChange={(e) => updateSearch({ condition: e.target.value, page: 1 })}
+                    className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+                  >
+                    <option value="all">All</option>
+                    {conditions.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
+                    Size
+                  </label>
+                  <select
+                    value={search.size}
+                    onChange={(e) => updateSearch({ size: e.target.value, page: 1 })}
+                    className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+                  >
+                    <option value="all">All</option>
+                    {sizes.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
+                    Price
+                  </label>
+                  <select
+                    value={search.priceRange}
+                    onChange={(e) => updateSearch({ priceRange: e.target.value, page: 1 })}
+                    className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+                  >
+                    <option value="all">All</option>
+                    <option value="under-700">Under EGP 700</option>
+                    <option value="700-900">EGP 700–900</option>
+                    <option value="over-900">Over EGP 900</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
-                  Condition
-                </label>
-                <select
-                  value={search.condition}
-                  onChange={(e) => updateSearch({ condition: e.target.value, page: 1 })}
-                  className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
+              {hasActiveFilters && (
+                <button
+                  onClick={() => {
+                    updateSearch({ tag: "all", size: "all", condition: "all", priceRange: "all", page: 1 });
+                    setFilterOpen(false);
+                  }}
+                  className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-concrete hover:text-ink transition-colors"
                 >
-                  <option value="all">All</option>
-                  {conditions.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
-                  Size
-                </label>
-                <select
-                  value={search.size}
-                  onChange={(e) => updateSearch({ size: e.target.value, page: 1 })}
-                  className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
-                >
-                  <option value="all">All</option>
-                  {sizes.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-concrete mb-1">
-                  Price
-                </label>
-                <select
-                  value={search.priceRange}
-                  onChange={(e) => updateSearch({ priceRange: e.target.value, page: 1 })}
-                  className="w-full h-9 appearance-none border border-hairline bg-paper pl-2 pr-6 text-[12px] font-medium text-ink outline-none hover:border-ink transition-colors cursor-pointer"
-                >
-                  <option value="all">All</option>
-                  <option value="under-700">Under EGP 700</option>
-                  <option value="700-900">EGP 700–900</option>
-                  <option value="over-900">Over EGP 900</option>
-                </select>
-              </div>
+                  <X className="h-3 w-3" /> Clear all filters
+                </button>
+              )}
             </div>
-            {hasActiveFilters && (
-              <button
-                onClick={() => {
-                  updateSearch({ tag: "all", size: "all", condition: "all", priceRange: "all", page: 1 });
-                  setFilterOpen(false);
-                }}
-                className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-concrete hover:text-ink transition-colors"
-              >
-                <X className="h-3 w-3" /> Clear all filters
-              </button>
-            )}
           </div>
-        )}
+        </div>
 
         {/* Product grid — always 2 cols on mobile, toggle on desktop */}
         <div
@@ -371,7 +378,7 @@ function Shop() {
           </div>
         )}
 
-        {hasMore && !query.trim() && (
+        {hasMore && (
           <div className="mt-14 text-center">
             <button
               onClick={() => updateSearch({ page: currentPage + 1 })}
