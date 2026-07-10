@@ -9,6 +9,8 @@ import {
   getDistinctConditionsFn,
 } from "@/lib/functions/products";
 
+const PER_PAGE = 16;
+
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
@@ -37,27 +39,19 @@ export const Route = createFileRoute("/shop")({
     q: search.q,
     pages: search.pages,
   }),
-  loader: async ({ location }) => {
-    const search = location.search as {
-      tag?: string;
-      size?: string;
-      condition?: string;
-      priceRange?: string;
-      sort?: string;
-      q?: string;
-      pages?: number;
-    };
+  loader: async ({ deps }) => {
+    const { tag, size, condition, priceRange, sort, q, pages } = deps;
+    const limit = pages * PER_PAGE;
     const [products, tagsRow, sizesRow, conditionsRow] = await Promise.all([
       listProductsFn({
         data: {
-          tag: search.tag === "all" ? undefined : (search.tag as never),
-          size: search.size === "all" ? undefined : search.size,
-          condition: search.condition === "all" ? undefined : (search.condition as never),
-          priceRange: search.priceRange === "all" ? undefined : (search.priceRange as never),
-          sort: search.sort as never,
-          page: 1,
-          perPage: 16,
-          q: search.q,
+          tag: tag === "all" ? undefined : (tag as never),
+          size: size === "all" ? undefined : size,
+          condition: condition === "all" ? undefined : (condition as never),
+          priceRange: priceRange === "all" ? undefined : (priceRange as never),
+          sort: sort as never,
+          limit,
+          q,
         },
       }),
       getDistinctTagsFn(),
@@ -78,90 +72,18 @@ function Shop() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const loader = Route.useLoaderData();
-  const { items, total, totalPages, page } = loader.products;
+  const { items, total, totalPages } = loader.products;
   const initialTags = Array.isArray(loader.tags) ? loader.tags : [];
   const initialSizes = Array.isArray(loader.sizes) ? loader.sizes : [];
   const [tags] = useState<string[]>(initialTags);
   const [sizes] = useState<string[]>(initialSizes);
   const [conditions, setConditions] = useState<string[]>([]);
 
-  // Accumulated items across pages
-  const [allItems, setAllItems] = useState(items);
-  const prevFilterKey = useRef<string>("");
-  const prevPages = useRef<number>(search.pages);
-
   useEffect(() => {
     if (Array.isArray(loader.conditions)) {
       setConditions(loader.conditions);
     }
   }, [loader.conditions]);
-
-  // On mount or when filters change, fetch additional pages if pages > 1
-  useEffect(() => {
-    const filterKey = `${search.tag}|${search.size}|${search.condition}|${search.priceRange}|${search.sort}|${search.q}`;
-
-    if (filterKey !== prevFilterKey.current) {
-      // Filters changed — reset to first page only
-      setAllItems(items);
-      prevFilterKey.current = filterKey;
-      prevPages.current = 1;
-      return;
-    }
-
-    // Same filters — check if we need to fetch more pages
-    if (search.pages > 1 && search.pages > prevPages.current) {
-      // Load more was clicked — fetch the next page
-      const pageToFetch = search.pages;
-      listProductsFn({
-        data: {
-          tag: search.tag === "all" ? undefined : (search.tag as never),
-          size: search.size === "all" ? undefined : search.size,
-          condition: search.condition === "all" ? undefined : (search.condition as never),
-          priceRange: search.priceRange === "all" ? undefined : (search.priceRange as never),
-          sort: search.sort as never,
-          page: pageToFetch,
-          perPage: 16,
-          q: search.q,
-        },
-      }).then((result) => {
-        setAllItems((prev) => {
-          const existingIds = new Set(prev.map((p) => p.id));
-          const newItems = result.items.filter((p) => !existingIds.has(p.id));
-          return [...prev, ...newItems];
-        });
-      });
-      prevPages.current = search.pages;
-    } else if (search.pages > 1 && prevPages.current === 1) {
-      // Page refresh with pages > 1 — fetch all pages up to search.pages
-      const fetchAllPages = async () => {
-        let accumulated = [...items];
-        for (let p = 2; p <= search.pages; p++) {
-          const result = await listProductsFn({
-            data: {
-              tag: search.tag === "all" ? undefined : (search.tag as never),
-              size: search.size === "all" ? undefined : search.size,
-              condition: search.condition === "all" ? undefined : (search.condition as never),
-              priceRange: search.priceRange === "all" ? undefined : (search.priceRange as never),
-              sort: search.sort as never,
-              page: p,
-              perPage: 16,
-              q: search.q,
-            },
-          });
-          const existingIds = new Set(accumulated.map((p) => p.id));
-          const newItems = result.items.filter((p) => !existingIds.has(p.id));
-          accumulated = [...accumulated, ...newItems];
-        }
-        setAllItems(accumulated);
-      };
-      fetchAllPages();
-      prevPages.current = search.pages;
-    } else {
-      // pages === 1 — just use loader data
-      setAllItems(items);
-      prevPages.current = 1;
-    }
-  }, [items, search.pages, search.tag, search.size, search.condition, search.priceRange, search.sort, search.q]);
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [query, setQuery] = useState(search.q || "");
@@ -408,16 +330,16 @@ function Shop() {
 
         {/* Product grid — always 2 cols on mobile, toggle on desktop */}
         <div
-          className={`grid gap-3 md:gap-5 grid-cols-2 ${
+          className={`grid gap-3 md:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${
             gridCols === 4 ? "md:grid-cols-4" : "md:grid-cols-2"
           }`}
         >
-          {allItems.map((p) => (
+          {items.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
 
-        {allItems.length === 0 && (
+        {items.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="text-[22px] font-bold text-ink mb-2">
               {search.q ? `No results for '${search.q}'` : "No pieces found"}

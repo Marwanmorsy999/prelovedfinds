@@ -53,6 +53,7 @@ const listParamsSchema = z.object({
   page: z.number().int().positive().optional(),
   perPage: z.number().int().positive().optional(),
   q: z.string().optional(),
+  limit: z.number().int().positive().optional(),
 });
 
 export const listProductsFn = createServerFn({ method: "GET" })

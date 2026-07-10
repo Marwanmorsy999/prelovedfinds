@@ -104,11 +104,11 @@ export function ProductInfo({ product }: { product: Product }) {
         <p className="text-[11px] text-[#9ca3af] mt-0.5">One of one — no restocks</p>
       </div>
 
-      <div className="space-y-2.5">
+      <div className="space-y-2.5 pb-[env(safe-area-inset-bottom)]">
         <button
           disabled={sold || alreadyInCart}
           onClick={handleAdd}
-          className="w-full h-12 bg-ink text-paper text-[13px] font-semibold uppercase tracking-widest hover:bg-black transition-colors disabled:bg-[#d1d5db] disabled:cursor-not-allowed disabled:text-[#9ca3af]"
+          className="w-full min-h-[44px] h-12 bg-ink text-paper text-[13px] font-semibold uppercase tracking-widest hover:bg-black transition-colors disabled:bg-[#d1d5db] disabled:cursor-not-allowed disabled:text-[#9ca3af]"
         >
           {sold
             ? "Sold Out"
@@ -134,7 +134,7 @@ export function ProductInfo({ product }: { product: Product }) {
               });
               navigate({ to: "/checkout" });
             }}
-            className="w-full h-12 border border-ink bg-paper text-ink text-[13px] font-semibold uppercase tracking-widest hover:bg-surface transition-colors"
+            className="w-full min-h-[44px] h-12 border border-ink bg-paper text-ink text-[13px] font-semibold uppercase tracking-widest hover:bg-surface transition-colors"
           >
             Buy it now
           </button>

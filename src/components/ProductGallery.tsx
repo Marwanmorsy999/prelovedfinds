@@ -47,12 +47,12 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
         <div
           ref={containerRef}
           onScroll={handleScroll}
-          className="flex overflow-x-auto snap-x snap-mandatory [-webkit-overflow-scrolling:touch] [scrollbar-width:none] touch-action-pan-x"
+          className="flex overflow-x-auto snap-x snap-mandatory [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [touch-action:pan-x]"
         >
           {slots.map((src, i) => (
             <div
               key={i}
-              className="flex-shrink-0 w-full snap-start aspect-[4/5] relative"
+              className="flex-shrink-0 w-full snap-start aspect-square relative"
               onDoubleClick={() => setZoomed(true)}
             >
               <ImageSlot
@@ -60,7 +60,7 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
                 alt={title}
                 className="w-full h-full"
                 width={800}
-                height={1000}
+                height={800}
                 loading={i === 0 ? "eager" : i === nextIndex ? "eager" : "lazy"}
                 fetchPriority={i === 0 ? "high" : undefined}
               />

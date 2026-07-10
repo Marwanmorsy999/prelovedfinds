@@ -98,6 +98,7 @@
       "Playfair Display", "Helvetica Neue", "Inter", ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: contain;
   }
 
   ::selection {
@@ -279,4 +280,10 @@
 /* ── Touch action for horizontal scroll areas ── */
 .touch-action-pan-x {
   touch-action: pan-x;
+}
+
+/* ── GPU compositing for animated elements ── */
+.gpu-composite {
+  will-change: transform;
+  transform: translateZ(0);
 }

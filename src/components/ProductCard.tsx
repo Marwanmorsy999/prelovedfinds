@@ -36,21 +36,21 @@ function ProductCardInner({ product }: { product: Product }) {
   };
 
   return (
-    <div className="group transition-all duration-200 ease-out product-card">
+    <div className="group transition-all duration-200 ease-out product-card cursor-pointer">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
         className="block"
         aria-label={`View ${product.title}`}
       >
-        <div className="relative w-full aspect-square overflow-hidden bg-white">
+        <div className="relative w-full aspect-[3/4] overflow-hidden bg-white">
           <img
             src={optimisedSrc}
             alt={product.title}
             loading="lazy"
             decoding="async"
             width={800}
-            height={800}
+            height={1067}
             className={`absolute inset-0 w-full h-full object-contain p-[8%] transition-transform duration-500 group-hover:scale-[1.04] ${sold ? "opacity-70" : ""}`}
           />
         </div>
@@ -79,11 +79,11 @@ function ProductCardInner({ product }: { product: Product }) {
         </div>
       )}
 
-      <Link to="/product/$id" params={{ id: product.id }} className="block mt-3 space-y-1">
-        <h3 className="text-[14px] font-medium text-ink leading-snug line-clamp-2">
+      <Link to="/product/$id" params={{ id: product.id }} className="block p-2 sm:p-3 space-y-1">
+        <h3 className="text-sm sm:text-base font-medium text-ink leading-snug line-clamp-2">
           {product.title}
         </h3>
-        <p className="text-[13px] text-concrete font-['IBM_Plex_Mono']">
+        <p className="text-sm font-['IBM_Plex_Mono'] text-concrete">
           {product.priceLabel ? product.priceLabel : `LE ${product.price.toLocaleString()}`}
         </p>
       </Link>

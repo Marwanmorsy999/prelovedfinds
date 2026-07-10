@@ -93,7 +93,7 @@ function ProductPage() {
         </p>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-14">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 py-10 md:py-14">
         <div className="grid gap-10 md:grid-cols-[3fr_2fr] md:gap-14">
           <ProductGallery images={product.images} title={product.title} />
           <ProductInfo product={product} />

@@ -13,6 +13,8 @@ export interface ListParams {
   page?: number;
   perPage?: number;
   q?: string;
+  /** When set, overrides page/perPage — fetches up to this many results (no offset) */
+  limit?: number;
 }
 
 export interface ProductInput {
@@ -143,17 +145,21 @@ export async function listProducts(params: ListParams = {}): Promise<ListResult>
     const total = countRow?.count ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / perPage));
 
+    // When limit is set, override page/perPage — fetch up to limit results with no offset
+    const effectiveLimit = params.limit ?? perPage;
+    const effectiveOffset = params.limit ? 0 : (page - 1) * perPage;
+
     const rows = await db
       .prepare(`SELECT * FROM products ${clause} ${sort} LIMIT ? OFFSET ?`)
-      .bind(...args, perPage, (page - 1) * perPage)
+      .bind(...args, effectiveLimit, effectiveOffset)
       .all<ProductRow>();
 
     return {
       items: (rows.results ?? []).map(rowToProduct),
       total,
-      page,
-      perPage,
-      totalPages,
+      page: params.limit ? 1 : page,
+      perPage: params.limit ? effectiveLimit : perPage,
+      totalPages: params.limit ? Math.max(1, Math.ceil(total / effectiveLimit)) : totalPages,
     };
   });
 }
