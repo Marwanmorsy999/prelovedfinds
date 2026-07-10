@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import type { Product } from "@/lib/products";
-import { ImageSlot } from "./ImageSlot";
 import { Plus, Check } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/lib/cart";
@@ -36,11 +35,15 @@ export function ProductCard({ product }: { product: Product }) {
         className="block"
         aria-label={`View ${product.title}`}
       >
-        <div className="relative overflow-hidden bg-surface aspect-[3/4]">
-          <ImageSlot
+        <div className="relative w-full aspect-square overflow-hidden bg-[#f6f4f0]">
+          <img
             src={imageSrc}
             alt={product.title}
-            className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${sold ? "opacity-70" : ""}`}
+            loading="lazy"
+            decoding="async"
+            width={800}
+            height={800}
+            className={`absolute inset-0 w-full h-full object-contain p-[8%] transition-transform duration-500 group-hover:scale-[1.04] ${sold ? "opacity-70" : ""}`}
           />
         </div>
       </Link>
@@ -50,7 +53,7 @@ export function ProductCard({ product }: { product: Product }) {
           <button
             onClick={handleAdd}
             disabled={inCart}
-            className="absolute bottom-0 left-0 right-0 translate-y-0 md:translate-y-full md:group-hover:translate-y-0 transition-transform duration-300 ease-out w-full bg-ink text-paper py-3 text-[12px] font-semibold uppercase tracking-widest hover:bg-black transition-colors disabled:bg-concrete flex items-center justify-center gap-2"
+            className="absolute bottom-0 left-0 right-0 translate-y-0 md:translate-y-full md:group-hover:translate-y-0 transition-all duration-200 ease-in-out w-full bg-ink text-paper py-3 text-[12px] font-semibold uppercase tracking-widest hover:bg-[#2d2d2d] active:bg-white active:text-black active:border-black active:scale-[0.97] [&]:[-webkit-tap-highlight-color:transparent] disabled:bg-concrete flex items-center justify-center gap-2"
             aria-label={inCart ? "Added to cart" : `Add ${product.title} to cart`}
           >
             {inCart ? (
