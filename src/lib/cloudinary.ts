@@ -6,8 +6,18 @@ const CLOUD_NAME =
   "dnggmrgmu";
 const UPLOAD_PRESET = "prelovedfinds5";
 
-export const cloudinaryUrl = (publicId: string, transforms = "q_auto,f_auto") =>
-  `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transforms}/${publicId}`;
+export const cloudinaryUrl = (publicIdOrUrl: string, transforms = "q_auto,f_auto") => {
+  if (!publicIdOrUrl) return "";
+  // If it's already a full Cloudinary URL, extract the public ID and rebuild with requested transforms
+  if (publicIdOrUrl.startsWith("http")) {
+    const match = publicIdOrUrl.match(/\/upload\/(?:[^/]+\/)?(.+)$/);
+    if (match) {
+      return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transforms}/${match[1]}`;
+    }
+    return publicIdOrUrl;
+  }
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transforms}/${publicIdOrUrl}`;
+};
 
 export async function uploadToCloudinary(file: File): Promise<string> {
   const form = new FormData();
