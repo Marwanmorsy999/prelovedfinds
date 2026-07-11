@@ -4,7 +4,7 @@ type LogoProps = {
   className?: string;
 };
 
-export function Logo({ className = "h-8 md:h-10 w-auto" }: LogoProps) {
+export function Logo({ className = "h-14 md:h-16 w-auto" }: LogoProps) {
   return (
     <img
       src={logoSrc}
