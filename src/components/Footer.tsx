@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { Logo } from "@/components/Logo";
 
 export function Footer({ whatsapp }: { whatsapp?: string }) {
   const waHref = whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}` : undefined;
@@ -12,7 +11,9 @@ export function Footer({ whatsapp }: { whatsapp?: string }) {
           {/* Brand */}
           <div>
             <Link to="/" className="inline-block mb-4 hover:opacity-80 transition-opacity">
-              <Logo className="h-16 w-auto" />
+              <span className="font-['Big_Shoulders_Display'] text-xl font-bold text-zinc-100 tracking-widest uppercase">
+                Preloved Finds
+              </span>
             </Link>
             <p className="text-[13px] text-zinc-400 leading-relaxed max-w-[220px]">
               Curated vintage & pre-owned pieces. One-of-one.

@@ -91,7 +91,7 @@ export function Navigation({ hasAnnouncement }: { hasAnnouncement?: boolean }) {
             className="flex items-center justify-center w-1/3 hover:opacity-85 transition-opacity duration-200"
             aria-label="Preloved Finds — home"
           >
-            <Logo className="h-8 md:h-10 w-auto" />
+            <Logo />
           </Link>
 
           {/* Right: admin link + cart */}
@@ -229,7 +229,7 @@ export function Navigation({ hasAnnouncement }: { hasAnnouncement?: boolean }) {
         aria-label="Navigation"
       >
         <div className="flex items-center justify-between px-4 h-16 border-b border-hairline">
-          <Logo className="h-8 md:h-10 w-auto" />
+          <Logo />
           <button
             onClick={() => setMobileOpen(false)}
             className="p-1 text-concrete hover:text-ink transition-colors"
