@@ -189,8 +189,8 @@ function Checkout() {
               <path d="M16 10a4 4 0 01-8 0" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-[#1a1a1a] mb-2">Your cart is empty</h1>
-          <p className="text-[14px] text-[#6b7280] mb-8">Add some vintage pieces to get started.</p>
+          <h1 className="text-2xl font-bold text-ink mb-2">Your cart is empty</h1>
+          <p className="text-[14px] text-concrete mb-8">Add some vintage pieces to get started.</p>
           <button
             onClick={() =>
               navigate({
@@ -216,9 +216,9 @@ function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-paper">
       {/* Top bar */}
-      <div className="border-b border-[#e5e7eb] bg-white">
+      <div className="border-b border-hairline bg-white">
         <div className="mx-auto max-w-5xl px-4 py-4 md:px-8">
           <div className="flex items-center gap-3">
             <button
@@ -236,13 +236,13 @@ function Checkout() {
                   },
                 })
               }
-              className="p-1.5 text-[#6b7280] hover:text-[#1a1a1a] transition-colors rounded-lg hover:bg-[#f5f5f5]"
+              className="p-1.5 text-concrete hover:text-ink transition-colors rounded-lg hover:bg-[#f5f5f5]"
               aria-label="Back to shop"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="h-5 w-px bg-[#e5e7eb]" />
-            <p className="text-[13px] font-semibold text-[#1a1a1a] tracking-tight">Checkout</p>
+            <p className="text-[13px] font-semibold text-ink tracking-tight">Checkout</p>
           </div>
         </div>
       </div>
@@ -252,11 +252,11 @@ function Checkout() {
           {/* Left column — form */}
           <div className="space-y-8">
             {/* Shipping information */}
-            <div className="bg-white rounded-xl border border-[#e5e7eb] overflow-hidden">
-              <div className="px-6 py-5 border-b border-[#e5e7eb]">
+            <div className="bg-white rounded-xl border border-hairline overflow-hidden">
+              <div className="px-6 py-5 border-b border-hairline">
                 <div className="flex items-center gap-2.5">
-                  <Truck className="h-4 w-4 text-[#6b7280]" />
-                  <h2 className="text-[13px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+                  <Truck className="h-4 w-4 text-concrete" />
+                  <h2 className="text-[13px] font-bold uppercase tracking-widest text-ink">
                     Shipping Information
                   </h2>
                 </div>
@@ -266,18 +266,18 @@ function Checkout() {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5"
+                    className="block text-[13px] font-semibold text-ink mb-1.5"
                   >
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-concrete" />
                     <input
                       id="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Your full name"
-                      className="w-full h-12 border border-[#e5e7eb] bg-white pl-10 pr-4 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg placeholder:text-[#9ca3af]"
+                      className="w-full h-12 border border-hairline bg-white pl-10 pr-4 text-[14px] text-ink outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg placeholder:text-concrete"
                     />
                   </div>
                 </div>
@@ -286,18 +286,18 @@ function Checkout() {
                 <div>
                   <label
                     htmlFor="phone"
-                    className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5"
+                    className="block text-[13px] font-semibold text-ink mb-1.5"
                   >
                     Phone Number
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-concrete" />
                     <input
                       id="phone"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="01xxxxxxxxx"
-                      className="w-full h-12 border border-[#e5e7eb] bg-white pl-10 pr-4 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg placeholder:text-[#9ca3af]"
+                      className="w-full h-12 border border-hairline bg-white pl-10 pr-4 text-[14px] text-ink outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg placeholder:text-concrete"
                     />
                   </div>
                 </div>
@@ -306,17 +306,17 @@ function Checkout() {
                 <div>
                   <label
                     htmlFor="governorate"
-                    className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5"
+                    className="block text-[13px] font-semibold text-ink mb-1.5"
                   >
                     Governorate
                   </label>
                   <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af] z-10" />
+                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-concrete z-10" />
                     <select
                       id="governorate"
                       value={governorate}
                       onChange={(e) => setGovernorate(e.target.value)}
-                      className="w-full h-12 appearance-none border border-[#e5e7eb] bg-white pl-10 pr-10 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg cursor-pointer"
+                      className="w-full h-12 appearance-none border border-hairline bg-white pl-10 pr-10 text-[14px] text-ink outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg cursor-pointer"
                     >
                       <option value="">Select governorate</option>
                       {EGYPTIAN_GOVERNORATES.map((g) => (
@@ -325,10 +325,10 @@ function Checkout() {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+                    <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-concrete" />
                   </div>
                   {governorate && (
-                    <p className="mt-1.5 text-[12px] text-[#6b7280] flex items-center gap-1">
+                    <p className="mt-1.5 text-[12px] text-concrete flex items-center gap-1">
                       <Truck className="h-3 w-3" />
                       Shipping to <strong>{governorate}</strong>: LE {shippingCost.toLocaleString()}
                     </p>
@@ -339,19 +339,19 @@ function Checkout() {
                 <div>
                   <label
                     htmlFor="address"
-                    className="block text-[13px] font-semibold text-[#1a1a1a] mb-1.5"
+                    className="block text-[13px] font-semibold text-ink mb-1.5"
                   >
                     Full Delivery Address
                   </label>
                   <div className="relative">
-                    <MapPin className="absolute left-3.5 top-3.5 h-4 w-4 text-[#9ca3af]" />
+                    <MapPin className="absolute left-3.5 top-3.5 h-4 w-4 text-concrete" />
                     <textarea
                       id="address"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="Street name, building number, apartment, landmark..."
                       rows={3}
-                      className="w-full border border-[#e5e7eb] bg-white pl-10 pr-4 py-3 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg placeholder:text-[#9ca3af] resize-none"
+                      className="w-full border border-hairline bg-white pl-10 pr-4 py-3 text-[14px] text-ink outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all rounded-lg placeholder:text-concrete resize-none"
                     />
                   </div>
                 </div>
@@ -359,12 +359,12 @@ function Checkout() {
             </div>
 
             {/* Trust indicators */}
-            <div className="bg-white rounded-xl border border-[#e5e7eb] px-6 py-5">
+            <div className="bg-white rounded-xl border border-hairline px-6 py-5">
               <div className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-[#9ca3af] mt-0.5 flex-shrink-0" />
+                <Shield className="h-5 w-5 text-concrete mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-[12px] font-semibold text-[#1a1a1a] mb-0.5">Secure Checkout</p>
-                  <p className="text-[12px] text-[#6b7280] leading-relaxed">
+                  <p className="text-[12px] font-semibold text-ink mb-0.5">Secure Checkout</p>
+                  <p className="text-[12px] text-concrete leading-relaxed">
                     Your information is safe. We'll contact you via WhatsApp to confirm your order.
                   </p>
                 </div>
@@ -374,9 +374,9 @@ function Checkout() {
 
           {/* Right column — order summary */}
           <div className="lg:sticky lg:top-8 lg:self-start">
-            <div className="bg-white rounded-xl border border-[#e5e7eb] overflow-hidden">
-              <div className="px-6 py-5 border-b border-[#e5e7eb]">
-                <h2 className="text-[13px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+            <div className="bg-white rounded-xl border border-hairline overflow-hidden">
+              <div className="px-6 py-5 border-b border-hairline">
+                <h2 className="text-[13px] font-bold uppercase tracking-widest text-ink">
                   Order Summary
                 </h2>
               </div>
@@ -387,15 +387,15 @@ function Checkout() {
                   {items.map((item) => (
                     <div key={item.id} className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-medium text-[#1a1a1a] truncate">
+                        <p className="text-[13px] font-medium text-ink truncate">
                           {item.name}
                         </p>
                         {item.size && (
-                          <p className="text-[11px] text-[#9ca3af] mt-0.5">Size: {item.size}</p>
+                          <p className="text-[11px] text-concrete mt-0.5">Size: {item.size}</p>
                         )}
-                        <p className="text-[11px] text-[#9ca3af]">Qty 1</p>
+                        <p className="text-[11px] text-concrete">Qty 1</p>
                       </div>
-                      <p className="text-[13px] font-medium text-[#1a1a1a] whitespace-nowrap">
+                      <p className="text-[13px] font-medium text-ink whitespace-nowrap">
                         LE {item.price.toLocaleString()}
                       </p>
                     </div>
@@ -404,20 +404,20 @@ function Checkout() {
               </div>
 
               {/* Totals */}
-              <div className="px-6 py-5 border-t border-[#e5e7eb] space-y-3">
+              <div className="px-6 py-5 border-t border-hairline space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-[#6b7280]">Subtotal</span>
-                  <span className="text-[13px] text-[#1a1a1a]">LE {subtotal.toLocaleString()}</span>
+                  <span className="text-[13px] text-concrete">Subtotal</span>
+                  <span className="text-[13px] text-ink">LE {subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-[#6b7280]">Shipping</span>
-                  <span className="text-[13px] text-[#1a1a1a] font-medium">
+                  <span className="text-[13px] text-concrete">Shipping</span>
+                  <span className="text-[13px] text-ink font-medium">
                     {governorate ? `LE ${shippingCost.toLocaleString()}` : "—"}
                   </span>
                 </div>
-                <div className="border-t border-[#e5e7eb] pt-3 flex items-center justify-between">
-                  <span className="text-[14px] font-bold text-[#1a1a1a]">Total</span>
-                  <span className="text-[18px] font-bold text-[#1a1a1a]">
+                <div className="border-t border-hairline pt-3 flex items-center justify-between">
+                  <span className="text-[14px] font-bold text-ink">Total</span>
+                  <span className="text-[18px] font-bold text-ink">
                     LE {total.toLocaleString()}
                   </span>
                 </div>
@@ -440,7 +440,7 @@ function Checkout() {
                     "Place Order"
                   )}
                 </button>
-                <p className="text-[11px] text-[#9ca3af] text-center mt-3">
+                <p className="text-[11px] text-concrete text-center mt-3">
                   You'll receive a WhatsApp confirmation after ordering.
                 </p>
               </div>

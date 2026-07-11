@@ -3,6 +3,7 @@ interface AppEnv {
   SESSION_SECRET?: string;
   CLOUDINARY_CLOUD_NAME?: string;
   CLOUDINARY_UNSIGNED_PRESET?: string;
+  COOKIE_SECURE?: string;
 }
 
 declare global {
@@ -17,6 +18,7 @@ function resolveEnv(): AppEnv {
     SESSION_SECRET: process.env.SESSION_SECRET,
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
     CLOUDINARY_UNSIGNED_PRESET: process.env.CLOUDINARY_UNSIGNED_PRESET,
+    COOKIE_SECURE: process.env.COOKIE_SECURE,
   };
 }
 

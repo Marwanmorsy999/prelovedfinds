@@ -7,7 +7,7 @@ export function Newsletter() {
   return (
     <section className="border-t border-hairline bg-bg-light">
       <div className="mx-auto max-w-xl px-4 py-16 text-center md:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9ca3af] mb-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-concrete mb-3">
           Newsletter
         </p>
         <h2 className="text-[24px] font-bold uppercase tracking-widest text-ink mb-2">
@@ -43,7 +43,7 @@ export function Newsletter() {
           </button>
         </form>
 
-        <p className="mt-4 text-[11px] text-[#9ca3af] uppercase tracking-widest">
+        <p className="mt-4 text-[11px] text-concrete uppercase tracking-widest">
           No spam. Unsubscribe anytime.
         </p>
       </div>

@@ -132,7 +132,7 @@ function AdminErrorComponent({ error, reset }: { error: Error; reset: () => void
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-[18px] font-semibold text-[#1a1a1a]">Couldn't load admin data</h1>
+        <h1 className="text-[18px] font-semibold text-ink">Couldn't load admin data</h1>
         {import.meta.env?.DEV && (
           <pre className="mt-4 text-left text-[12px] text-red-600 bg-[#111] p-4 overflow-auto max-h-64">
             {error.message}
@@ -140,7 +140,7 @@ function AdminErrorComponent({ error, reset }: { error: Error; reset: () => void
             {error.stack}
           </pre>
         )}
-        <p className="mt-2 text-[13px] text-[#6b7280]">
+        <p className="mt-2 text-[13px] text-concrete">
           {import.meta.env?.DEV
             ? "Check the server logs for details."
             : "Something went wrong on our end — check the server logs (console) and try again later."}
@@ -1120,15 +1120,12 @@ function AdminDashboard() {
                 </label>
                 <select
                   value={(() => {
-                    const raw = typeof search === "string" ? search : "";
-                    return raw.includes("tag=") ? "" : "all";
+                    const params = new URLSearchParams(typeof search === "string" ? search : "");
+                    return params.get("tag") ?? "all";
                   })()}
                   onChange={(e) => {
                     const v = e.target.value;
-                    const s =
-                      typeof search === "string"
-                        ? new URLSearchParams(search)
-                        : new URLSearchParams();
+                    const s = new URLSearchParams(typeof search === "string" ? search : "");
                     if (v === "all") s.delete("tag");
                     else s.set("tag", v);
                     s.delete("page");
@@ -1149,12 +1146,13 @@ function AdminDashboard() {
                   Size
                 </label>
                 <select
+                  value={(() => {
+                    const params = new URLSearchParams(typeof search === "string" ? search : "");
+                    return params.get("size") ?? "all";
+                  })()}
                   onChange={(e) => {
                     const v = e.target.value;
-                    const s =
-                      typeof search === "string"
-                        ? new URLSearchParams(search)
-                        : new URLSearchParams();
+                    const s = new URLSearchParams(typeof search === "string" ? search : "");
                     if (v === "all") s.delete("size");
                     else s.set("size", v);
                     s.delete("page");
@@ -1175,12 +1173,13 @@ function AdminDashboard() {
                   Condition
                 </label>
                 <select
+                  value={(() => {
+                    const params = new URLSearchParams(typeof search === "string" ? search : "");
+                    return params.get("condition") ?? "all";
+                  })()}
                   onChange={(e) => {
                     const v = e.target.value;
-                    const s =
-                      typeof search === "string"
-                        ? new URLSearchParams(search)
-                        : new URLSearchParams();
+                    const s = new URLSearchParams(typeof search === "string" ? search : "");
                     if (v === "all") s.delete("condition");
                     else s.set("condition", v);
                     s.delete("page");
@@ -1201,12 +1200,13 @@ function AdminDashboard() {
                   Availability
                 </label>
                 <select
+                  value={(() => {
+                    const params = new URLSearchParams(typeof search === "string" ? search : "");
+                    return params.get("availability") ?? "all";
+                  })()}
                   onChange={(e) => {
                     const v = e.target.value;
-                    const s =
-                      typeof search === "string"
-                        ? new URLSearchParams(search)
-                        : new URLSearchParams();
+                    const s = new URLSearchParams(typeof search === "string" ? search : "");
                     if (v === "all") s.delete("availability");
                     else s.set("availability", v);
                     s.delete("page");

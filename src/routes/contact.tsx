@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Instagram, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { useSettings } from "@/lib/settings-context";
+import { submitContactFn } from "@/lib/functions/contact";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -19,14 +20,26 @@ export const Route = createFileRoute("/contact")({
 
 function Contact() {
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const { whatsapp } = useSettings();
   const waHref = whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}` : null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Contact form submitted:", formData);
-    setSent(true);
+    setError("");
+    setSubmitting(true);
+    try {
+      await submitContactFn({
+        data: { name: formData.name, email: formData.email, message: formData.message },
+      });
+      setSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (sent) {
@@ -37,10 +50,10 @@ function Contact() {
             Message sent ✓
           </p>
         </div>
-        <p className="text-[14px] text-[#6b7280]">We'll get back to you within 24 hours.</p>
+        <p className="text-[14px] text-concrete">We'll get back to you within 24 hours.</p>
         <Link
           to="/"
-          className="mt-8 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors"
+          className="mt-8 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-ink hover:bg-[#1a1a1a] hover:text-white transition-colors"
         >
           Back to Home
         </Link>
@@ -51,13 +64,13 @@ function Contact() {
   return (
     <div className="page-enter">
       {/* Header */}
-      <div className="border-b border-[#e5e7eb] px-4 py-8 md:px-8">
+      <div className="border-b border-hairline px-4 py-8 md:px-8">
         <div className="mx-auto max-w-2xl">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-[#9ca3af] mb-1">Support</p>
-          <h1 className="text-[28px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-concrete mb-1">Support</p>
+          <h1 className="text-[28px] font-bold uppercase tracking-widest text-ink">
             Contact Us
           </h1>
-          <p className="mt-2 text-[14px] text-[#6b7280]">
+          <p className="mt-2 text-[14px] text-concrete">
             Questions about an order, sizing, or a specific piece? We'll get back to you within 24
             hours.
           </p>
@@ -94,7 +107,7 @@ function Contact() {
           <div>
             <label
               htmlFor="message"
-              className="block text-[11px] font-semibold uppercase tracking-widest text-[#1a1a1a] mb-2"
+              className="block text-[11px] font-semibold uppercase tracking-widest text-ink mb-2"
             >
               Message <span className="text-[#dc2626]">*</span>
             </label>
@@ -104,21 +117,27 @@ function Contact() {
               rows={6}
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              className="w-full border border-[#e5e7eb] bg-white px-4 py-3 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors resize-none"
+              className="w-full border border-hairline bg-white px-4 py-3 text-[14px] text-ink outline-none focus:border-[#1a1a1a] transition-colors resize-none"
             />
           </div>
 
+          {error && (
+            <div className="border border-[#fecaca] bg-[#fef2f2] px-4 py-3">
+              <p className="text-[12px] text-[#dc2626]">{error}</p>
+            </div>
+          )}
           <button
             type="submit"
-            className="h-12 bg-[#1a1a1a] text-white px-10 text-[12px] font-semibold uppercase tracking-widest hover:bg-black transition-colors"
+            disabled={submitting}
+            className="h-12 bg-[#1a1a1a] text-white px-10 text-[12px] font-semibold uppercase tracking-widest hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send Message
+            {submitting ? "Sending..." : "Send Message"}
           </button>
         </form>
 
         {/* Direct contact */}
-        <div className="mt-14 border-t border-[#e5e7eb] pt-10">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7280] mb-5">
+        <div className="mt-14 border-t border-hairline pt-10">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-concrete mb-5">
             Or reach us directly
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:gap-8">
@@ -126,7 +145,7 @@ function Contact() {
               href="https://www.instagram.com/preloved.finds._"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2.5 text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+              className="flex items-center gap-2.5 text-[13px] text-ink hover:text-concrete transition-colors"
             >
               <Instagram className="h-4 w-4" />
               @preloved.finds._
@@ -136,7 +155,7 @@ function Contact() {
                 href={waHref}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2.5 text-[13px] text-[#1a1a1a] hover:text-[#6b7280] transition-colors"
+                className="flex items-center gap-2.5 text-[13px] text-ink hover:text-concrete transition-colors"
               >
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp
@@ -168,7 +187,7 @@ function Field({
     <div>
       <label
         htmlFor={id}
-        className="block text-[11px] font-semibold uppercase tracking-widest text-[#1a1a1a] mb-2"
+        className="block text-[11px] font-semibold uppercase tracking-widest text-ink mb-2"
       >
         {label}
         {required && <span className="text-[#dc2626] ml-1">*</span>}
@@ -179,7 +198,7 @@ function Field({
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full border border-[#e5e7eb] bg-white px-4 py-3 text-[14px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors"
+        className="w-full border border-hairline bg-white px-4 py-3 text-[14px] text-ink outline-none focus:border-[#1a1a1a] transition-colors"
       />
     </div>
   );

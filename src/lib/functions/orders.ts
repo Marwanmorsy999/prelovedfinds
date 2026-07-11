@@ -107,6 +107,13 @@ export const getOrderFn = createServerFn({ method: "GET" })
     return getOrderById(data.id);
   });
 
+/** Public lookup — no auth required. Returns null for missing/invalid orders. */
+export const getPublicOrderFn = createServerFn({ method: "GET" })
+  .validator(z.object({ id: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    return getOrderById(data.id);
+  });
+
 export const createOrderFn = createServerFn({ method: "POST" })
   .validator(
     z.object({

@@ -3,13 +3,11 @@ import { Link } from "@tanstack/react-router";
 import type { Product } from "@/lib/products";
 import { Plus, Check } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 
-/**
- * Transforms a Cloudinary URL to request an optimised size.
- */
-function cloudinaryUrl(src: string, width: number): string {
+function cloudinaryUrlWithWidth(src: string, width: number): string {
   if (src.includes("cloudinary.com")) {
-    return src.replace(/\/upload\//, `/upload/w_${width},q_auto,f_auto/`);
+    return cloudinaryUrl(src, `w_${width},q_auto,f_auto`);
   }
   return src;
 }
@@ -20,7 +18,7 @@ function ProductCardInner({ product }: { product: Product }) {
   const isInCart = items.some((i) => i.id === product.id);
 
   const imageSrc = product.imageUrl ?? product.images[0];
-  const optimisedSrc = imageSrc ? cloudinaryUrl(imageSrc, 800) : "";
+  const optimisedSrc = imageSrc ? cloudinaryUrlWithWidth(imageSrc, 800) : "";
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();

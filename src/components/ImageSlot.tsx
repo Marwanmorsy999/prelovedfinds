@@ -1,18 +1,9 @@
 import { useMemo } from "react";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 
-const CLOUD_NAME = "dnggmrgmu";
-
-/**
- * Transforms a Cloudinary URL to request an optimised size.
- * Falls back to the original URL for non-Cloudinary images.
- */
-function cloudinaryUrl(src: string, width: number): string {
+function cloudinaryUrlWithWidth(src: string, width: number): string {
   if (src.includes("cloudinary.com")) {
-    // Replace /upload/ with /upload/w_{width},q_auto,f_auto/
-    return src.replace(
-      /\/upload\//,
-      `/upload/w_${width},q_auto,f_auto/`,
-    );
+    return cloudinaryUrl(src, `w_${width},q_auto,f_auto`);
   }
   return src;
 }
@@ -35,7 +26,7 @@ export function ImageSlot({
   fetchPriority?: "high" | "low" | "auto";
 }) {
   const optimisedSrc = useMemo(
-    () => (src ? cloudinaryUrl(src, width) : undefined),
+    () => (src ? cloudinaryUrlWithWidth(src, width) : undefined),
     [src, width],
   );
 

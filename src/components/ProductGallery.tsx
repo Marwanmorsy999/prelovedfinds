@@ -1,11 +1,29 @@
 import { useState, useRef, useEffect } from "react";
 import { ImageSlot } from "./ImageSlot";
 import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 
 export function ProductGallery({ images, title }: { images: string[]; title: string }) {
   const [active, setActive] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
+  const closeZoomRef = useRef<HTMLButtonElement>(null);
+  const lastTap = useRef(0);
+
+  // Escape key dismisses lightbox
+  useEffect(() => {
+    if (!zoomed) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setZoomed(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [zoomed]);
+
+  // Focus the close button when zoom opens
+  useEffect(() => {
+    if (zoomed) closeZoomRef.current?.focus();
+  }, [zoomed]);
 
   const slots = images.filter(Boolean).length ? images.filter(Boolean) : [undefined];
 
@@ -39,12 +57,19 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
   // Preload next image eagerly
   const nextIndex = active + 1 < slots.length ? active + 1 : -1;
 
+  const handleTap = () => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) setZoomed(true);
+    lastTap.current = now;
+  };
+
   return (
     <div className="space-y-3">
       {/* Main gallery with CSS scroll snapping — no JS drag/swipe */}
       <div className="relative overflow-hidden bg-surface select-none group">
         <div
           ref={galleryRef}
+          onTouchEnd={handleTap}
           className="flex overflow-x-scroll snap-x snap-mandatory [scroll-behavior:smooth] [scrollbar-width:none] [-ms-overflow-style:none] [touch-action:pan-x] [-webkit-overflow-scrolling:touch] [will-change:scroll-position] [&::-webkit-scrollbar]:hidden"
         >
           {slots.map((src, i) => (
@@ -67,10 +92,10 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
           ))}
         </div>
 
-        {/* Zoom hint */}
+        {/* Zoom hint — always visible on touch devices */}
         <button
           onClick={() => setZoomed(true)}
-          className="absolute top-3 right-3 bg-white/80 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white"
+          className="absolute bottom-3 right-3 bg-white/80 p-2 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity duration-200 hover:bg-white"
           aria-label="Zoom image"
         >
           <ZoomIn className="h-4 w-4 text-ink" />
@@ -157,17 +182,21 @@ export function ProductGallery({ images, title }: { images: string[]; title: str
       )}
 
       {/* Zoom lightbox with scale-in animation */}
-      {zoomed && (
+      {zoomed && slots[active] && (
         <div
           className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-black/90 cursor-zoom-out animate-[zoomFadeIn_0.25s_ease-out]"
           onClick={() => setZoomed(false)}
+          role="dialog"
+          aria-label="Photo zoom"
         >
           <img
-            src={slots[active]}
+            src={slots[active].includes("cloudinary.com") ? cloudinaryUrl(slots[active], "q_auto,f_auto,w_1200") : slots[active]}
             alt={title}
             className="max-h-[90vh] max-w-[90vw] object-contain"
           />
           <button
+            ref={closeZoomRef}
+            autoFocus
             onClick={(e) => {
               e.stopPropagation();
               setZoomed(false);

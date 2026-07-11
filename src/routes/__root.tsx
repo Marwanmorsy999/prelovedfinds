@@ -143,7 +143,7 @@ export const Route = createRootRouteWithContext<{
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;700;900&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap",
       },
     ],
   }),
@@ -175,6 +175,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient, announcement, whatsapp } = Route.useRouteContext();
+  const hasAnnouncement = Boolean(announcement);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -182,8 +183,8 @@ function RootComponent() {
         <SettingsCtx.Provider value={{ whatsapp }}>
           <div className="flex min-h-screen flex-col bg-white">
             <AnnouncementBanner announcement={sanitize(announcement)} />
-            <Navigation />
-            <main className="flex-1 pt-[80px]" id="main-content">
+            <Navigation hasAnnouncement={hasAnnouncement} />
+            <main className={`flex-1 ${hasAnnouncement ? "pt-[120px]" : "pt-[80px]"}`} id="main-content">
               <Outlet />
             </main>
             <Footer whatsapp={sanitize(whatsapp)} />

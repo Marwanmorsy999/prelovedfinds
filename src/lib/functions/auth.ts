@@ -8,6 +8,7 @@ import {
 } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { verifyPassword, signSessionToken } from "@/lib/auth.ts";
+import { getEnv } from "@/lib/env";
 
 const SESSION_COOKIE = "session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
@@ -32,10 +33,11 @@ function checkRateLimit(ip: string): boolean {
 
 async function issueSession() {
   const token = await signSessionToken();
+  const env = getEnv();
   setCookie(SESSION_COOKIE, token, {
-    httpOnly: true, // prevents JS access — security hardening
-    secure: true, // HTTPS only
-    sameSite: "strict",
+    httpOnly: true,
+    secure: (env.COOKIE_SECURE ?? "true") === "true",
+    sameSite: "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE,
   });

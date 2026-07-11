@@ -1,7 +1,13 @@
 // Cloudinary public config — safe to expose client-side (not secrets).
 // These match wrangler.jsonc vars: CLOUDINARY_CLOUD_NAME / CLOUDINARY_UNSIGNED_PRESET
-const CLOUD_NAME = "dnggmrgmu";
+const CLOUD_NAME =
+  import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ??
+  (globalThis as any).CLOUDINARY_CLOUD_NAME ??
+  "dnggmrgmu";
 const UPLOAD_PRESET = "prelovedfinds5";
+
+export const cloudinaryUrl = (publicId: string, transforms = "q_auto,f_auto") =>
+  `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transforms}/${publicId}`;
 
 export async function uploadToCloudinary(file: File): Promise<string> {
   const form = new FormData();

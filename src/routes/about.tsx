@@ -24,7 +24,12 @@ function About() {
       <section className="relative h-[60vh] overflow-hidden">
         <img
           src={aboutFounder}
-          alt="Founder at Cairo market"
+          alt="About Preloved Finds"
+          width={1200}
+          height={600}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -41,7 +46,7 @@ function About() {
       {/* Story */}
       <section className="mx-auto max-w-3xl px-4 py-16 md:px-8 md:py-20">
         <div className="space-y-6 text-[15px] leading-relaxed text-[#374151]">
-          <p className="text-[26px] md:text-[28px] font-bold uppercase tracking-tight text-[#1a1a1a]">
+          <p className="text-[26px] md:text-[28px] font-bold uppercase tracking-tight text-ink">
             Welcome to preloved finds
           </p>
 

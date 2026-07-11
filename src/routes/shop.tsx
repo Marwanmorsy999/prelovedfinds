@@ -107,8 +107,7 @@ function Shop() {
     }, 200);
   };
 
-  // Default 2 cols on mobile (handled by CSS), 4 on desktop
-  const [gridCols, setGridCols] = useState<2 | 4>(4);
+  const [viewMode, setViewMode] = useState<"2col" | "4col">("4col");
 
   const updateSearch = (patch: Record<string, unknown>) =>
     navigate({ to: "/shop", search: { ...search, ...patch } as typeof search, replace: true });
@@ -126,14 +125,14 @@ function Shop() {
       <div className="border-b border-hairline px-4 py-7 md:px-8">
         <div className="mx-auto max-w-7xl flex items-end justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-[#9ca3af] mb-1">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-concrete mb-1">
               Collections
             </p>
             <h1 className="text-[26px] font-bold uppercase tracking-widest text-ink">
               {search.tag !== "all" ? search.tag : "Shop All"}
             </h1>
           </div>
-          <p className="text-[12px] text-[#9ca3af] mb-1">{total} items</p>
+          <p className="text-[12px] text-concrete mb-1">{total} items</p>
         </div>
       </div>
 
@@ -141,18 +140,18 @@ function Shop() {
         {/* Search + Filter toggle + Sort — one row */}
         <div className="flex items-center gap-2 mb-4">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-concrete" />
             <input
               value={query}
               onChange={(e) => handleQueryChange(e.target.value)}
               placeholder="Search..."
-              className="h-10 w-full border border-hairline bg-paper pl-9 pr-8 text-[13px] text-ink outline-none focus:border-ink transition-colors placeholder:text-[#9ca3af]"
+              className="h-10 w-full border border-hairline bg-paper pl-9 pr-8 text-[13px] text-ink outline-none focus:border-ink transition-colors placeholder:text-concrete"
               aria-label="Search products"
             />
             {query && (
               <button
                 onClick={() => handleQueryChange("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-ink"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-concrete hover:text-ink"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -208,19 +207,19 @@ function Shop() {
 
           {/* Grid toggle — desktop only */}
           <div className="hidden md:flex gap-1 shrink-0">
-            {([2, 4] as const).map((n) => (
+            {(["2col", "4col"] as const).map((mode) => (
               <button
-                key={n}
-                onClick={() => setGridCols(n)}
+                key={mode}
+                onClick={() => setViewMode(mode)}
                 className={`h-9 w-9 flex items-center justify-center border transition-colors ${
-                  gridCols === n
+                  viewMode === mode
                     ? "border-ink bg-ink text-paper"
                     : "border-hairline text-concrete hover:border-ink"
                 }`}
-                aria-label={`${n} columns`}
+                aria-label={mode === "2col" ? "2 columns" : "4 columns"}
               >
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor">
-                  {n === 2 ? (
+                  {mode === "2col" ? (
                     <>
                       <rect x="0" y="0" width="5.5" height="13" />
                       <rect x="7.5" y="0" width="5.5" height="13" />
@@ -330,9 +329,11 @@ function Shop() {
 
         {/* Product grid — always 2 cols on mobile, toggle on desktop */}
         <div
-          className={`grid gap-3 md:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${
-            gridCols === 4 ? "md:grid-cols-4" : "md:grid-cols-2"
-          }`}
+          className={
+            viewMode === "2col"
+              ? "grid grid-cols-2 gap-3"
+              : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+          }
         >
           {items.map((p) => (
             <ProductCard key={p.id} product={p} />
@@ -344,7 +345,7 @@ function Shop() {
             <p className="text-[22px] font-bold text-ink mb-2">
               {search.q ? `No results for '${search.q}'` : "No pieces found"}
             </p>
-            <p className="text-[13px] text-[#9ca3af] mb-6">
+            <p className="text-[13px] text-concrete mb-6">
               Try different filters or clear everything
             </p>
             <button

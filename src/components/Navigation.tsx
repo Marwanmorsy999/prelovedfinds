@@ -5,7 +5,7 @@ import { useCart } from "@/lib/cart";
 import { ImageSlot } from "@/components/ImageSlot";
 import { Logo } from "@/components/Logo";
 
-export function Navigation() {
+export function Navigation({ hasAnnouncement }: { hasAnnouncement?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const admin = useRouterState({
@@ -53,7 +53,7 @@ export function Navigation() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-paper border-b border-hairline transition-all duration-300">
+      <header className={`fixed left-0 right-0 z-[100] bg-paper border-b border-hairline transition-all duration-300 ${hasAnnouncement ? "top-10" : "top-0"}`}>
         <div className="mx-auto max-w-7xl flex h-14 md:h-16 items-center justify-between px-4 md:px-8">
           {/* Left: hamburger mobile / nav links desktop */}
           <div className="flex items-center gap-8 w-1/3">
@@ -141,7 +141,7 @@ export function Navigation() {
               setCartOpen(false);
               cartTriggerRef.current?.focus();
             }}
-            className="p-1 text-[#9ca3af] hover:text-ink transition-colors rounded-full hover:bg-surface"
+            className="p-1 text-concrete hover:text-ink transition-colors rounded-full hover:bg-surface"
             aria-label="Close cart"
           >
             <X className="h-5 w-5" />
@@ -155,7 +155,7 @@ export function Navigation() {
                 <ShoppingBag className="h-7 w-7 text-[#d1d5db]" />
               </div>
               <p className="text-[14px] font-semibold text-ink">Your bag is empty</p>
-              <p className="text-[12px] text-[#9ca3af]">Add some pieces to get started</p>
+              <p className="text-[12px] text-concrete">Add some pieces to get started</p>
               <button
                 onClick={() => setCartOpen(false)}
                 className="mt-2 h-10 bg-ink text-paper px-6 text-[11px] font-bold uppercase tracking-widest hover:bg-concrete transition-colors"
@@ -178,7 +178,7 @@ export function Navigation() {
                   <p className="text-[13px] font-medium text-ink leading-snug line-clamp-2">
                     {item.name}
                   </p>
-                  <p className="text-[12px] text-[#9ca3af] mt-1">
+                  <p className="text-[12px] text-concrete mt-1">
                     LE {item.price.toLocaleString()}
                   </p>
                 </div>
@@ -187,7 +187,7 @@ export function Navigation() {
                     e.stopPropagation();
                     remove(item.id);
                   }}
-                  className="mt-0.5 p-1.5 text-[#9ca3af] hover:text-red-500 active:text-red-700 hover:bg-red-50 active:bg-red-100 transition-colors rounded flex-shrink-0"
+                  className="mt-0.5 p-1.5 text-concrete hover:text-red-500 active:text-red-700 hover:bg-red-50 active:bg-red-100 transition-colors rounded flex-shrink-0"
                   aria-label={`Remove ${item.name}`}
                 >
                   <X className="h-3.5 w-3.5" />
@@ -213,7 +213,7 @@ export function Navigation() {
             </button>
             <button
               onClick={() => setCartOpen(false)}
-              className="w-full h-10 text-[11px] font-semibold uppercase tracking-widest text-[#9ca3af] hover:text-ink transition-colors"
+              className="w-full h-10 text-[11px] font-semibold uppercase tracking-widest text-concrete hover:text-ink transition-colors"
             >
               Continue Shopping
             </button>
@@ -232,7 +232,7 @@ export function Navigation() {
           <Logo className="h-8 md:h-10 w-auto" />
           <button
             onClick={() => setMobileOpen(false)}
-            className="p-1 text-[#9ca3af] hover:text-ink transition-colors"
+            className="p-1 text-concrete hover:text-ink transition-colors"
             aria-label="Close menu"
           >
             <X className="h-6 w-6" />
@@ -253,7 +253,7 @@ export function Navigation() {
           })}
         </nav>
         <div className="mt-auto px-6 pb-8 pt-6">
-          <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
+          <p className="text-[11px] text-concrete uppercase tracking-widest">
             Preloved Finds · Cairo
           </p>
         </div>

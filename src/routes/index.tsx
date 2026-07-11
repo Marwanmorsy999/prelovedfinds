@@ -38,34 +38,13 @@ function Home() {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <div className="absolute inset-0 bg-black/40 pointer-events-none" />
           <div className="relative space-y-3 md:space-y-4">
-            <p
-              className="text-white uppercase tracking-[0.15em]"
-              style={{
-                fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif",
-                fontSize: "clamp(20px, 3.5vw, 32px)",
-                lineHeight: 1.2,
-              }}
-            >
+            <p className="text-white uppercase tracking-[0.15em] font-['Big_Shoulders_Display'] font-bold text-[clamp(20px,3.5vw,32px)] leading-[1.2]">
               WORN ONCE.
             </p>
-            <p
-              className="text-white uppercase tracking-[0.15em]"
-              style={{
-                fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif",
-                fontSize: "clamp(20px, 3.5vw, 32px)",
-                lineHeight: 1.2,
-              }}
-            >
+            <p className="text-white uppercase tracking-[0.15em] font-['Big_Shoulders_Display'] font-bold text-[clamp(20px,3.5vw,32px)] leading-[1.2]">
               WORN WELL.
             </p>
-            <p
-              className="text-white uppercase tracking-[0.15em]"
-              style={{
-                fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif",
-                fontSize: "clamp(20px, 3.5vw, 32px)",
-                lineHeight: 1.2,
-              }}
-            >
+            <p className="text-white uppercase tracking-[0.15em] font-['Big_Shoulders_Display'] font-bold text-[clamp(20px,3.5vw,32px)] leading-[1.2]">
               NOW YOURS.
             </p>
           </div>
@@ -80,11 +59,7 @@ function Home() {
               q: "",
               pages: 1,
             }}
-            className="relative inline-flex h-12 items-center justify-center border-2 border-white/80 bg-white/10 text-white px-10 uppercase tracking-[0.2em] backdrop-blur-sm [-webkit-backdrop-filter:blur(6px)] hover:bg-white/20 hover:text-white transition-colors mt-10 md:mt-14 [@supports_not_(backdrop-filter:blur(1px))]:bg-black/45"
-            style={{
-              fontFamily: "'Helvetica Neue Bold', 'Helvetica Neue', 'Inter', sans-serif",
-              fontSize: "14px",
-            }}
+            className="relative inline-flex h-12 items-center justify-center border-2 border-white/80 bg-white/10 text-white px-10 uppercase tracking-[0.2em] backdrop-blur-sm [-webkit-backdrop-filter:blur(6px)] hover:bg-white/20 hover:text-white transition-colors mt-10 md:mt-14 [@supports_not_(backdrop-filter:blur(1px))]:bg-black/45 text-[14px]"
           >
             Shop All
           </Link>
@@ -94,7 +69,7 @@ function Home() {
       {/* New Picks */}
       <section className="mx-auto max-w-7xl px-4 py-14 md:px-8 md:py-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+          <h2 className="text-[20px] font-bold uppercase tracking-widest text-ink">
             New Picks
           </h2>
           <Link

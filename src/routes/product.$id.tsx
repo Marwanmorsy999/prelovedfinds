@@ -31,17 +31,17 @@ export const Route = createFileRoute("/product/$id")({
   },
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <h1 className="text-[18px] font-semibold text-[#1a1a1a]">Something went wrong</h1>
-      <p className="mt-2 text-[13px] text-[#6b7280]">{error.message}</p>
+      <h1 className="text-[18px] font-semibold text-ink">Something went wrong</h1>
+      <p className="mt-2 text-[13px] text-concrete">{error.message}</p>
     </div>
   ),
   notFoundComponent: () => (
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#9ca3af]">404</p>
-      <h1 className="mt-3 text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-concrete">404</p>
+      <h1 className="mt-3 text-[20px] font-bold uppercase tracking-widest text-ink">
         Piece not found
       </h1>
-      <p className="mt-2 text-[13px] text-[#6b7280]">It may have already been snapped up.</p>
+      <p className="mt-2 text-[13px] text-concrete">It may have already been snapped up.</p>
       <Link
         to="/shop"
         search={{
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/product/$id")({
           q: "",
           pages: 1,
         }}
-        className="mt-6 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors"
+        className="mt-6 inline-flex h-11 items-center justify-center border border-[#1a1a1a] px-8 text-[12px] font-semibold uppercase tracking-widest text-ink hover:bg-[#1a1a1a] hover:text-white transition-colors"
       >
         Back to Shop
       </Link>
@@ -67,9 +67,9 @@ function ProductPage() {
 
   return (
     <div className="page-enter">
-      <div className="border-b border-[#e5e7eb] px-4 py-3 md:px-8">
-        <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
-          <Link to="/" className="hover:text-[#1a1a1a] transition-colors">
+      <div className="border-b border-hairline px-4 py-3 md:px-8">
+        <p className="text-[11px] text-concrete uppercase tracking-widest">
+          <Link to="/" className="hover:text-ink transition-colors">
             Home
           </Link>
           <span className="mx-2">/</span>
@@ -84,12 +84,12 @@ function ProductPage() {
               q: "",
               pages: 1,
             }}
-            className="hover:text-[#1a1a1a] transition-colors"
+            className="hover:text-ink transition-colors"
           >
             Shop All
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-[#1a1a1a]">{product.title}</span>
+          <span className="text-ink">{product.title}</span>
         </p>
       </div>
 
@@ -100,8 +100,8 @@ function ProductPage() {
         </div>
 
         {related?.length > 0 && (
-          <section className="mt-20 border-t border-[#e5e7eb] pt-12">
-            <h2 className="text-[20px] font-bold uppercase tracking-widest text-[#1a1a1a] mb-8">
+          <section className="mt-20 border-t border-hairline pt-12">
+            <h2 className="text-[20px] font-bold uppercase tracking-widest text-ink mb-8">
               You may also like
             </h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

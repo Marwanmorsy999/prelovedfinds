@@ -81,9 +81,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const isInCart = (id: string) => itemsRef.current.some((x) => x.id === id);
 
   const buyNow = (item: CartItem) => {
-    const next = [item];
-    setItems(next);
-    saveCart(next);
+    setItems((prev) => {
+      const filtered = prev.filter((i) => i.id !== item.id);
+      return [...filtered, item];
+    });
     setHydrated(true);
   };
 

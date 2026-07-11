@@ -38,8 +38,8 @@ export function AnnouncementBanner({ announcement }: { announcement: string }) {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[var(--z-nav)] bg-ink text-paper">
-      <div className="mx-auto max-w-7xl flex items-center justify-center gap-3 px-4 py-2">
+    <div className="fixed top-0 left-0 right-0 z-[110] bg-ink text-paper h-10 flex items-center">
+      <div className="mx-auto max-w-7xl flex items-center justify-center gap-3 px-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-center">
           {announcement}
         </p>

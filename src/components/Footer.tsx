@@ -21,7 +21,7 @@ export function Footer({ whatsapp }: { whatsapp?: string }) {
 
           {/* Navigate */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9ca3af] mb-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-concrete mb-4">
               Navigate
             </p>
             <ul className="space-y-3">
@@ -44,7 +44,7 @@ export function Footer({ whatsapp }: { whatsapp?: string }) {
 
           {/* Contact */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9ca3af] mb-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-concrete mb-4">
               Get in Touch
             </p>
             <ul className="space-y-3">
@@ -86,10 +86,12 @@ export function Footer({ whatsapp }: { whatsapp?: string }) {
       {/* Bottom bar */}
       <div className="border-t border-hairline px-4 py-4 md:px-8">
         <div className="mx-auto max-w-7xl flex flex-col items-center justify-between gap-2 md:flex-row">
-          <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">
+          <p className="text-[11px] text-concrete uppercase tracking-widest">
             © {new Date().getFullYear()} Preloved Finds. All rights reserved.
           </p>
-          <p className="text-[11px] text-[#9ca3af] uppercase tracking-widest">Terms & Policies</p>
+          <Link to="/terms" className="text-[11px] text-concrete uppercase tracking-widest hover:text-ink transition-colors">
+            Terms & Policies
+          </Link>
         </div>
       </div>
     </footer>
